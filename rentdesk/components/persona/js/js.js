@@ -16,82 +16,6 @@ $(document).ready(function () {
 		$('#textoRegistroCliente').text('');
 		$('#dni').val('');
 	}
-
-	//BRUNO
-	$('#descargarExcelPersona').on('click', function (e) {
-		e.preventDefault();
-
-		// Captura el valor del input (para filtrar en el backend, si corresponde)
-		var searchTerm = $('#nombre_cliente').val();
-
-		$.ajax({
-			url: 'components/persona/models/get_persona_excel.php',
-			type: 'GET',
-			data: { searchTerm: searchTerm },
-			dataType: 'json',
-			success: function (response) {
-				// 1) Validar si está vacío
-				if (!response || response.length === 0) {
-					Swal.fire({
-						icon: 'info',
-						title: 'No se encontró ningún arriendo',
-						showConfirmButton: true,
-					});
-					return; // Terminamos la ejecución de la función
-				}
-
-				// 1) Transforma la respuesta para renombrar columnas en el Excel
-				var formattedData = response.map(function (row) {
-					return {
-						'Nombre Completo': row.nombre_completo, // Viene de la columna "nombre_completo"
-						DNI: row.dni, // Viene de la columna "dni"
-						Correo: row.correo, // Viene de la columna "correo"
-						'Tipo de Persona': row.tipo_persona, // Viene de la columna "tipo_persona"
-						Dirección: row.direccion, // Viene de la columna "direccion"
-					};
-				});
-
-				// 2) Crear la hoja (worksheet) usando los datos formateados
-				var worksheet = XLSX.utils.json_to_sheet(formattedData);
-
-				// 3) Ajustar el ancho de las columnas (opcional)
-				worksheet['!cols'] = [
-					{ wpx: 200 }, // Nombre Completo
-					{ wpx: 100 }, // DNI
-					{ wpx: 180 }, // Correo
-					{ wpx: 120 }, // Tipo de Persona
-					{ wpx: 200 }, // Dirección
-				];
-
-				// 4) Crear un nuevo libro de trabajo (workbook)
-				var workbook = XLSX.utils.book_new();
-				XLSX.utils.book_append_sheet(workbook, worksheet, 'Personas');
-
-				// 5) Generar el archivo XLSX en un formato binario (array)
-				var wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
-
-				// 6) Crear un Blob a partir del workbook
-				var blob = new Blob([wbout], { type: 'application/octet-stream' });
-
-				// 7) Crear un objeto URL para la descarga
-				var url = URL.createObjectURL(blob);
-
-				// 8) Crear un enlace temporal para forzar la descarga
-				var a = document.createElement('a');
-				a.href = url;
-				a.download = 'personas.xlsx'; // Nombre del archivo Excel
-				document.body.appendChild(a);
-				a.click();
-				document.body.removeChild(a);
-
-				// 9) Liberar el objeto URL
-				URL.revokeObjectURL(url);
-			},
-			error: function (xhr, status, error) {
-				console.error('Error en la petición AJAX:', error);
-			},
-		});
-	});
 });
 
 $(document).ready(function () {
@@ -142,6 +66,71 @@ $(document).ready(function () {
 				.val()
 				.replace(/[^0-9kK-]/g, '')
 		);
+	});
+
+	//BRUNO
+	$('#descargarExcelPersona').on('click', function (e) {
+		e.preventDefault();
+		// Captura el valor del input (para filtrar en el backend, si corresponde)
+		var searchTerm = $('#nombre_cliente').val();
+		$.ajax({
+			url: 'components/persona/models/get_persona_excel.php',
+			type: 'GET',
+			data: { searchTerm: searchTerm },
+			dataType: 'json',
+			success: function (response) {
+				// 1) Validar si está vacío
+				if (!response || response.length === 0) {
+					Swal.fire({
+						icon: 'info',
+						title: 'No se encontró ningún arriendo',
+						showConfirmButton: true,
+					});
+					return; // Terminamos la ejecución de la función
+				}
+				// 1) Transforma la respuesta para renombrar columnas en el Excel
+				var formattedData = response.map(function (row) {
+					return {
+						'Nombre Completo': row.nombre_completo, // Viene de la columna "nombre_completo"
+						DNI: row.dni, // Viene de la columna "dni"
+						Correo: row.correo, // Viene de la columna "correo"
+						'Tipo de Persona': row.tipo_persona, // Viene de la columna "tipo_persona"
+						Dirección: row.direccion, // Viene de la columna "direccion"
+					};
+				});
+				// 2) Crear la hoja (worksheet) usando los datos formateados
+				var worksheet = XLSX.utils.json_to_sheet(formattedData);
+				// 3) Ajustar el ancho de las columnas (opcional)
+				worksheet['!cols'] = [
+					{ wpx: 200 }, // Nombre Completo
+					{ wpx: 100 }, // DNI
+					{ wpx: 180 }, // Correo
+					{ wpx: 120 }, // Tipo de Persona
+					{ wpx: 200 }, // Dirección
+				];
+				// 4) Crear un nuevo libro de trabajo (workbook)
+				var workbook = XLSX.utils.book_new();
+				XLSX.utils.book_append_sheet(workbook, worksheet, 'Personas');
+				// 5) Generar el archivo XLSX en un formato binario (array)
+				var wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+				// 6) Crear un Blob a partir del workbook
+				var blob = new Blob([wbout], { type: 'application/octet-stream' });
+				// 7) Crear un objeto URL para la descarga
+				var url = URL.createObjectURL(blob);
+				// 8) Crear un enlace temporal para forzar la descarga
+				var a = document.createElement('a');
+				a.href = url;
+				a.download = 'personas.xlsx'; // Nombre del archivo Excel
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				// 9) Liberar el objeto URL
+				URL.revokeObjectURL(url);
+			},
+			error: function (xhr, status, error) {
+				console.error('Error en la petición AJAX:', error);
+			},
+		});
 	});
 });
 
