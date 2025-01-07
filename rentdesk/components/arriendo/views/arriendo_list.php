@@ -122,7 +122,7 @@
                         <div class="col-md-3">
                             <div class="form-group">
                                 <label>Ficha Arriendo</label>
-                                <input type="text" id="FichaArriendo" value="" name="FichaArriendo" class="form-control" placeholder="Nombre o RUT o correo" onblur="ocultarAutocomplete('FichaArriendo');" autocomplete='off' onkeyup='buscarPersonaAutocomplete(this.value,"FichaArriendo");'>
+                                <input type="text" id="FichaArriendo" value="" name="FichaArriendo" class="form-control" placeholder="COD. ARRIENDO" onblur="ocultarAutocomplete('FichaArriendo');" autocomplete='off' onkeyup='buscarPersonaAutocomplete(this.value,"FichaArriendo");'>
                                 <div id='suggestions_FichaArriendo'></div>
                             </div>
                         </div>
