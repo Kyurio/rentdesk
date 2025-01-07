@@ -167,7 +167,7 @@
 
             <div class="table-responsive overflow-auto">
                 <div class="col">
-                    <button id="descargarExcelArrendatario" type="button" class="btn btn-secondary">Descargar Excel Completo</button>
+                    <button id="descargarExcelArrendatario" type="button" class="btn btn-outline-primary">Descargar Excel Completo</button>
                 </div>
                 <table id="arrendatario" class="table table-striped" cellspacing="0" width="100%">
 

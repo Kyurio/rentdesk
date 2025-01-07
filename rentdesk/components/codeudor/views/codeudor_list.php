@@ -4,9 +4,9 @@
 </script>
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 <script>
-     $( document ).ready(function() {
-    loadCodeudor_List();
-}); 
+    $(document).ready(function() {
+        loadCodeudor_List();
+    });
 </script>
 
 <div id="header" class="header-page">
@@ -85,21 +85,21 @@
 
     <div class="row top-100">
         <div class="col p-0">
-                <fieldset class="form-group border p-3">
-                    <legend>
-                        <h5 class="mt-0" style="font-size:14px !important;margin-bottom:5px !important;">Criterios de Búsqueda</h5>
-                    </legend>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Nombre</label>
-                                <input type="text" class="form-control" id="nombre_codeudor" name="nombre_codeudor" value="" 
-                                placeholder="Nombre o Rut " 
-                                onblur="ocultarAutocomplete('nombre_codeudor');" 
+            <fieldset class="form-group border p-3">
+                <legend>
+                    <h5 class="mt-0" style="font-size:14px !important;margin-bottom:5px !important;">Criterios de Búsqueda</h5>
+                </legend>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" class="form-control" id="nombre_codeudor" name="nombre_codeudor" value=""
+                                placeholder="Nombre o Rut "
+                                onblur="ocultarAutocomplete('nombre_codeudor');"
                                 autocomplete='off' onkeyup='buscarCodeudorAutocompleteGenerica(this.value,"nombre_codeudor");'>
-                                <div id='suggestions_nombre_codeudor'  class="suggestionsAutoComplete"></div>
-                            </div>
+                            <div id='suggestions_nombre_codeudor' class="suggestionsAutoComplete"></div>
                         </div>
+                    </div>
 
 
                     <!---
@@ -123,9 +123,9 @@
                         </div>
 
                     </div>
-                
-                </fieldset>
-       
+
+            </fieldset>
+
 
         </div>
     </div>
@@ -135,21 +135,24 @@
     <div class="card">
         <div class="card-body">
 
-                <div class="table-responsive overflow-auto">
-                    <table id="codeudor" class="table table-striped" cellspacing="0" width="100%">
-
-                        <thead>
-                            <tr>
-								<th>Ficha Técnica</th>
-                                <th>Nombre</th>
-                                <th>Nro. Documento</th>
-                                <th>Tipo Persona</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-
-                    </table>
+            <div class="table-responsive overflow-auto">
+                <div class="col">
+                    <button id="descargarExcelCodeudor" type="button" class="btn btn-outline-primary mb-4">Descargar Excel Completo</button>
                 </div>
+                <table id="codeudor" class="table table-striped" cellspacing="0" width="100%">
+
+                    <thead>
+                        <tr>
+                            <th>Ficha Técnica</th>
+                            <th>Nombre</th>
+                            <th>Nro. Documento</th>
+                            <th>Tipo Persona</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                </table>
+            </div>
         </div>
     </div>
 </div>

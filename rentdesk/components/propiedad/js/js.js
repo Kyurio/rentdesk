@@ -12,7 +12,6 @@ sessionStorage.removeItem('comuna');
 sessionStorage.clear();
 
 $(document).ready(function () {
-
 	ListadoNotificaciones();
 
 	//jhernandez carga la funcion de listar tipo movimientos cuentas corrientes
@@ -65,11 +64,7 @@ $(document).ready(function () {
 
 	document.getElementById('botonEliminaSeccion').style.display = 'none';
 
-
-
-
 	// bruno
-
 	// Guardar nuevo recordatorio
 	$('#btnGuardarRecordatorio').on('click', function () {
 		// Validaciones
@@ -78,8 +73,8 @@ $(document).ready(function () {
 			$('#fechaRecordatorio').val(),
 			$('#repeticionesRecordatorio').val().trim(),
 			$('#tipoRecordatorio').val(),
-			$('#frecuenciaRecordatorio').val()
-		].some(campo => campo === '');
+			$('#frecuenciaRecordatorio').val(),
+		].some((campo) => campo === '');
 
 		if (camposVacios) {
 			Swal.fire('Complete todos los campos.', '', 'info');
@@ -102,13 +97,17 @@ $(document).ready(function () {
 			contentType: false,
 			success: function (response) {
 				if (response == 1) {
-					Swal.fire('Los datos se han guardado con éxito.', '', 'success').then((result) => {
-						if (result.isConfirmed) {
-							$('#modalRecordatoriosNuevo').modal('hide');
-							$('#formRecordatorio')[0].reset();
-							$('#ListadoRecordatiorios').DataTable().ajax.reload(null, false); // Recargar la tabla
+					Swal.fire('Los datos se han guardado con éxito.', '', 'success').then(
+						(result) => {
+							if (result.isConfirmed) {
+								$('#modalRecordatoriosNuevo').modal('hide');
+								$('#formRecordatorio')[0].reset();
+								$('#ListadoRecordatiorios')
+									.DataTable()
+									.ajax.reload(null, false); // Recargar la tabla
+							}
 						}
-					});
+					);
 				} else {
 					Swal.fire('Error al guardar', '', 'error');
 				}
@@ -118,7 +117,7 @@ $(document).ready(function () {
 			},
 			complete: function () {
 				$('#nombreEjecutivo').prop('disabled', true);
-			}
+			},
 		});
 	});
 
@@ -145,7 +144,7 @@ $(document).ready(function () {
 			},
 			error: function (error) {
 				console.error('Error al obtener el nombre del ejecutivo:', error);
-			}
+			},
 		});
 
 		// Obtener tipos de recordatorio
@@ -154,18 +153,20 @@ $(document).ready(function () {
 			method: 'GET',
 			success: function (response) {
 				var tipos = JSON.parse(response);
-				$('#tipoRecordatorio').empty().append('<option value="">Seleccione un tipo</option>');
+				$('#tipoRecordatorio')
+					.empty()
+					.append('<option value="">Seleccione un tipo</option>');
 				tipos.forEach(function (tipo) {
-					$('#tipoRecordatorio').append('<option value="' + tipo.nombre + '">' + tipo.nombre + '</option>');
+					$('#tipoRecordatorio').append(
+						'<option value="' + tipo.nombre + '">' + tipo.nombre + '</option>'
+					);
 				});
 			},
 			error: function (xhr, status, error) {
 				console.error('Error al obtener los tipos de recordatorio:', error);
-			}
+			},
 		});
 	});
-
-
 });
 
 $(document).ready(function () {
@@ -182,6 +183,97 @@ $(document).ready(function () {
 	cargarLiquidacionesHistorico();
 	cargarLiquidacionesPagoPropietariosList();
 	cargarInfoComentario();
+
+	//BRUNO TORRES
+	$('#descargarExcelPropiedad').on('click', function (e) {
+		e.preventDefault();
+
+		// Capturamos los valores de los 2 inputs
+		var codigoProp = $('#codigo_propiedad').val();
+		var propietario = $('#propietario').val();
+
+		$.ajax({
+			url: 'components/propiedad/models/get_propiedad_excel.php', // Ajusta la ruta a tu PHP
+			type: 'GET',
+			// Enviamos los parámetros
+			data: {
+				codigo_propiedad: codigoProp,
+				propietario: propietario,
+			},
+			dataType: 'json',
+			success: function (response) {
+				// 1) Validar si está vacío
+				if (!response || response.length === 0) {
+					Swal.fire({
+						icon: 'info',
+						title: 'No se encontró ningún arriendo',
+						showConfirmButton: true,
+					});
+					return; // Terminamos la ejecución de la función
+				}
+				// 1) Transformar la respuesta a columnas amigables
+				//    (Sucusal, Ejecutivo, Propietario, Tipo de Propiedad, Dirección, etc.)
+				var formattedData = response.map(function (row) {
+					return {
+						Sucursal: row.sucursal,
+						Ejecutivo: row.ejecutivo,
+						Propietario: row.propietarios,
+						'Tipo de Propiedad': row.tipo_propiedad,
+						Dirección: row.direccion,
+						Comuna: row.comuna,
+						Región: row.region,
+						Estado: row.estado,
+						Asegurado: row.asegurado,
+						Precio: row.precio,
+					};
+				});
+
+				// 2) Crear la hoja con SheetJS
+				var worksheet = XLSX.utils.json_to_sheet(formattedData);
+
+				// 3) Ajustar anchos de columna (opcional)
+				worksheet['!cols'] = [
+					{ wpx: 140 }, // Sucursal
+					{ wpx: 140 }, // Ejecutivo
+					{ wpx: 180 }, // Propietario
+					{ wpx: 130 }, // Tipo de Propiedad
+					{ wpx: 220 }, // Dirección
+					{ wpx: 120 }, // Comuna
+					{ wpx: 120 }, // Región
+					{ wpx: 100 }, // Estado
+					{ wpx: 100 }, // Asegurado
+					{ wpx: 120 }, // Precio
+				];
+
+				// 4) Crear workbook y añadir la hoja
+				var workbook = XLSX.utils.book_new();
+				XLSX.utils.book_append_sheet(workbook, worksheet, 'Propiedades');
+
+				// 5) Generar archivo XLSX (array binario)
+				var wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
+
+				// 6) Convertir a Blob
+				var blob = new Blob([wbout], { type: 'application/octet-stream' });
+
+				// 7) Crear URL de descarga
+				var url = URL.createObjectURL(blob);
+
+				// 8) Crear enlace temporal y forzar la descarga
+				var a = document.createElement('a');
+				a.href = url;
+				a.download = 'propiedades.xlsx'; // Nombre del archivo
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+
+				// 9) Liberar URL
+				URL.revokeObjectURL(url);
+			},
+			error: function (xhr, status, error) {
+				console.error('Error en la petición AJAX:', error);
+			},
+		});
+	});
 });
 
 function generarExcel(urlbase) {
@@ -231,8 +323,9 @@ function guardarCcAbono() {
 
 	var jsonInformacionNueva = obtenerValoresFormulario('cc_pago_no_liquidable');
 
-
-	const ccTipoMovimientoAbonoinput = document.getElementById('ccTipoMovimientoAbono');
+	const ccTipoMovimientoAbonoinput = document.getElementById(
+		'ccTipoMovimientoAbono'
+	);
 	var ccTipoMovimientoAbono = ccTipoMovimientoAbonoinput.value;
 
 	const cc_pago_razon_input = document.getElementById('ccIngresoPagoNLRazon');
@@ -342,7 +435,6 @@ function guardarCcAbono() {
 			//habilita y deshabilita los botoenes segun movimeintos de cuenta corriente jhernandez
 			$('#btnLiquidar').css('display', 'block');
 			$('#infoPropiedad').css('display', 'none');
-
 		})
 		.fail(function (jqXHR, textStatus, errorThrown) {
 			$('#modalCuentaCorrienteIngresoPagoNoLiquidable').modal('hide');
@@ -607,8 +699,6 @@ function resetFormGuardarCC() {
 	//document.getElementById("modalDocumentoIngresoCC").reset();
 }
 
-
-
 function cargarDocumentosSoloLectura() {
 	// Realizar la solicitud AJAX para obtener los datos
 	var url = window.location.href;
@@ -655,8 +745,8 @@ function cargarDocumentosSoloLectura() {
 					if (item.token_agrupador != previousId) {
 						newRow.append(
 							"<td><div class='d-flex align-items-center' style='gap: .5rem;'><label style='font-size: 1em; text-align: center; color: black;'>" +
-							item.titulo +
-							'</label></div></td>'
+								item.titulo +
+								'</label></div></td>'
 						);
 						previousId = item.token_agrupador;
 					} else {
@@ -665,8 +755,8 @@ function cargarDocumentosSoloLectura() {
 					if (item.nombre_archivo != null && item.nombre_archivo != '') {
 						newRow.append(
 							"<td><i class='fa-solid fa-chevron-right'></i> " +
-							item.nombre_archivo +
-							'</td>'
+								item.nombre_archivo +
+								'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -680,8 +770,8 @@ function cargarDocumentosSoloLectura() {
 					) {
 						newRow.append(
 							'<td>' +
-							moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
-							'</td>'
+								moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
+								'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -690,8 +780,8 @@ function cargarDocumentosSoloLectura() {
 					//console.log(item.link);
 					newRow.append(
 						"<td><div class='d-flex' style='gap: .5rem;'><a href='" +
-						item.link +
-						"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
+							item.link +
+							"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
 					);
 					if (
 						item.fecha_ultima_actualizacion != null &&
@@ -699,12 +789,12 @@ function cargarDocumentosSoloLectura() {
 					) {
 						newRow.append(
 							'<td>' +
-							(item.fecha_ultima_actualizacion
-								? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
-								: '-') +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								(item.fecha_ultima_actualizacion
+									? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
+									: '-') +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -841,10 +931,10 @@ function cargarInfoComentario() {
 					) {
 						newRow.append(
 							'<td>' +
-							formateoNulos(item.fecha_comentario) +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								formateoNulos(item.fecha_comentario) +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -1001,14 +1091,11 @@ function eliminarInfoComentario(idInfoComentario) {
 }
 
 function guardarCcDescuento() {
-
 	var formData = new FormData(
 		document.getElementById('cc_descuento_autorizado')
 	);
 
-	var ccTipoMovimiento = document.getElementById(
-		'ccTipoMovimiento'
-	)
+	var ccTipoMovimiento = document.getElementById('ccTipoMovimiento');
 
 	var jsonInformacionNueva = obtenerValoresFormulario(
 		'cc_descuento_autorizado'
@@ -1040,17 +1127,13 @@ function guardarCcDescuento() {
 	var ccIngresoDescAutorizadoFecha = cc_pago_fecha_input.value;
 
 	if (ccTipoMovimiento == null || ccTipoMovimiento == '') {
-
 		Swal.fire({
 			title: 'Atención ',
 			text: 'Debe seleccionar un tipo de movimiento.',
 			icon: 'warning',
 		});
 		return;
-
-
 	}
-
 
 	if (
 		ccIngresoDescAutorizadoRazon == null ||
@@ -1112,8 +1195,7 @@ function guardarCcDescuento() {
 		return;
 	}
 
-
-	formData.append('ccTipoMovimiento', ccTipoMovimiento.value)
+	formData.append('ccTipoMovimiento', ccTipoMovimiento.value);
 	formData.append('ccIngresoDescAutorizadoRazon', ccIngresoDescAutorizadoRazon);
 	formData.append('ccIngresoDescAutorizadoMonto', ccIngresoDescAutorizadoMonto);
 	formData.append(
@@ -1226,7 +1308,6 @@ function guardarCcDescuento() {
 // 	// 	},
 // 	// });
 
-
 // 	var idFicha = $('#id_ficha').val();
 // 	$.ajax({
 // 		url: 'components/propiedad/models/prueba.php?idFicha=' + idFicha,
@@ -1259,10 +1340,7 @@ function guardarCcDescuento() {
 // 	});
 // }
 
-
-
-
-// ahora se llena de una nueva manera esta tabla por que se creo una funcion sql para ello 
+// ahora se llena de una nueva manera esta tabla por que se creo una funcion sql para ello
 // jhernandez
 
 // function cargarCCMovimientosList() {
@@ -1367,7 +1445,6 @@ function guardarCcDescuento() {
 // 	});
 // }
 
-
 // function cargarCCMovimientosList() {
 //     console.log('CARGA LISTA MOVIMIENTOS');
 //     var idFicha = $('#id_ficha').val();
@@ -1462,7 +1539,6 @@ function guardarCcDescuento() {
 //     });
 // }
 
-
 function cargarCCMovimientoSaldoActual() {
 	// var idFicha = $('#id_ficha').val();
 	// $.ajax({
@@ -1473,13 +1549,10 @@ function cargarCCMovimientoSaldoActual() {
 	// 		if (response.status === 'success') {
 	// 			// Parsear el string JSON
 	// 			var data = JSON.parse(response.data[0].fn_saldos_cuenta_corriente);
-
-
 	// 			// Destruir la instancia anterior de DataTable si existe
 	// 			if ($.fn.DataTable.isDataTable('#cc-movimientos-propiedad')) {
 	// 				$('#cc-movimientos-propiedad').DataTable().clear().destroy();
 	// 			}
-
 	// 			// Inicializar DataTables
 	// 			$('#cc-movimientos-propiedad').DataTable({
 	// 				data: data,
@@ -1491,7 +1564,6 @@ function cargarCCMovimientoSaldoActual() {
 	// 					//{ title: "ID Tipo Movimiento Cta Cte", data: "id_tipo_movimiento_cta_cte" },
 	// 					{ title: "Razón", data: "razon" },
 	// 					{ title: "Monto 1", data: "monto1" },
-
 	// 					//{ title: "ID Tipo Movimiento", data: "id_tipo_movimiento" },
 	// 					{ title: "Monto 2", data: "monto2" },
 	// 					{ title: "Saldo", data: "saldo" }
@@ -1516,7 +1588,7 @@ function cargarCCMovimientosList() {
 		method: 'GET',
 		dataType: 'json',
 		success: function (response) {
-			console.log("Respuesta de la función: ", response);
+			console.log('Respuesta de la función: ', response);
 
 			// Destruir la instancia anterior de DataTable si existe
 			if ($.fn.DataTable.isDataTable('#cc-movimientos-propiedad')) {
@@ -1528,41 +1600,49 @@ function cargarCCMovimientosList() {
 				$('#cc-movimientos-propiedad').DataTable({
 					data: response,
 					columns: [
-						{ title: "Fecha Movimiento", data: "fecha_movimiento" },
-						{ title: "Hora Movimiento", data: "hora_movimiento" },
-						{ title: "Razón", data: "razon" },
+						{ title: 'Fecha Movimiento', data: 'fecha_movimiento' },
+						{ title: 'Hora Movimiento', data: 'hora_movimiento' },
+						{ title: 'Razón', data: 'razon' },
 						{
-							title: "Abono",
-							data: "monto1",
-							render: function (data) { return formatCurrency(data); }
+							title: 'Abono',
+							data: 'monto1',
+							render: function (data) {
+								return formatCurrency(data);
+							},
 						},
 						{
-							title: "Cargo",
-							data: "monto2",
-							render: function (data) { return formatCurrency(data); }
+							title: 'Cargo',
+							data: 'monto2',
+							render: function (data) {
+								return formatCurrency(data);
+							},
 						},
 						{
-							title: "Saldo",
-							data: "saldo",
-							render: function (data) { return formatCurrency(data); }
-						}
+							title: 'Saldo',
+							data: 'saldo',
+							render: function (data) {
+								return formatCurrency(data);
+							},
+						},
 					],
 					ordering: false,
 					language: {
-						"sProcessing": "Procesando...",
-						"sLengthMenu": "Mostrar _MENU_ registros",
-						"sZeroRecords": "No se encontraron resultados",
-						"sEmptyTable": "No hay datos disponibles en la tabla",
-						"sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-						"sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
-						"sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
-						"sSearch": "Buscar:",
-						"oPaginate": {
-							"sFirst": "Primero",
-							"sLast": "Último",
-							"sNext": "Siguiente",
-							"sPrevious": "Anterior"
-						}
+						sProcessing: 'Procesando...',
+						sLengthMenu: 'Mostrar _MENU_ registros',
+						sZeroRecords: 'No se encontraron resultados',
+						sEmptyTable: 'No hay datos disponibles en la tabla',
+						sInfo:
+							'Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros',
+						sInfoEmpty:
+							'Mostrando registros del 0 al 0 de un total de 0 registros',
+						sInfoFiltered: '(filtrado de un total de _MAX_ registros)',
+						sSearch: 'Buscar:',
+						oPaginate: {
+							sFirst: 'Primero',
+							sLast: 'Último',
+							sNext: 'Siguiente',
+							sPrevious: 'Anterior',
+						},
 					},
 					dom: 'Bfrtip',
 					buttons: [
@@ -1575,64 +1655,66 @@ function cargarCCMovimientosList() {
 								format: {
 									body: function (data) {
 										return data; // Exportar los datos tal como están
-									}
-								}
-							}
-						}
-					]
+									},
+								},
+							},
+						},
+					],
 				});
-
 			} else {
 				// Si no hay datos, mostrar un mensaje en la tabla
 				$('#cc-movimientos-propiedad').DataTable({
 					data: [],
 					columns: [
-						{ title: "Fecha Movimiento", data: '' },
-						{ title: "Hora Movimiento", data: '' },
-						{ title: "Razón", data: '' },
-						{ title: "Abono", data: '' },
-						{ title: "Cargo", data: '' },
-						{ title: "Saldo", data: '' }
+						{ title: 'Fecha Movimiento', data: '' },
+						{ title: 'Hora Movimiento', data: '' },
+						{ title: 'Razón', data: '' },
+						{ title: 'Abono', data: '' },
+						{ title: 'Cargo', data: '' },
+						{ title: 'Saldo', data: '' },
 					],
 					ordering: false,
 					language: {
-						"sProcessing": "Procesando...",
-						"sLengthMenu": "Mostrar _MENU_ registros",
-						"sZeroRecords": "No se encontraron resultados",
-						"sEmptyTable": "No hay datos disponibles en la tabla",
-						"sInfo": "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-						"sInfoEmpty": "Mostrando registros del 0 al 0 de un total de 0 registros",
-						"sInfoFiltered": "(filtrado de un total de _MAX_ registros)",
-						"sSearch": "Buscar:",
-						"oPaginate": {
-							"sFirst": "Primero",
-							"sLast": "Último",
-							"sNext": "Siguiente",
-							"sPrevious": "Anterior"
-						}
+						sProcessing: 'Procesando...',
+						sLengthMenu: 'Mostrar _MENU_ registros',
+						sZeroRecords: 'No se encontraron resultados',
+						sEmptyTable: 'No hay datos disponibles en la tabla',
+						sInfo:
+							'Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros',
+						sInfoEmpty:
+							'Mostrando registros del 0 al 0 de un total de 0 registros',
+						sInfoFiltered: '(filtrado de un total de _MAX_ registros)',
+						sSearch: 'Buscar:',
+						oPaginate: {
+							sFirst: 'Primero',
+							sLast: 'Último',
+							sNext: 'Siguiente',
+							sPrevious: 'Anterior',
+						},
 					},
 					createdRow: function (row) {
 						// Agregar un mensaje de "No hay resultados" en la primera columna
-						$('td', row).eq(0).attr('colspan', 6).html('No hay resultados disponibles').css({
-							'text-align': 'center'
-						});
-					}
+						$('td', row)
+							.eq(0)
+							.attr('colspan', 6)
+							.html('No hay resultados disponibles')
+							.css({
+								'text-align': 'center',
+							});
+					},
 				});
 			}
 		},
 		error: function (xhr, status, error) {
-			console.error("Error en la solicitud: ", error);
-		}
+			console.error('Error en la solicitud: ', error);
+		},
 	});
 }
 
-
 function formatCurrency(value) {
-	if (!value) return "$0.00";
+	if (!value) return '$0.00';
 	return `$${parseFloat(value).toFixed(2).toLocaleString()}`;
 }
-
-
 
 function guardarInfoComentario() {
 	var formData = new FormData(document.getElementById('comentario_formulario'));
@@ -1742,10 +1824,10 @@ function cargarInfoComentario() {
 					) {
 						newRow.append(
 							'<td>' +
-							formateoNulos(item.fecha_comentario) +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								formateoNulos(item.fecha_comentario) +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -1921,79 +2003,86 @@ function avisoPropiedad() {
 	});
 }
 
-
-// actualizacion de generar excel propiedad 
+// actualizacion de generar excel propiedad
 // <!-- actualizacion de generar excel propiedad -->
 function loadPropiedad_List() {
-    $(document).ready(function () {
+	$(document).ready(function () {
+		var propietario = $('#propietario').val() || '';
+		var ejecutivo = $('#ejecutivo').val() || '';
+		var filtro_codigo_propiedad = $('#codigo_propiedad').val() || '';
+		var filtro_direccion = $('#filtro_direccion').val() || '';
+		var filtro_sucursal = $('#filtro_sucursal').val() || '';
+		var tipoPropiedad = $('#tipoPropiedad').val() || '';
+		var estadoPropiedad = $('#estadoPropiedad').val() || '';
+		var region = $('#region').val() || '';
+		var comuna = $('#comuna').val() || '';
+		var direccion = $('#direccion').val() || '';
 
-        var propietario = $('#propietario').val() || '';
-        var ejecutivo = $('#ejecutivo').val() || '';
-        var filtro_codigo_propiedad = $('#codigo_propiedad').val() || '';
-        var filtro_direccion = $('#filtro_direccion').val() || '';
-        var filtro_sucursal = $('#filtro_sucursal').val() || '';
-        var tipoPropiedad = $('#tipoPropiedad').val() || '';
-        var estadoPropiedad = $('#estadoPropiedad').val() || '';
-        var region = $('#region').val() || '';
-        var comuna = $('#comuna').val() || '';
-        var direccion = $('#direccion').val() || '';
+		var ajaxUrl =
+			'components/propiedad/models/propiedad_list_procesa.php?' +
+			'propietario=' +
+			encodeURIComponent(propietario) +
+			'&ejecutivo=' +
+			encodeURIComponent(ejecutivo) +
+			'&filtro_direccion=' +
+			encodeURIComponent(filtro_direccion) +
+			'&filtro_sucursal=' +
+			encodeURIComponent(filtro_sucursal) +
+			'&tipoPropiedad=' +
+			encodeURIComponent(tipoPropiedad) +
+			'&estadoPropiedad=' +
+			encodeURIComponent(estadoPropiedad) +
+			'&region=' +
+			encodeURIComponent(region) +
+			'&comuna=' +
+			encodeURIComponent(comuna) +
+			'&codigo_propiedad=' +
+			encodeURIComponent(filtro_codigo_propiedad) +
+			'&direccion=' +
+			encodeURIComponent(direccion);
 
-        var ajaxUrl = 'components/propiedad/models/propiedad_list_procesa.php?' +
-            'propietario=' + encodeURIComponent(propietario) +
-            '&ejecutivo=' + encodeURIComponent(ejecutivo) +
-            '&filtro_direccion=' + encodeURIComponent(filtro_direccion) +
-            '&filtro_sucursal=' + encodeURIComponent(filtro_sucursal) +
-            '&tipoPropiedad=' + encodeURIComponent(tipoPropiedad) +
-            '&estadoPropiedad=' + encodeURIComponent(estadoPropiedad) +
-            '&region=' + encodeURIComponent(region) +
-            '&comuna=' + encodeURIComponent(comuna) +
-            '&codigo_propiedad=' + encodeURIComponent(filtro_codigo_propiedad) +
-            '&direccion=' + encodeURIComponent(direccion);
-
-        if ($.fn.DataTable.isDataTable('#propiedades')) {
-            $('#propiedades').DataTable().ajax.url(ajaxUrl).load();
-        } else {
-            $('#propiedades').DataTable({
-                order: [[0, 'desc']],
-                processing: true,
-                serverSide: true,
-                searching: false, // Desactiva el buscador
-                ajax: {
-                    url: ajaxUrl,
-                    type: 'POST',
-                    dataSrc: function (json) {
-                        if (!json || !json.data || json.data.length === 0) {
-                            return []; // Regresa un arreglo vacío si no hay datos
-                        }
-                        return json.data; // Si hay datos, pásalos a la tabla
-                    }
-                },
-                language: {
-                    emptyTable: 'No hay datos disponibles para la sucursal seleccionada.',
-                    processing: '<div class=" text-primary" role="status"><span class="visually-hidden">Cargando...</span></div>',
-                },
-                drawCallback: function () {
-                    console.log('Tabla actualizada correctamente');
-                    $('#propiedades_processing').hide();
-                },
-                dom: 'Bfrtip', // Permite agregar los botones de exportación
-                buttons: [
-                    {
-                        extend: 'excelHtml5',
-                        title: 'Listado de Propiedades',
-                        text: 'Descargar Excel',
-                        exportOptions: {
-                            columns: ':visible' // Exporta solo las columnas visibles
-                        }
-                    }
-                ],
-           
-            });
-        }
-    });
-
+		if ($.fn.DataTable.isDataTable('#propiedades')) {
+			$('#propiedades').DataTable().ajax.url(ajaxUrl).load();
+		} else {
+			$('#propiedades').DataTable({
+				order: [[0, 'desc']],
+				processing: true,
+				serverSide: true,
+				searching: false, // Desactiva el buscador
+				ajax: {
+					url: ajaxUrl,
+					type: 'POST',
+					dataSrc: function (json) {
+						if (!json || !json.data || json.data.length === 0) {
+							return []; // Regresa un arreglo vacío si no hay datos
+						}
+						return json.data; // Si hay datos, pásalos a la tabla
+					},
+				},
+				language: {
+					emptyTable: 'No hay datos disponibles para la sucursal seleccionada.',
+					processing:
+						'<div class=" text-primary" role="status"><span class="visually-hidden">Cargando...</span></div>',
+				},
+				drawCallback: function () {
+					console.log('Tabla actualizada correctamente');
+					$('#propiedades_processing').hide();
+				},
+				dom: 'Bfrtip', // Permite agregar los botones de exportación
+				buttons: [
+					{
+						extend: 'excelHtml5',
+						title: 'Listado de Propiedades',
+						text: 'Descargar Excel',
+						exportOptions: {
+							columns: ':visible', // Exporta solo las columnas visibles
+						},
+					},
+				],
+			});
+		}
+	});
 }
-
 
 var tablaPropiedades; // Variable global para almacenar la instancia de DataTables
 /*
@@ -2723,8 +2812,6 @@ function redirectPropietarios() {
 }
 
 function onChangePersona(token = null) {
-
-
 	var selectedValue = $('#DNI').val();
 	var url = window.location.href;
 	//console.log(url);
@@ -2766,13 +2853,11 @@ function busquedaDNI() {
 	var dniBuscar = $('#DNI').val();
 
 	if (dniBuscar !== '') {
-
 		$.ajax({
 			url: 'components/propiedad/models/busca_dni.php',
 			type: 'POST',
 			data: 'dni=' + dni,
 			success: function (resp) {
-
 				$.unblockUI();
 				var retorno = resp.split('||');
 				var resultado = retorno[0];
@@ -2810,7 +2895,6 @@ function busquedaDNI() {
 					}
 
 					if (mensaje === 'propietario') {
-
 						sessionStorage.setItem('propietarioDNI', dni);
 
 						Swal.fire({
@@ -2824,7 +2908,6 @@ function busquedaDNI() {
 
 								window.location.href =
 									'index.php?component=propietario&view=propietario';
-
 							},
 						}).then((result) => {
 							// Verificar si el usuario confirmó la alerta
@@ -2836,58 +2919,44 @@ function busquedaDNI() {
 						});
 
 						return;
-
 					}
-
 				} else {
-
-
 					var datos = JSON.parse(retorno[3]); // Convierte el string JSON a un objeto
 					var id = datos[0].id; // Accede al id del primer objeto en el array
-
 
 					// document.location.href =
 					//   "index.php?component=arrendatario&view=arrendatario&persona=" + mensaje;
 
-					ValidarClienteCuentasBancarias(id).then(flag => {
-
-
-						if (flag == true) {
-
-							inputPersonaToken.value = mensaje;
-							var personaJson = retorno[3];
-							var personaJson = JSON.parse(personaJson);
-							inputPersonaToken.value = mensaje;
-							console.log(personaJson);
-							cargarInfoPersonal(personaJson);
-							onChangePersona();
-							$('#section-0').show();
-							$('#section-1').show();
-							$('#section-2').show();
-							$('#section-3').show();
-							$('#section-4').show();
-							$('#bt_aceptar_propiedad').show();
-
-						} else {
-							Swal.fire({
-								icon: 'info',
-								title: 'Información de Cuenta Bancaria Requerida',
-								text: 'Por favor, complete los datos de la cuenta bancaria del propietario para poder continuar.',
-
-							});
-						}
-
-					}).catch(error => {
-						console.error("Error en la validación: ", error);
-					});
-
+					ValidarClienteCuentasBancarias(id)
+						.then((flag) => {
+							if (flag == true) {
+								inputPersonaToken.value = mensaje;
+								var personaJson = retorno[3];
+								var personaJson = JSON.parse(personaJson);
+								inputPersonaToken.value = mensaje;
+								console.log(personaJson);
+								cargarInfoPersonal(personaJson);
+								onChangePersona();
+								$('#section-0').show();
+								$('#section-1').show();
+								$('#section-2').show();
+								$('#section-3').show();
+								$('#section-4').show();
+								$('#bt_aceptar_propiedad').show();
+							} else {
+								Swal.fire({
+									icon: 'info',
+									title: 'Información de Cuenta Bancaria Requerida',
+									text: 'Por favor, complete los datos de la cuenta bancaria del propietario para poder continuar.',
+								});
+							}
+						})
+						.catch((error) => {
+							console.error('Error en la validación: ', error);
+						});
 				}
-
-
-
 			},
 		});
-
 	} else {
 		Swal.fire({
 			icon: 'info',
@@ -2896,9 +2965,6 @@ function busquedaDNI() {
 		});
 		//$.showAlert({ title: "Atención", body: "Debe escribir un DNI/RUT" });
 	}
-
-
-
 } //function enviar
 
 document.addEventListener('DOMContentLoaded', function () {
@@ -2915,8 +2981,6 @@ document.addEventListener('DOMContentLoaded', function () {
 /*Funciones de busqueda*/
 
 function buscarPropiedadAutocompleteB(valor, tipo) {
-
-
 	var codigo = document.getElementById(tipo).value;
 
 	var caracteres = codigo.length;
@@ -2980,10 +3044,10 @@ function cargarInfoPersonal(infoJSON) {
 	if (infoJSON[0].tipo_persona === 'NATURAL') {
 		$('#nombrePersona').text(
 			infoJSON[0].nombres +
-			' ' +
-			infoJSON[0].apellido_paterno +
-			' ' +
-			infoJSON[0].apellido_materno
+				' ' +
+				infoJSON[0].apellido_paterno +
+				' ' +
+				infoJSON[0].apellido_materno
 		);
 
 		$('#telefonoMovilPersona').text(
@@ -2993,14 +3057,14 @@ function cargarInfoPersonal(infoJSON) {
 		$('#tipoPersona').text(infoJSON[0].tipo_persona);
 		$('#direccionPersona').text(
 			infoJSON[0].direccion +
-			' #' +
-			infoJSON[0].numero +
-			', ' +
-			infoJSON[0].comuna +
-			', ' +
-			infoJSON[0].region +
-			', ' +
-			infoJSON[0].pais
+				' #' +
+				infoJSON[0].numero +
+				', ' +
+				infoJSON[0].comuna +
+				', ' +
+				infoJSON[0].region +
+				', ' +
+				infoJSON[0].pais
 		);
 		var urlMaps =
 			'https://www.google.com/maps/place/' +
@@ -3025,14 +3089,14 @@ function cargarInfoPersonal(infoJSON) {
 		$('#tipoPersonaJuridica').text(infoJSON[0].tipo_persona);
 		$('#direccionPersonaJuridica').text(
 			infoJSON[0].direccion +
-			' #' +
-			infoJSON[0].numero +
-			', ' +
-			infoJSON[0].comuna +
-			', ' +
-			infoJSON[0].region +
-			', ' +
-			infoJSON[0].pais
+				' #' +
+				infoJSON[0].numero +
+				', ' +
+				infoJSON[0].comuna +
+				', ' +
+				infoJSON[0].region +
+				', ' +
+				infoJSON[0].pais
 		);
 		var urlMaps =
 			'https://www.google.com/maps/place/' +
@@ -3298,12 +3362,12 @@ function cargarDocumentos() {
 					if (item.token_agrupador != previousId) {
 						newRow.append(
 							"<td><div class='d-flex align-items-center' style='gap: .5rem;'> <a data-bs-toggle='modal' data-bs-target='#modalTituloEditar' type='button' onclick='cargarTituloDocumentosEditar(\"" +
-							item.titulo +
-							'","' +
-							item.token_agrupador +
-							"\")' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='Editar' title='Editar'> <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i></a><label style='font-size: 1em; text-align: center; color: black;'>" +
-							item.titulo +
-							'</label></div></td>'
+								item.titulo +
+								'","' +
+								item.token_agrupador +
+								"\")' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='Editar' title='Editar'> <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i></a><label style='font-size: 1em; text-align: center; color: black;'>" +
+								item.titulo +
+								'</label></div></td>'
 						);
 						previousId = item.token_agrupador;
 					} else {
@@ -3312,8 +3376,8 @@ function cargarDocumentos() {
 					if (item.nombre_archivo != null && item.nombre_archivo != '') {
 						newRow.append(
 							"<td><i class='fa-solid fa-chevron-right'></i> " +
-							item.nombre_archivo +
-							'</td>'
+								item.nombre_archivo +
+								'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3327,8 +3391,8 @@ function cargarDocumentos() {
 					) {
 						newRow.append(
 							'<td>' +
-							moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
-							'</td>'
+								moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
+								'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3337,8 +3401,8 @@ function cargarDocumentos() {
 					//console.log(item.link);
 					newRow.append(
 						"<td><div class='d-flex' style='gap: .5rem;'><a href='" +
-						item.link +
-						"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
+							item.link +
+							"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
 					);
 					if (
 						item.fecha_ultima_actualizacion != null &&
@@ -3346,12 +3410,12 @@ function cargarDocumentos() {
 					) {
 						newRow.append(
 							'<td>' +
-							(item.fecha_ultima_actualizacion
-								? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
-								: '-') +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								(item.fecha_ultima_actualizacion
+									? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
+									: '-') +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3713,7 +3777,6 @@ function cargarInfoCoPropietarios() {
 					if (parentRow) {
 						porcentaje += parseFloat(parentRow.porcentaje_participacion_base);
 
-
 						if (parseInt(porcentaje) < 100) {
 							$('#procentajePropietarioValidacion').show();
 							$('#btnLiquidar').hide();
@@ -3725,8 +3788,9 @@ function cargarInfoCoPropietarios() {
               <tr class="parent-row">
                   <td>
                       <div class='d-flex' style='gap: .5rem;'>
-                          <button type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' title='Ingreso Beneficiario' data-bs-toggle="modal" data-bs-target="#modalBeneficiarioIngreso" onclick="llenarIdPropietarioSeleccionado(${parentRow.id_propietario
-							}, ${parentRow.id})">
+                          <button type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' title='Ingreso Beneficiario' data-bs-toggle="modal" data-bs-target="#modalBeneficiarioIngreso" onclick="llenarIdPropietarioSeleccionado(${
+														parentRow.id_propietario
+													}, ${parentRow.id})">
                               <i class='fa-regular fa-plus' style='font-size: .75rem;'></i>
                           </button>
                       </div>
@@ -3735,18 +3799,24 @@ function cargarInfoCoPropietarios() {
                   <td>${formateoNulos(formatRutChile(parentRow.dni))}</td>
                   <td>${formateoNulos(parentRow.nombre_titular)}</td>
                   <td>${formateoNulos(
-								formatRutChile(parentRow.rut_titular)
-							)}</td>
+										formatRutChile(parentRow.rut_titular)
+									)}</td>
                   <td>${formateoNulos(parentRow.cuenta_banco)}</td>
              
-                  <td><input type="number" class="porcentaje_participacion_base parent-input numeric-vacio" id="porcentaje_participacion_base_${id_propietario}" name="${parentRow.id_propietario
-							}|${parentRow.id_cta_banc}|porc_part_base||${parentRow?.id
-							}" min="0" max="100" step="0.01" value="${parentRow.porcentaje_participacion_base
-							}"></td>
-            <td><input disabled type="number" class="porcentaje_participacion numeric-vacio" id="porcentaje_participacion_${id_propietario}" name="${parentRow.id_propietario
-							}|${parentRow.id_cta_banc}|porc_part||${parentRow?.id
-							}" min="0" max="100" step="0.01" value="${parentRow.porcentaje_participacion
-							}"></td>
+                  <td><input type="number" class="porcentaje_participacion_base parent-input numeric-vacio" id="porcentaje_participacion_base_${id_propietario}" name="${
+							parentRow.id_propietario
+						}|${parentRow.id_cta_banc}|porc_part_base||${
+							parentRow?.id
+						}" min="0" max="100" step="0.01" value="${
+							parentRow.porcentaje_participacion_base
+						}"></td>
+            <td><input disabled type="number" class="porcentaje_participacion numeric-vacio" id="porcentaje_participacion_${id_propietario}" name="${
+							parentRow.id_propietario
+						}|${parentRow.id_cta_banc}|porc_part||${
+							parentRow?.id
+						}" min="0" max="100" step="0.01" value="${
+							parentRow.porcentaje_participacion
+						}"></td>
             <td>
             <div id="eliminarParent">
             <div class='d-flex' style='gap: .5rem;' >
@@ -3777,17 +3847,23 @@ function cargarInfoCoPropietarios() {
                   <td>${formateoNulos(formatRutChile(child.rut_titular))}</td>
                   <td>${formateoNulos(child.cuenta_banco)}</td>
              
-                <!--  <td><input type="number" class="porcentaje_participacion_base numeric-vacio" id="porcentaje_participacion_base_${id_propietario}_${index}" name="${child.id_propietario
-							}||porc_part_base|${child.id_beneficiario}|${child?.id_relacion
-							}" min="0" max="100" step="0.01" value="${child.porcentaje_participacion_base
-							}"></td>
+                <!--  <td><input type="number" class="porcentaje_participacion_base numeric-vacio" id="porcentaje_participacion_base_${id_propietario}_${index}" name="${
+							child.id_propietario
+						}||porc_part_base|${child.id_beneficiario}|${
+							child?.id_relacion
+						}" min="0" max="100" step="0.01" value="${
+							child.porcentaje_participacion_base
+						}"></td>
 
             -->
             <td>-</td>
-            <td><input type="number" class="porcentaje_participacion child-input numeric-vacio" id="porcentaje_participacion_${id_propietario}_${index}" name="${child.id_propietario
-							}||porc_part|${child.id_beneficiario}|${child?.id_relacion
-							}" min="0" max="100" step="0.01" value="${child.porcentaje_participacion
-							}"></td>
+            <td><input type="number" class="porcentaje_participacion child-input numeric-vacio" id="porcentaje_participacion_${id_propietario}_${index}" name="${
+							child.id_propietario
+						}||porc_part|${child.id_beneficiario}|${
+							child?.id_relacion
+						}" min="0" max="100" step="0.01" value="${
+							child.porcentaje_participacion
+						}"></td>
                   <td>
                       <div class='d-flex' style='gap: .5rem;'>
                           <button onclick='eliminarInfoCoPropietario({
@@ -4188,8 +4264,6 @@ function calculateSum() {
 }
 
 function busquedaDNIProp() {
-
-
 	// Realizar la solicitud AJAX para obtener los datos
 	var idFicha = $('#ficha_tecnica').val();
 	//var formData = dni;
@@ -4332,24 +4406,24 @@ function cargarInfoPersonalProp(infoJSON) {
 	if (infoJSON[0].tipo_persona === 'NATURAL') {
 		$('#nombrePersona').text(
 			infoJSON[0].nombres +
-			' ' +
-			infoJSON[0].apellido_paterno +
-			' ' +
-			infoJSON[0].apellido_materno
+				' ' +
+				infoJSON[0].apellido_paterno +
+				' ' +
+				infoJSON[0].apellido_materno
 		);
 		$('#telefonoMovilPersona').text(infoJSON[0].telefono_fijo);
 		$('#emailPersona').text(infoJSON[0].correo_electronico);
 		$('#tipoPersona').text(infoJSON[0].tipo_persona);
 		$('#direccionPersona').text(
 			infoJSON[0].direccion +
-			' #' +
-			infoJSON[0].numero +
-			', ' +
-			infoJSON[0].comuna +
-			', ' +
-			infoJSON[0].region +
-			', ' +
-			infoJSON[0].pais
+				' #' +
+				infoJSON[0].numero +
+				', ' +
+				infoJSON[0].comuna +
+				', ' +
+				infoJSON[0].region +
+				', ' +
+				infoJSON[0].pais
 		);
 		var urlMaps =
 			'https://www.google.com/maps/place/' +
@@ -4374,14 +4448,14 @@ function cargarInfoPersonalProp(infoJSON) {
 		$('#tipoPersonaJuridica').text(infoJSON[0].tipo_persona);
 		$('#direccionPersonaJuridica').text(
 			infoJSON[0].direccion +
-			' #' +
-			infoJSON[0].numero +
-			', ' +
-			infoJSON[0].comuna +
-			', ' +
-			infoJSON[0].region +
-			', ' +
-			infoJSON[0].pais
+				' #' +
+				infoJSON[0].numero +
+				', ' +
+				infoJSON[0].comuna +
+				', ' +
+				infoJSON[0].region +
+				', ' +
+				infoJSON[0].pais
 		);
 		var urlMaps =
 			'https://www.google.com/maps/place/' +
@@ -4400,7 +4474,13 @@ function cargarInfoPersonalProp(infoJSON) {
 		$('#section-info-cliente-juridico').css('display', 'block');
 	}
 
-	$('#ctaBancNombreTitularDeCuenta').text(infoJSON[0].nombre_titular + ' ' + infoJSON[0].apellido_paterno + ' ' + infoJSON[0].apellido_materno);
+	$('#ctaBancNombreTitularDeCuenta').text(
+		infoJSON[0].nombre_titular +
+			' ' +
+			infoJSON[0].apellido_paterno +
+			' ' +
+			infoJSON[0].apellido_materno
+	);
 	$('#ctaBancRutTitular').text(infoJSON[0].rut_titular);
 	$('#ctaBancNumero').text(infoJSON[0].numero_cta_banc);
 	$('#section-info-cta-bancaria').css('display', 'block');
@@ -4995,8 +5075,8 @@ function cargarInfoCtaServicios() {
 					newRow.append('<td>' + formateoNulos(item.nombre_servicio) + '</td>');
 					newRow.append(
 						'<td>' +
-						formateoNulos(formateoDivisa(item.monto_adeudado)) +
-						'</td>'
+							formateoNulos(formateoDivisa(item.monto_adeudado)) +
+							'</td>'
 					);
 					newRow.append(
 						`<td>
@@ -5174,7 +5254,6 @@ function guardarInfoCtaServicio() {
 
 //********************************  AGREGAR PROPIETARIO **********************************
 function buscarPropiedadAutocomplete(valor, tipo) {
-
 	var codigo = document.getElementById(tipo).value;
 	$('#suggested_cta_banc').val('');
 
@@ -5186,11 +5265,8 @@ function buscarPropiedadAutocomplete(valor, tipo) {
 			url: 'components/propiedad/models/buscar_propietario_autocomplete_generica.php',
 			data: 'codigo=' + codigo + '&tipo=' + tipo,
 			success: function (data) {
-
-
 				console.log('DATA SUGERIDO:', data);
 				console.log;
-
 
 				$('#suggestions_' + tipo)
 					.fadeIn(500)
@@ -5372,8 +5448,8 @@ function cargarInfoCoPropietariosPropiedad() {
 						newRow.append('<td>' + formateoNulos(item.cuenta_banco) + '</td>');
 						newRow.append(
 							'<td>' +
-							formateoNulos(item.porcentaje_participacion_base) +
-							'</td>'
+								formateoNulos(item.porcentaje_participacion_base) +
+								'</td>'
 						);
 						newRow.append(
 							'<td>' + formateoNulos(item.porcentaje_participacion) + '</td>'
@@ -5396,8 +5472,8 @@ function cargarInfoCoPropietariosPropiedad() {
 						newRow.append('<td>' + formateoNulos(item.cuenta_banco) + '</td>');
 						newRow.append(
 							'<td>' +
-							formateoNulos(item.porcentaje_participacion_base) +
-							'</td>'
+								formateoNulos(item.porcentaje_participacion_base) +
+								'</td>'
 						);
 						newRow.append(
 							'<td>' + formateoNulos(item.porcentaje_participacion) + '</td>'
@@ -5459,8 +5535,8 @@ function cargarLiquidaciones() {
 					newRow.append('<td>' + replaceNull(item.id_ficha_arriendo) + '</td>');
 					newRow.append(
 						'<td>$' +
-						replaceNull(item.comision).toLocaleString('es-ES') +
-						'</td>'
+							replaceNull(item.comision).toLocaleString('es-ES') +
+							'</td>'
 					);
 					newRow.append(
 						'<td>$' + replaceNull(item.iva).toLocaleString('es-ES') + '</td>'
@@ -5470,8 +5546,8 @@ function cargarLiquidaciones() {
 					);
 					newRow.append(
 						'<td>$' +
-						replaceNull(item.descuentos).toLocaleString('es-ES') +
-						'</td>'
+							replaceNull(item.descuentos).toLocaleString('es-ES') +
+							'</td>'
 					);
 					newRow.append(
 						'<td>$' + replaceNull(item.total).toLocaleString('es-ES') + '</td>'
@@ -5509,77 +5585,79 @@ function cargarLiquidaciones() {
 }
 
 function cargarHistorialArriendoList() {
-    var idFicha = $('#id_ficha').val();
+	var idFicha = $('#id_ficha').val();
 
-    // Validar idFicha
-    if (!idFicha) {
-        console.error('El ID de la ficha no está definido.');
-        return;
-    }
+	// Validar idFicha
+	if (!idFicha) {
+		console.error('El ID de la ficha no está definido.');
+		return;
+	}
 
-    // Destruir instancia previa si existe
-    if ($.fn.DataTable.isDataTable('#historial-table')) {
-        $('#historial-table').DataTable().destroy();
-    }
+	// Destruir instancia previa si existe
+	if ($.fn.DataTable.isDataTable('#historial-table')) {
+		$('#historial-table').DataTable().destroy();
+	}
 
-    // Limpiar eventos previos
-    $('#historial-table').off('init.dt');
+	// Limpiar eventos previos
+	$('#historial-table').off('init.dt');
 
-    // Inicializar DataTable
-    $('#historial-table').DataTable({
-        dom: 'B<"clear">lfrtip',
-        destroy: true,
-        targets: 'no-sort',
-        bSort: false,
-        order: [[0, 'desc']],
-        pagingType: 'full_numbers',
-        pageLength: 10,
-        lengthMenu: [
-            [10, 25, 50, 100, 5000],
-            [10, 25, 50, 100, 'Todos'],
-        ],
-        columnDefs: [
-            {
-                render: (data) => formateoNulos(moment(data).format('DD-MM-YYYY HH:mm')),
-                targets: 0,
-            },
-            { render: (data) => formateoNulos(data), targets: [1, 2, 3, 4, 5] },
-        ],
-        ajax: {
-            url: `components/propiedad/models/listado_historial_procesa.php?idFicha=${idFicha}`,
-            type: 'POST',
-            dataType: 'json',
-            error: function (xhr, error, thrown) {
-                console.error('Error al cargar los datos:', error, thrown);
-            },
-        },
-        language: {
-            lengthMenu: 'Mostrar _MENU_ registros por página',
-            zeroRecords: 'No se encontraron registros',
-            info: 'Mostrando página _PAGE_ de _PAGES_ (Total de registros: _MAX_)',
-            infoEmpty: 'No existen registros para mostrar',
-            infoFiltered: '(filtrado desde _MAX_ total de registros)',
-            loadingRecords: 'Cargando...',
-            processing: 'Procesando...',
-            search: 'Buscar',
-            paginate: {
-                first: 'Primero',
-                last: 'Último',
-                next: 'Siguiente',
-                previous: 'Anterior',
-            },
-            buttons: {
-                copy: 'Copiar',
-            },
-        },
-    });
+	// Inicializar DataTable
+	$('#historial-table').DataTable({
+		dom: 'B<"clear">lfrtip',
+		destroy: true,
+		targets: 'no-sort',
+		bSort: false,
+		order: [[0, 'desc']],
+		pagingType: 'full_numbers',
+		pageLength: 10,
+		lengthMenu: [
+			[10, 25, 50, 100, 5000],
+			[10, 25, 50, 100, 'Todos'],
+		],
+		columnDefs: [
+			{
+				render: (data) =>
+					formateoNulos(moment(data).format('DD-MM-YYYY HH:mm')),
+				targets: 0,
+			},
+			{ render: (data) => formateoNulos(data), targets: [1, 2, 3, 4, 5] },
+		],
+		ajax: {
+			url: `components/propiedad/models/listado_historial_procesa.php?idFicha=${idFicha}`,
+			type: 'POST',
+			dataType: 'json',
+			error: function (xhr, error, thrown) {
+				console.error('Error al cargar los datos:', error, thrown);
+			},
+		},
+		language: {
+			lengthMenu: 'Mostrar _MENU_ registros por página',
+			zeroRecords: 'No se encontraron registros',
+			info: 'Mostrando página _PAGE_ de _PAGES_ (Total de registros: _MAX_)',
+			infoEmpty: 'No existen registros para mostrar',
+			infoFiltered: '(filtrado desde _MAX_ total de registros)',
+			loadingRecords: 'Cargando...',
+			processing: 'Procesando...',
+			search: 'Buscar',
+			paginate: {
+				first: 'Primero',
+				last: 'Último',
+				next: 'Siguiente',
+				previous: 'Anterior',
+			},
+			buttons: {
+				copy: 'Copiar',
+			},
+		},
+	});
 
-    // Agregar evento de inicialización
-    $('#historial-table').on('init.dt', function () {
-        console.log('DataTables se ha inicializado correctamente en #historial-table');
-    });
+	// Agregar evento de inicialización
+	$('#historial-table').on('init.dt', function () {
+		console.log(
+			'DataTables se ha inicializado correctamente en #historial-table'
+		);
+	});
 }
-
 
 function cargarRevCuentasServicioList() {
 	var idFicha = $('#id_ficha').val();
@@ -5723,7 +5801,6 @@ function cargarArriendoEliminarMorasList() {
 	var idFicha = $('#id_ficha').val();
 
 	$('#prop-pago-arriendo-eliminar-moras-table').DataTable({
-
 		destroy: true,
 		targets: 'no-sort',
 		bSort: true,
@@ -5733,8 +5810,6 @@ function cargarArriendoEliminarMorasList() {
 		responsive: false, // Desactiva comportamiento responsive
 
 		columnDefs: [
-
-
 			{
 				render: (data, type, row) => {
 					return `<span class="arriendo">${formateoNulos(data)}</span>`; // Agrega clase 'direccion'
@@ -5824,8 +5899,6 @@ function cargarArriendoEliminarMorasList() {
 			);
 		},
 	});
-
-
 }
 
 function selectAllCheckboxes() {
@@ -5870,7 +5943,6 @@ $(document).ready(function () {
 });
 
 function removerCheckboxes() {
-
 	$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
 	let checkboxValues = [];
 
@@ -5883,9 +5955,7 @@ function removerCheckboxes() {
 			if (checkboxValue !== undefined && $(this).prop('checked')) {
 				checkboxValues.push(checkboxValue);
 			}
-
 		});
-
 
 	if (checkboxValues.length === 0) return;
 
@@ -5914,7 +5984,7 @@ function removerCheckboxes() {
 						direccion: row.find('.direccion').text().trim(), // Captura datos visibles en la fila
 						arrendatario: row.find('.arrendatario').text().trim(),
 						saldo: row.find('.saldo').text().trim(),
-						id: $(this).attr('data-row-id') // Captura el ID desde el checkbox
+						id: $(this).attr('data-row-id'), // Captura el ID desde el checkbox
 					};
 
 					selectedRows.push(rowData); // Agrega los datos al array
@@ -6021,9 +6091,6 @@ function removerCheckboxes() {
 }
 
 function eliminarMoras(idsFichasTecnicas, idAutorizador) {
-
-
-
 	Swal.fire({
 		title: '¿Estás seguro?',
 		text: 'Una vez eliminado la mora(s) desaparecerá(n) del listado',
@@ -6060,7 +6127,6 @@ function eliminarMoras(idsFichasTecnicas, idAutorizador) {
 		}
 	});
 }
-
 
 function isAnyCheckboxChecked() {
 	// Select all checkboxes within the DataTable
@@ -6125,9 +6191,9 @@ function cargarLiquidacionesGenMasivaList() {
 				var montoFormateado = isNaN(precioNumerico)
 					? 'No definido'
 					: new Intl.NumberFormat('es-CL', {
-						style: 'currency',
-						currency: 'CLP',
-					}).format(precioNumerico);
+							style: 'currency',
+							currency: 'CLP',
+					  }).format(precioNumerico);
 
 				// Generar fila solo si las propiedades principales son válidas
 				if (idPropiedad !== 'Sin dato' && idContrato !== 'Sin dato') {
@@ -6162,9 +6228,6 @@ function cargarLiquidacionesGenMasivaList() {
 				$('#liq-generacion-masiva-table').DataTable().destroy();
 				$('#liq-generacion-masiva-table').DataTable();
 			}
-
-
-
 		},
 		error: function (xhr, status, error) {
 			console.error('Error en la solicitud:', error); // Manejo de errores
@@ -6173,20 +6236,28 @@ function cargarLiquidacionesGenMasivaList() {
 }
 
 function habilitarTodos() {
-	$('#liq-generacion-masiva-table tbody input[type="checkbox"]').prop('checked', true);
+	$('#liq-generacion-masiva-table tbody input[type="checkbox"]').prop(
+		'checked',
+		true
+	);
 }
 
 function deshabilitarTodos() {
-	$('#liq-generacion-masiva-table tbody input[type="checkbox"]').prop('checked', false);
+	$('#liq-generacion-masiva-table tbody input[type="checkbox"]').prop(
+		'checked',
+		false
+	);
 }
 
 function GenerarLiquidaciones() {
 	let contratosSeleccionados = [];
 
 	// Recolectar los IDs seleccionados desde los checkboxes marcados
-	$('#liq-generacion-masiva-table tbody input[type="checkbox"]:checked').each(function () {
-		contratosSeleccionados.push($(this).val());
-	});
+	$('#liq-generacion-masiva-table tbody input[type="checkbox"]:checked').each(
+		function () {
+			contratosSeleccionados.push($(this).val());
+		}
+	);
 
 	if (contratosSeleccionados.length === 0) {
 		Swal.fire('Por favor selecciona al menos un contrato.');
@@ -6199,21 +6270,21 @@ function GenerarLiquidaciones() {
 	form.action = 'components/officesbanking/models/Api.php'; // Ruta al backend
 
 	// Crear inputs ocultos con los IDs seleccionados
-	contratosSeleccionados.forEach(id_arriendo => {
+	contratosSeleccionados.forEach((id_arriendo) => {
 		let input = document.createElement('input');
 		input.type = 'hidden';
-		input.name = 'ficha_tecnica[]';  // Usamos como array
+		input.name = 'ficha_tecnica[]'; // Usamos como array
 		input.value = id_arriendo;
 		form.appendChild(input);
 
 		// Registrar en historial cada ID procesado
 		registroHistorial(
-			"Crear",
-			"",
+			'Crear',
+			'',
 			JSON.stringify({
-				"id_arriendo": id_arriendo, // Cambiado para reflejar la referencia correcta
+				id_arriendo: id_arriendo, // Cambiado para reflejar la referencia correcta
 			}),
-			"Liquidación",
+			'Liquidación',
 			id_arriendo,
 			id_arriendo
 		);
@@ -6221,27 +6292,16 @@ function GenerarLiquidaciones() {
 
 	// Agregar el formulario al body y enviarlo
 	document.body.appendChild(form);
-	form.submit();  // Enviar el formulario
+	form.submit(); // Enviar el formulario
 
 	// Mostrar un mensaje mientras se procesa
 	Swal.fire({
 		title: 'Generando liquidaciones...',
 		text: 'Por favor espera unos momentos.',
 		allowOutsideClick: false,
-		didOpen: () => Swal.showLoading()
+		didOpen: () => Swal.showLoading(),
 	});
 }
-
-
-
-
-
-
-
-
-
-
-
 
 // jhernandez
 
@@ -6324,7 +6384,7 @@ function cargarLiquidacionesPagoPropietariosList() {
 		},
 	});
 
-	$('#prop-liq-pago-propietarios-table').on('init.dt', function () { });
+	$('#prop-liq-pago-propietarios-table').on('init.dt', function () {});
 }
 
 function deselectAll() {
@@ -6427,12 +6487,10 @@ function cargarLiquidacionesHistorico() {
 			},
 			{
 				render: (data, type, row) => {
-
 					if (!data) {
-						return `<a type="button" class="btn btn-warning m-0 d-flex" style="padding: .5rem; width: 27px;" title="URL no encontrada"><i class="fa-solid fa-triangle-exclamation"></i></a>`
+						return `<a type="button" class="btn btn-warning m-0 d-flex" style="padding: .5rem; width: 27px;" title="URL no encontrada"><i class="fa-solid fa-triangle-exclamation"></i></a>`;
 					} else {
 						return `<a href="${data}" download="" type="button" class="btn btn-info m-0 d-flex" style="padding: .5rem; width: 27px;" aria-label="documento" title="documento"><i class="fa-solid fa-file" style="font-size: .75rem;"></i></a>`;
-
 					}
 				},
 				targets: 6,
@@ -6466,7 +6524,7 @@ function cargarLiquidacionesHistorico() {
 			},
 		},
 	});
-	$('#liq-generacion-masiva-table').on('init.dt', function () { });
+	$('#liq-generacion-masiva-table').on('init.dt', function () {});
 	$('[data-toggle="tooltip"]').tooltip();
 }
 
@@ -6534,28 +6592,27 @@ function CopiarDatos() {
 	$('#emailTitular').val(email);
 }
 
-
 $(document).ready(function () {
 	// picker year
-	$("#valorRolAño").datepicker({
-		format: "yyyy",
-		viewMode: "years",
-		minViewMode: "years",
+	$('#valorRolAño').datepicker({
+		format: 'yyyy',
+		viewMode: 'years',
+		minViewMode: 'years',
 	});
 
 	function extraerdetalleid(id_propiedades_roles) {
 		$.ajax({
-			url: "components/propiedad/models/LeerDetalleValoresRol.php",
-			type: "GET",
+			url: 'components/propiedad/models/LeerDetalleValoresRol.php',
+			type: 'GET',
 			data: { id_propiedades_roles: id_propiedades_roles },
-			dataType: "json",
+			dataType: 'json',
 			success: function (data) {
 				// Limpiar la tabla antes de llenarla
-				$("#tablaValoresRolDetalle tbody").empty();
+				$('#tablaValoresRolDetalle tbody').empty();
 
 				// Verificar si hay errores
 				if (data.error) {
-					console.error("Error:", data.error);
+					console.error('Error:', data.error);
 					return;
 				}
 
@@ -6572,7 +6629,13 @@ $(document).ready(function () {
 				  <td>
 					<div class="d-flex">
 					  <label class="switch"> 
-						<input value="1" type="checkbox" id="rolActivoCobrado_${item.id}" name="cobrado_${item.id}" ${item.cobrado ? "checked" : ""} onclick="confirmarCambioEstado(${item.id}, 'cobrado', this.checked)">
+						<input value="1" type="checkbox" id="rolActivoCobrado_${
+							item.id
+						}" name="cobrado_${item.id}" ${
+						item.cobrado ? 'checked' : ''
+					} onclick="confirmarCambioEstado(${
+						item.id
+					}, 'cobrado', this.checked)">
 						<span class="slider round"></span>
 					  </label>
 					</div> 
@@ -6580,13 +6643,21 @@ $(document).ready(function () {
 				  <td>
 					<div class="d-flex">
 					  <label class="switch">
-						<input value="1" type="checkbox" id="rolActivoPagado_${item.id}" name="pagado_${item.id}" ${item.pagado ? "checked" : ""} onclick="confirmarCambioEstado(${item.id}, 'pagado', this.checked)">
+						<input value="1" type="checkbox" id="rolActivoPagado_${item.id}" name="pagado_${
+						item.id
+					}" ${item.pagado ? 'checked' : ''} onclick="confirmarCambioEstado(${
+						item.id
+					}, 'pagado', this.checked)">
 						<span class="slider round"></span>
 					  </label>
 					</div>
 				  </td>
 				  <td>
-					<button class="btn btn-info editar-btn me-2" data-bs-toggle="modal" data-bs-target="#ModalEditarValor" data-id="${item.id}" data-año="${item.año}" data-valor="${item.valor}" data-cuota="${item.cuota}" data-mes="${item.mes}">
+					<button class="btn btn-info editar-btn me-2" data-bs-toggle="modal" data-bs-target="#ModalEditarValor" data-id="${
+						item.id
+					}" data-año="${item.año}" data-valor="${item.valor}" data-cuota="${
+						item.cuota
+					}" data-mes="${item.mes}">
 					  <i class="fa-solid fa-pen-to-square"></i>
 					</button>
 					<button class="btn btn-danger eliminar-btn-valores me-2" data-id="${item.id}">
@@ -6594,89 +6665,97 @@ $(document).ready(function () {
 					</button>
 				  </td>
 				</tr>`;
-					$("#tablaValoresRolDetalle tbody").append(row);
+					$('#tablaValoresRolDetalle tbody').append(row);
 				});
 				// Asignar eventos a los checkboxes
-				$('input[type="checkbox"]').on("click", function () {
-					if (this.id.startsWith("rolActivoCobrado_")) {
-						var id = this.id.split("_")[1];
-						confirmarCambioEstado(id, "cobrado", this.checked);
-					} else if (this.id.startsWith("rolActivoPagado_")) {
-						var id = this.id.split("_")[1];
-						confirmarCambioEstado(id, "pagado", this.checked);
+				$('input[type="checkbox"]').on('click', function () {
+					if (this.id.startsWith('rolActivoCobrado_')) {
+						var id = this.id.split('_')[1];
+						confirmarCambioEstado(id, 'cobrado', this.checked);
+					} else if (this.id.startsWith('rolActivoPagado_')) {
+						var id = this.id.split('_')[1];
+						confirmarCambioEstado(id, 'pagado', this.checked);
 					}
 				});
 
 				// Asignar eventos a los botones de eliminar
-				$(document).on("click", ".eliminar-btn-valores", function () {
-					var idEliminar = $(this).data("id");
+				$(document).on('click', '.eliminar-btn-valores', function () {
+					var idEliminar = $(this).data('id');
 					confirmarEliminacionvalor(idEliminar);
 				});
 
 				function confirmarEliminacionvalor(id) {
 					Swal.fire({
-						title: "¿Estás seguro?",
-						text: "¡No podrás revertir esto!",
-						icon: "warning",
+						title: '¿Estás seguro?',
+						text: '¡No podrás revertir esto!',
+						icon: 'warning',
 						showCancelButton: true,
-						confirmButtonColor: "#3085d6",
-						cancelButtonColor: "#d33",
-						confirmButtonText: "Sí, elimínalo!",
+						confirmButtonColor: '#3085d6',
+						cancelButtonColor: '#d33',
+						confirmButtonText: 'Sí, elimínalo!',
 					}).then((result) => {
 						if (result.isConfirmed) {
 							// Lógica para eliminar el registro
 							$.ajax({
-								url: "components/propiedad/models/EliminarValoresRol.php",
-								type: "POST",
+								url: 'components/propiedad/models/EliminarValoresRol.php',
+								type: 'POST',
 								data: { id: id },
 								success: function (response) {
 									if (response.success) {
 										Swal.fire({
-											title: "¡Eliminado!",
+											title: '¡Eliminado!',
 											text: response.message,
-											icon: "success",
+											icon: 'success',
 											timer: 1500,
 											showConfirmButton: false,
-											position: "center",
+											position: 'center',
 										}).then(() => {
 											// Cierra el modal de eliminación y el modal de detalle
-											$("#ModalEliminar").modal("hide");
-											$("#ModalDetalle").modal("hide");
+											$('#ModalEliminar').modal('hide');
+											$('#ModalDetalle').modal('hide');
 
 											registroHistorial(
-												"Eliminar", // Acción
+												'Eliminar', // Acción
 												`Rol eliminado con ID: ${id}`,
-												"", // Información posterior (vacío ya que el rol fue eliminado)
-												"Rol", // Componente afectado
+												'', // Información posterior (vacío ya que el rol fue eliminado)
+												'Rol', // Componente afectado
 												id, // ID del recurso eliminado
 												id // ID del item eliminado
-											).then((historialResponse) => {
-												console.log("Historial registrado:", historialResponse);
-											}).catch((error) => {
-												console.error("Error al registrar en el historial:", error);
-											});
+											)
+												.then((historialResponse) => {
+													console.log(
+														'Historial registrado:',
+														historialResponse
+													);
+												})
+												.catch((error) => {
+													console.error(
+														'Error al registrar en el historial:',
+														error
+													);
+												});
 
 											// Llama a la función para cargar los datos, usando el id_propiedades_roles
-											var idPropiedadesRoles = $("#idPropiedadesRoles").val(); // Asegúrate de que el valor del ID esté disponible
+											var idPropiedadesRoles = $('#idPropiedadesRoles').val(); // Asegúrate de que el valor del ID esté disponible
 											extraerdetalleid(idPropiedadesRoles);
 										});
 									} else {
 										Swal.fire({
-											title: "Error",
+											title: 'Error',
 											text: response.message,
-											icon: "error",
-											confirmButtonText: "Aceptar",
-											position: "center",
+											icon: 'error',
+											confirmButtonText: 'Aceptar',
+											position: 'center',
 										});
 									}
 								},
 								error: function () {
 									Swal.fire({
-										title: "Error",
-										text: "Error al procesar la solicitud.",
-										icon: "error",
-										confirmButtonText: "Aceptar",
-										position: "center",
+										title: 'Error',
+										text: 'Error al procesar la solicitud.',
+										icon: 'error',
+										confirmButtonText: 'Aceptar',
+										position: 'center',
 									});
 								},
 							});
@@ -6684,48 +6763,49 @@ $(document).ready(function () {
 					});
 				}
 
-
 				// Asignar eventos a los botones de editar
-				$(document).on("click", ".editar-btn", function () {
-					var idEditar = $(this).data("id");
-					var añoEditar = $(this).data("año");
-					var valorEditar = $(this).data("valor");
-					var cuotaEditar = $(this).data("cuota");
-					var medeEditar = $(this).data("mes");
+				$(document).on('click', '.editar-btn', function () {
+					var idEditar = $(this).data('id');
+					var añoEditar = $(this).data('año');
+					var valorEditar = $(this).data('valor');
+					var cuotaEditar = $(this).data('cuota');
+					var medeEditar = $(this).data('mes');
 
 					// Llenar el formulario del modal con los datos
-					$("#idEdit").val(idEditar);
-					$("#valorRolAñoEdit").val(añoEditar);
-					$("#ValorRolEdit").val(valorEditar);
+					$('#idEdit').val(idEditar);
+					$('#valorRolAñoEdit').val(añoEditar);
+					$('#ValorRolEdit').val(valorEditar);
 
 					// Limpiar el select antes de agregar nuevas opciones
-					$("#mesEdit").empty().append("<option>Selecciona una cuota</option>");
+					$('#mesEdit').empty().append('<option>Selecciona una cuota</option>');
 
 					// Crear y agregar el nuevo elemento
-					var nuevoElemento = $("<option>", {
+					var nuevoElemento = $('<option>', {
 						value: cuotaEditar, // Asegúrate de que el valor coincida con el que deseas seleccionar
 						text: medeEditar,
 						selected: true, // Marca este elemento como seleccionado
 					});
 
 					// Agregar el nuevo elemento al select
-					$("#mesEdit").append(nuevoElemento);
+					$('#mesEdit').append(nuevoElemento);
 
 					// Asegúrate de que el valor del mes se seleccione
-					$("#mesEdit").val(cuotaEditar);
+					$('#mesEdit').val(cuotaEditar);
 
 					// Mostrar atributos del nuevo elemento
-					console.log("Clase:", nuevoElemento.attr("class"));
-					console.log("Texto:", nuevoElemento.text());
+					console.log('Clase:', nuevoElemento.attr('class'));
+					console.log('Texto:', nuevoElemento.text());
 				});
 			},
 			error: function (jqXHR, textStatus, errorThrown) {
-				console.error("Error al cargar datos:", textStatus);
+				console.error('Error al cargar datos:', textStatus);
 			},
 		});
 		// Función para formatear el valor como moneda chilena
 		function formateoDivisa(valor) {
-			return `$${Number(valor).toLocaleString("es-CL", { minimumFractionDigits: 0 })}`;
+			return `$${Number(valor).toLocaleString('es-CL', {
+				minimumFractionDigits: 0,
+			})}`;
 		}
 	}
 
@@ -6737,16 +6817,16 @@ $(document).ready(function () {
 	function cargarDatos() {
 		var url = window.location.href;
 		var parametros = new URL(url).searchParams;
-		var token = parametros.get("token");
+		var token = parametros.get('token');
 
 		$.ajax({
-			url: "components/propiedad/models/LeerValoresRol.php",
-			type: "GET",
-			dataType: "json",
+			url: 'components/propiedad/models/LeerValoresRol.php',
+			type: 'GET',
+			dataType: 'json',
 			data: { token: token },
 			success: function (data) {
 				// Limpiar la tabla antes de llenarla
-				$("#tablaValoresRol").DataTable().clear().destroy();
+				$('#tablaValoresRol').DataTable().clear().destroy();
 
 				// Iterar sobre los datos recibidos y construir las filas de la tabla
 				$.each(data, function (index, item) {
@@ -6755,36 +6835,48 @@ $(document).ready(function () {
                 <tr>
                   <td>${item.numero}</td>
                   <td>${item.principal}</td>
-                  <td>${item.descripcion}</td> <!-- Nueva celda para la descripción -->
+                  <td>${
+										item.descripcion
+									}</td> <!-- Nueva celda para la descripción -->
                   <td>
                     <div class="d-flex gap-2">
-                      <button class="btn btn-success pasar-id-btn" data-token="${item.token_rol}" data-id-rol="${item.id_propiedades_roles}" data-bs-toggle="modal" data-bs-target="#ModalDetalle"><i class="fa-regular fa-eye"></i></button>
-                      <button class="btn btn-info editar-btn" data-bs-toggle="modal" data-bs-target="#modalRolEditar" data-propiedad="${item.id_propiedad}" data-id="${item.id}" data-numero="${item.numero}" data-principal="${item.principal}" data-token-rol="${item.token_rol}"> <i class="fa-solid fa-pen-to-square"></i></button>
-                      ${item.principal === "No" ? botonBorrar : ""}
+                      <button class="btn btn-success pasar-id-btn" data-token="${
+												item.token_rol
+											}" data-id-rol="${
+						item.id_propiedades_roles
+					}" data-bs-toggle="modal" data-bs-target="#ModalDetalle"><i class="fa-regular fa-eye"></i></button>
+                      <button class="btn btn-info editar-btn" data-bs-toggle="modal" data-bs-target="#modalRolEditar" data-propiedad="${
+												item.id_propiedad
+											}" data-id="${item.id}" data-numero="${
+						item.numero
+					}" data-principal="${item.principal}" data-token-rol="${
+						item.token_rol
+					}"> <i class="fa-solid fa-pen-to-square"></i></button>
+                      ${item.principal === 'No' ? botonBorrar : ''}
                     </div>
                   </td>
                 </tr>`;
-					$("#tablaValoresRol tbody").append(row);
+					$('#tablaValoresRol tbody').append(row);
 				});
 
 				// Inicializar DataTables
-				$("#tablaValoresRol").DataTable({
+				$('#tablaValoresRol').DataTable({
 					paging: true,
 					searching: true,
 					ordering: false,
 					info: true,
 					language: {
-						lengthMenu: "Mostrar _MENU_ registros por página",
-						zeroRecords: "No se encontraron registros",
-						info: "Mostrando página _PAGE_ de _PAGES_",
-						infoEmpty: "No hay registros disponibles",
-						infoFiltered: "(filtrado de _MAX_ registros totales)",
-						search: "Buscar:",
+						lengthMenu: 'Mostrar _MENU_ registros por página',
+						zeroRecords: 'No se encontraron registros',
+						info: 'Mostrando página _PAGE_ de _PAGES_',
+						infoEmpty: 'No hay registros disponibles',
+						infoFiltered: '(filtrado de _MAX_ registros totales)',
+						search: 'Buscar:',
 						paginate: {
-							first: "Primero",
-							last: "Último",
-							next: "Siguiente",
-							previous: "Anterior",
+							first: 'Primero',
+							last: 'Último',
+							next: 'Siguiente',
+							previous: 'Anterior',
 						},
 					},
 				});
@@ -6793,7 +6885,7 @@ $(document).ready(function () {
 				asignarEventos();
 			},
 			error: function (jqXHR, textStatus, errorThrown) {
-				console.error("Error al cargar datos:", textStatus);
+				console.error('Error al cargar datos:', textStatus);
 			},
 		});
 	}
@@ -6802,45 +6894,42 @@ $(document).ready(function () {
 	// Asignar eventos a los botones de la tabla
 	function asignarEventos() {
 		// Botón para ver detalles
-		$("#tablaValoresRol tbody").on("click", ".pasar-id-btn", function () {
-			var id_propiedades_roles = $(this).data("id-rol");
-			$("#id_propiedades_roles").val(id_propiedades_roles);
+		$('#tablaValoresRol tbody').on('click', '.pasar-id-btn', function () {
+			var id_propiedades_roles = $(this).data('id-rol');
+			$('#id_propiedades_roles').val(id_propiedades_roles);
 			extraerdetalleid(id_propiedades_roles);
 		});
 		//******************************BOTON PARA EDITAR VALORES******************************* */
 		// Botón para editar
-		$("#tablaValoresRol tbody").on("click", ".editar-btn", function () {
-			var numero = $(this).data("numero");
-			var principal = $(this).data("principal");
+		$('#tablaValoresRol tbody').on('click', '.editar-btn', function () {
+			var numero = $(this).data('numero');
+			var principal = $(this).data('principal');
 
-			$("#modalRolEditarNumero").val(numero);
-			$("#modalRolDescripcion").val(descripcion);
-			$("#modalEditarRolPrincipal").prop("checked", principal === "Sí");
+			$('#modalRolEditarNumero').val(numero);
+			$('#modalRolDescripcion').val(descripcion);
+			$('#modalEditarRolPrincipal').prop('checked', principal === 'Sí');
 		});
 
 		//***************************BOTON PARA ELIMINAR Y CONFIRMACION VALORES*************** */
 		//cristobal saez
 		// Botón para eliminar
-		$("#tablaValoresRol tbody").on("click", ".eliminar-rol-btn", function () {
+		$('#tablaValoresRol tbody').on('click', '.eliminar-rol-btn', function () {
 			// Captura el token_rol usando el atributo correcto
-			var token_rol = $(this).data("token-rol"); // Asegúrate de que el botón tenga este atributo
+			var token_rol = $(this).data('token-rol'); // Asegúrate de que el botón tenga este atributo
 			confirmarEliminacion(token_rol); // Llama a la función de confirmación con el token
 		});
-
-
-
 	}
 
 	// Función para confirmar la eliminación
 	function confirmarEliminacion(id, infoEliminado) {
 		Swal.fire({
-			title: "¿Estás seguro?",
-			text: "¡No podrás revertir esto!",
-			icon: "warning",
+			title: '¿Estás seguro?',
+			text: '¡No podrás revertir esto!',
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonColor: "#3085d6",
-			cancelButtonColor: "#d33",
-			confirmButtonText: "Sí, eliminarlo!",
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Sí, eliminarlo!',
 		}).then((result) => {
 			if (result.isConfirmed) {
 				// Llamar a la función eliminarRegistro con el id e infoEliminado
@@ -6852,23 +6941,23 @@ $(document).ready(function () {
 	// Función para eliminar el registro
 	function eliminarRegistro(id, infoEliminado) {
 		$.ajax({
-			url: "components/rol/models/eliminar_valores_rol.php",
-			type: "POST",
+			url: 'components/rol/models/eliminar_valores_rol.php',
+			type: 'POST',
 			data: { id: id },
 			success: function () {
 				Swal.fire(
-					"¡Éxito!",
-					"El registro ha sido eliminado correctamente.",
-					"success"
+					'¡Éxito!',
+					'El registro ha sido eliminado correctamente.',
+					'success'
 				);
 				// Recargar los datos después de la eliminación
 				cargarDatos();
 			},
 			error: function () {
 				Swal.fire(
-					"Precaución",
-					"Hubo un problema al eliminar el registro.",
-					"info"
+					'Precaución',
+					'Hubo un problema al eliminar el registro.',
+					'info'
 				);
 			},
 		});
@@ -6877,26 +6966,27 @@ $(document).ready(function () {
 	// funcion para confirar el cambio de estado
 	function confirmarCambioEstado(id, tipo, isChecked) {
 		Swal.fire({
-			title: "¿Estás seguro?",
-			text: "¿Quieres cambiar el estado?",
-			icon: "warning",
+			title: '¿Estás seguro?',
+			text: '¿Quieres cambiar el estado?',
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonColor: "#3085d6",
-			cancelButtonColor: "#d33",
-			confirmButtonText: "Sí, cambiarlo",
-			cancelButtonText: "No, cancelar",
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Sí, cambiarlo',
+			cancelButtonText: 'No, cancelar',
 		}).then((result) => {
 			if (result.isConfirmed) {
-				if (tipo === "cobrado") {
+				if (tipo === 'cobrado') {
 					CambiarCobrado(id, isChecked);
-				} else if (tipo === "pagado") {
+				} else if (tipo === 'pagado') {
 					CambiarEstadoPago(id, isChecked);
 				}
 			} else {
 				// Revertir el cambio en el switch si se cancela la acción
-				if (tipo === "cobrado") {
-					document.getElementById(`rolActivoCobrado_${id}`).checked = !isChecked;
-				} else if (tipo === "pagado") {
+				if (tipo === 'cobrado') {
+					document.getElementById(`rolActivoCobrado_${id}`).checked =
+						!isChecked;
+				} else if (tipo === 'pagado') {
 					document.getElementById(`rolActivoPagado_${id}`).checked = !isChecked;
 				}
 			}
@@ -6906,25 +6996,25 @@ $(document).ready(function () {
 	// funcion para cambiar el estado true o ffalse de la columna pago
 	function CambiarEstadoPago(id, isChecked) {
 		$.ajax({
-			url: "components/rol/models/actualiza_valores_rol_pagado.php",
-			type: "POST",
+			url: 'components/rol/models/actualiza_valores_rol_pagado.php',
+			type: 'POST',
 			data: {
 				id: id,
 				pagado: isChecked,
 			},
 			success: function (response) {
 				Swal.fire(
-					"¡Éxito!",
-					"El estado de cobrado se ha actualizado correctamente.",
-					"success"
+					'¡Éxito!',
+					'El estado de cobrado se ha actualizado correctamente.',
+					'success'
 				);
 				cargarDatos();
 			},
 			error: function (jqXHR, textStatus, errorThrown) {
 				Swal.fire(
-					"Error",
-					"Hubo un problema al actualizar el estado de cobrado.",
-					"error"
+					'Error',
+					'Hubo un problema al actualizar el estado de cobrado.',
+					'error'
 				);
 			},
 		});
@@ -6933,25 +7023,25 @@ $(document).ready(function () {
 	// funcion para cambiar el estado true o ffalse de la columna cobrado
 	function CambiarCobrado(id, isChecked) {
 		$.ajax({
-			url: "components/rol/models/actualizar_valores_rol_cobrado.php",
-			type: "POST",
+			url: 'components/rol/models/actualizar_valores_rol_cobrado.php',
+			type: 'POST',
 			data: {
 				id: id,
 				cobrado: isChecked,
 			},
 			success: function (response) {
 				Swal.fire(
-					"¡Éxito!",
-					"El estado de pagado se ha actualizado correctamente.",
-					"success"
+					'¡Éxito!',
+					'El estado de pagado se ha actualizado correctamente.',
+					'success'
 				);
 				cargarDatos();
 			},
 			error: function (jqXHR, textStatus, errorThrown) {
 				Swal.fire(
-					"Error",
-					"Hubo un problema al actualizar el estado de pagado.",
-					"error"
+					'Error',
+					'Hubo un problema al actualizar el estado de pagado.',
+					'error'
 				);
 			},
 		});
@@ -6960,21 +7050,21 @@ $(document).ready(function () {
 	// Llamar a la función para cargar los datos al cargar la página
 	cargarDatos();
 	// *******************************GRABAR VALORES DE ROLES**************************
-	$("#btnGrabar").on("click", function () {
+	$('#btnGrabar').on('click', function () {
 		var url = window.location.href;
 		var parametros = new URL(url).searchParams;
-		var token_propiedad = parametros.get("token");
+		var token_propiedad = parametros.get('token');
 
-		var valorRolAño = $("#valorRolAño").val();
-		var ValorRol = $("#ValorRol").val();
-		var mes = $("#mes").val(); // Suponiendo que este valor es un número
-		var id_propiedades_roles = $("#id_propiedades_roles").val();
+		var valorRolAño = $('#valorRolAño').val();
+		var ValorRol = $('#ValorRol').val();
+		var mes = $('#mes').val(); // Suponiendo que este valor es un número
+		var id_propiedades_roles = $('#id_propiedades_roles').val();
 
-		if (!valorRolAño || !ValorRol || mes === "Selecciona una cuota") {
+		if (!valorRolAño || !ValorRol || mes === 'Selecciona una cuota') {
 			Swal.fire(
-				"Campos incompletos",
-				"Por favor, completa todos los campos requeridos.",
-				"info"
+				'Campos incompletos',
+				'Por favor, completa todos los campos requeridos.',
+				'info'
 			);
 			return;
 		}
@@ -6984,7 +7074,7 @@ $(document).ready(function () {
 			1: 'Abril',
 			2: 'Junio',
 			3: 'Septiembre',
-			4: 'Noviembre'
+			4: 'Noviembre',
 		};
 
 		// Obtiene el nombre del mes correspondiente
@@ -6995,8 +7085,8 @@ $(document).ready(function () {
 				if (idPropiedad && idPropiedad.length > 0) {
 					let id_propiedad = idPropiedad[0].id;
 					$.ajax({
-						url: "components/propiedad/models/insertarValoresRol.php",
-						type: "POST",
+						url: 'components/propiedad/models/insertarValoresRol.php',
+						type: 'POST',
 						data: {
 							id_propiedad: id_propiedad,
 							id_propiedades_roles: id_propiedades_roles,
@@ -7005,83 +7095,83 @@ $(document).ready(function () {
 							mes: mes,
 						},
 						success: function (response) {
-							if (response.trim() === "true") {
+							if (response.trim() === 'true') {
 								Swal.fire(
-									"¡Éxito!",
-									"Datos enviados correctamente.",
-									"success"
+									'¡Éxito!',
+									'Datos enviados correctamente.',
+									'success'
 								);
 								// Registrar en historial con el nombre del mes
 								registroHistorial(
-									"Crear",
-									"",
+									'Crear',
+									'',
 									JSON.stringify({
-										"valor Rol Año": valorRolAño,
-										"Valor Rol": ValorRol,
-										"mes": nombreMes // Usa el nombre del mes en lugar del número
+										'valor Rol Año': valorRolAño,
+										'Valor Rol': ValorRol,
+										mes: nombreMes, // Usa el nombre del mes en lugar del número
 									}),
-									"Rol",
+									'Rol',
 									id_propiedad,
 									id_propiedades_roles
 								);
-								$("#ModalAgregarValor").modal("hide");
+								$('#ModalAgregarValor').modal('hide');
 								cargarDatos();
 								limpiarCampos();
 							} else {
-								Swal.fire("Error", "No se pudieron enviar los datos.", "error");
+								Swal.fire('Error', 'No se pudieron enviar los datos.', 'error');
 							}
 						},
 						error: function (jqXHR, textStatus) {
 							Swal.fire(
-								"Precaución",
-								"Error al enviar los datos: " + textStatus,
-								"info"
+								'Precaución',
+								'Error al enviar los datos: ' + textStatus,
+								'info'
 							);
 						},
 					});
 				}
 			})
 			.catch((error) => {
-				console.error("Error al obtener idPropiedad:", error);
+				console.error('Error al obtener idPropiedad:', error);
 			});
 	});
 
 	// Función para limpiar los campos de entrada después de enviar los datos
 	function limpiarCampos() {
-		$("#valorRolAño").val("");
-		$("#ValorRol").val("");
-		$("#mes").val("Selecciona una cuota");
-		$("#id_propiedades_roles").val("");
+		$('#valorRolAño').val('');
+		$('#ValorRol').val('');
+		$('#mes').val('Selecciona una cuota');
+		$('#id_propiedades_roles').val('');
 	}
 
 	// Manejar clic en el botón "Guardar Cambios" dentro del modal de editar
-	$("#btnGuardarCambios").on("click", function () {
-		var idEdit = $("#idEdit").val(); // Este es el ID actual del elemento
-		var valorRolAño = $("#valorRolAñoEdit").val();
-		var ValorRol = $("#ValorRolEdit").val();
-		var mes = $("#mesEdit").val();
+	$('#btnGuardarCambios').on('click', function () {
+		var idEdit = $('#idEdit').val(); // Este es el ID actual del elemento
+		var valorRolAño = $('#valorRolAñoEdit').val();
+		var ValorRol = $('#ValorRolEdit').val();
+		var mes = $('#mesEdit').val();
 
 		if (!valorRolAño || !ValorRol) {
 			Swal.fire(
-				"Precaución",
-				"Por favor, complete todos los campos requeridos.",
-				"info"
+				'Precaución',
+				'Por favor, complete todos los campos requeridos.',
+				'info'
 			);
 			return;
 		}
 
-		if (!mes || mes === "Selecciona una cuota" || isNaN(mes)) {
-			Swal.fire("Precaución", "Debe seleccionar un mes válido.", "info");
-			$("#mesEdit").focus();
+		if (!mes || mes === 'Selecciona una cuota' || isNaN(mes)) {
+			Swal.fire('Precaución', 'Debe seleccionar un mes válido.', 'info');
+			$('#mesEdit').focus();
 			return;
 		}
 
-		var formData = new FormData($("#editar_valor_rol")[0]);
+		var formData = new FormData($('#editar_valor_rol')[0]);
 
 		// Obtener el token de propiedad desde la URL o la interfaz
 		var url = window.location.href;
 		var parametros = new URL(url).searchParams;
-		var token_propiedad = parametros.get("token");
+		var token_propiedad = parametros.get('token');
 
 		// Obtener id_propiedad antes de hacer la solicitud AJAX
 		grabarIdPropiedad(token_propiedad)
@@ -7090,13 +7180,17 @@ $(document).ready(function () {
 					let id_propiedad = idPropiedad[0].id; // Obtener el id_propiedad
 
 					$.ajax({
-						url: "components/rol/models/actualizar_valores_rol.php",
-						type: "POST",
+						url: 'components/rol/models/actualizar_valores_rol.php',
+						type: 'POST',
 						data: formData,
 						processData: false,
 						contentType: false,
 						success: function () {
-							Swal.fire("¡Éxito!", "Datos actualizados correctamente", "success");
+							Swal.fire(
+								'¡Éxito!',
+								'Datos actualizados correctamente',
+								'success'
+							);
 
 							// Registrar en historial
 							var jsonInformacionNueva = JSON.stringify({
@@ -7108,43 +7202,41 @@ $(document).ready(function () {
 
 							// Asegurarse de que idEdit no esté vacío y que se pase correctamente como id_item
 							if (!idEdit) {
-								console.error("idEdit está vacío");
+								console.error('idEdit está vacío');
 								return;
 							}
 
 							registroHistorial(
-								"Modificar",               // Acción
-								jsonInformacioAntigua,     // Información anterior
-								jsonInformacionNueva,      // Información nueva
-								"Valores Rol",
+								'Modificar', // Acción
+								jsonInformacioAntigua, // Información anterior
+								jsonInformacionNueva, // Información nueva
+								'Valores Rol',
 								id_propiedad,
-								idEdit              // id_recurso (id de la propiedad)      
+								idEdit // id_recurso (id de la propiedad)
 							);
 
-
 							// Ocultar el modal y recargar los datos
-							$("#ModalEditarValor").modal("hide");
+							$('#ModalEditarValor').modal('hide');
 							cargarDatos();
 						},
 						error: function (jqXHR, textStatus) {
 							Swal.fire(
-								"Precaución",
-								"Error al actualizar los datos: " + textStatus,
-								"info"
+								'Precaución',
+								'Error al actualizar los datos: ' + textStatus,
+								'info'
 							);
 						},
 					});
 				}
 			})
 			.catch((error) => {
-				console.error("Error al obtener idPropiedad:", error);
+				console.error('Error al obtener idPropiedad:', error);
 			});
 	});
 
-
 	// Limpiar campos al cerrar el modal de editar
-	$("#ModalEditarValor").on("hidden.bs.modal", function () {
-		$("#editar_valor_rol")[0].reset();
+	$('#ModalEditarValor').on('hidden.bs.modal', function () {
+		$('#editar_valor_rol')[0].reset();
 	});
 
 	//************************  cristobal ***********************//
@@ -7153,7 +7245,7 @@ $(document).ready(function () {
 	function eliminarRegistro(token_rol) {
 		var url = window.location.href;
 		var parametros = new URL(url).searchParams;
-		var token_propiedad = parametros.get("token");
+		var token_propiedad = parametros.get('token');
 
 		// Obtener el id_propiedad antes de proceder con la eliminación
 		grabarIdPropiedad(token_propiedad)
@@ -7162,52 +7254,55 @@ $(document).ready(function () {
 					let id_propiedad = idPropiedad[0].id; // Obtener el id_propiedad
 
 					$.ajax({
-						url: "components/propiedad/models/eliminar_rol_propiedad.php",
-						type: "POST",
+						url: 'components/propiedad/models/eliminar_rol_propiedad.php',
+						type: 'POST',
 						data: {
 							token_rol: token_rol, // Enviar el token para la eliminación
 						},
 						success: function (response) {
-							Swal.fire("¡Eliminado!", "El registro ha sido eliminado.", "success");
+							Swal.fire(
+								'¡Eliminado!',
+								'El registro ha sido eliminado.',
+								'success'
+							);
 
 							// Llamada a registroHistorial
 							registroHistorial(
-
 								'Eliminar',
-								"", // Acción
+								'', // Acción
 								`Registro eliminado ${token_rol}`,
-								"Rol", // Item (el rol) - Asegúrate que este sea 'Rol'
+								'Rol', // Item (el rol) - Asegúrate que este sea 'Rol'
 								id_propiedad, // id_recurso
-								id_propiedad// id_item, puedes ajustar este valor si es necesario
+								id_propiedad // id_item, puedes ajustar este valor si es necesario
 							);
 
 							cargarDatos(); // Volver a cargar los datos después de eliminar
 						},
 						error: function (jqXHR, textStatus, errorThrown) {
 							Swal.fire(
-								"Precaución",
-								"Hubo un problema al eliminar el registro.",
-								"info"
+								'Precaución',
+								'Hubo un problema al eliminar el registro.',
+								'info'
 							);
 						},
 					});
 				}
 			})
 			.catch((error) => {
-				console.error("Error al obtener idPropiedad:", error);
+				console.error('Error al obtener idPropiedad:', error);
 			});
 	}
 
 	// Función para confirmar la eliminación usando SweetAlert2
 	function confirmarEliminacion(token_rol) {
 		Swal.fire({
-			title: "¿Estás seguro?",
-			text: "¡No podrás revertir esto!",
-			icon: "warning",
+			title: '¿Estás seguro?',
+			text: '¡No podrás revertir esto!',
+			icon: 'warning',
 			showCancelButton: true,
-			confirmButtonColor: "#3085d6",
-			cancelButtonColor: "#d33",
-			confirmButtonText: "Sí, eliminarlo!",
+			confirmButtonColor: '#3085d6',
+			cancelButtonColor: '#d33',
+			confirmButtonText: 'Sí, eliminarlo!',
 		}).then((result) => {
 			if (result.isConfirmed) {
 				eliminarRegistro(token_rol);
@@ -7217,18 +7312,18 @@ $(document).ready(function () {
 
 	// Delegación de eventos para manejar los clics en los botones de eliminación
 	$(document).ready(function () {
-		$("#tablaValoresRol tbody").on("click", ".eliminar-rol-btn", function () {
-			var token_rol = $(this).data("token-rol"); // Asegúrate de que el atributo sea correcto
+		$('#tablaValoresRol tbody').on('click', '.eliminar-rol-btn', function () {
+			var token_rol = $(this).data('token-rol'); // Asegúrate de que el atributo sea correcto
 			confirmarEliminacion(token_rol);
 		});
 	});
 
 	// Delegación de eventos para manejar los clics en los botones de eliminación
 	$(document).ready(function () {
-		$("#tablaValoresRol tbody").on("click", ".eliminar-rol-btn", function () {
-			var id_propiedades_roles = $(this).data("id_propiedades_roles");
-			var id_ficha = $(this).data("id_ficha"); // Asegúrate de que este dato esté disponible
-			var idCheque = $(this).data("id_cheque"); // Asegúrate de que este dato esté disponible
+		$('#tablaValoresRol tbody').on('click', '.eliminar-rol-btn', function () {
+			var id_propiedades_roles = $(this).data('id_propiedades_roles');
+			var id_ficha = $(this).data('id_ficha'); // Asegúrate de que este dato esté disponible
+			var idCheque = $(this).data('id_cheque'); // Asegúrate de que este dato esté disponible
 			confirmarEliminacion(id_propiedades_roles, id_ficha, idCheque);
 		});
 	});
@@ -7236,75 +7331,76 @@ $(document).ready(function () {
 	// ************************* bruno *************************** //
 
 	// ************************* roles *************************** //
-	$("#btnGuardarRol").on("click", function () {
-		let rolInput = $("#modalRolNumero");
+	$('#btnGuardarRol').on('click', function () {
+		let rolInput = $('#modalRolNumero');
 		let numeroRol = rolInput.val().trim();
-		let descripcionInput = $("#modalRolDescripcion"); // Obtener el input de descripción
+		let descripcionInput = $('#modalRolDescripcion'); // Obtener el input de descripción
 		let descripcion = descripcionInput.val().trim(); // Obtener valor de descripción
 
 		var url = window.location.href;
 		var parametros = new URL(url).searchParams;
-		var token = parametros.get("token");
+		var token = parametros.get('token');
 
 		// VALIDAR NÚMERO
-		if (numeroRol === "" || descripcion === "") { // Añadir validación para descripción
+		if (numeroRol === '' || descripcion === '') {
+			// Añadir validación para descripción
 			Swal.fire({
-				icon: "info",
-				title: "Información",
-				text: "Faltaron Algunos Datos",
+				icon: 'info',
+				title: 'Información',
+				text: 'Faltaron Algunos Datos',
 			});
 			return;
 		}
 
 		if (numeroRol.length > 11) {
 			Swal.fire({
-				icon: "info",
-				title: "Información",
+				icon: 'info',
+				title: 'Información',
 				text: 'El rol excede el máximo de caracteres (10 y el "-")',
 			});
 			return;
-		} else if (!numeroRol.includes("-")) {
+		} else if (!numeroRol.includes('-')) {
 			Swal.fire({
-				icon: "info",
-				title: "Información",
-				text: "El rol debe incluir un guión (-)",
+				icon: 'info',
+				title: 'Información',
+				text: 'El rol debe incluir un guión (-)',
 			});
 			return;
 		}
 
 		// Separar en dos partes
-		let partes = numeroRol.split("-");
+		let partes = numeroRol.split('-');
 		let izquierda = partes[0];
 		let derecha = partes[1];
 
 		if (izquierda.length > 5 || derecha.length > 5) {
 			Swal.fire({
-				icon: "info",
-				title: "Información",
-				text: "Cada parte del rol no debe exceder los 5 caracteres",
+				icon: 'info',
+				title: 'Información',
+				text: 'Cada parte del rol no debe exceder los 5 caracteres',
 			});
 			return;
 		} else if (izquierda.length <= 0 || derecha.length <= 0) {
 			Swal.fire({
-				icon: "info",
-				title: "Información",
-				text: "Cada parte del rol debe tener por lo menos un carácter",
+				icon: 'info',
+				title: 'Información',
+				text: 'Cada parte del rol debe tener por lo menos un carácter',
 			});
 			return;
 		}
 
 		// Rellenar con ceros si es necesario
-		izquierda = izquierda.padStart(5, "0");
-		derecha = derecha.padStart(5, "0");
+		izquierda = izquierda.padStart(5, '0');
+		derecha = derecha.padStart(5, '0');
 
 		const rolFormateado = `${izquierda}-${derecha}`;
-		let principal = $("#modalRolPrincipal").is(":checked");
+		let principal = $('#modalRolPrincipal').is(':checked');
 
 		grabarIdPropiedad(token)
 			.then((idPropiedad) => {
 				if (idPropiedad && idPropiedad.length > 0) {
 					let id_propiedad = idPropiedad[0].id;
-					console.log("ID de propiedad:", id_propiedad);
+					console.log('ID de propiedad:', id_propiedad);
 
 					if (principal) {
 						cambiarEstadoRol(id_propiedad);
@@ -7316,53 +7412,53 @@ $(document).ready(function () {
 					}
 
 					// Cerrar modal solo si la operación fue exitosa
-					$("#modalRolIngreso").modal("hide");
-					$("#modalRolNumero").val("");
-					descripcionInput.val(""); // Limpiar el campo de descripción
+					$('#modalRolIngreso').modal('hide');
+					$('#modalRolNumero').val('');
+					descripcionInput.val(''); // Limpiar el campo de descripción
 				} else {
 					Swal.fire({
-						icon: "error",
-						title: "Error",
-						text: "No se encontró la propiedad",
+						icon: 'error',
+						title: 'Error',
+						text: 'No se encontró la propiedad',
 					});
-					console.log("No se encontró la idPropiedad");
+					console.log('No se encontró la idPropiedad');
 				}
 			})
 			.catch((error) => {
-				console.error("Error al obtener idPropiedad:", error);
+				console.error('Error al obtener idPropiedad:', error);
 			});
 	});
 
 	// PASAR LOS ATRIBUTOS DE BTN EDITAR -> MODAL EDITAR
-	$(document).on("click", ".editar-btn", function () {
+	$(document).on('click', '.editar-btn', function () {
 		// Captura los valores del botón de edición
-		let numero = $(this).attr("data-numero");
-		let principal = $(this).attr("data-principal");
-		let token = $(this).attr("data-token-rol");
-		let descripcion = $(this).attr("data-descripcion"); // Añadir captura de descripción
+		let numero = $(this).attr('data-numero');
+		let principal = $(this).attr('data-principal');
+		let token = $(this).attr('data-token-rol');
+		let descripcion = $(this).attr('data-descripcion'); // Añadir captura de descripción
 
 		// Guarda los valores en atributos ocultos del modal
-		$("#modalRolEditar").data("numero", numero);
-		$("#modalRolEditar").data("principal", principal);
-		$("#modalRolEditar").data("token", token);
-		$("#modalRolEditarDescripcion").val(descripcion); // Establecer la descripción en el modal
+		$('#modalRolEditar').data('numero', numero);
+		$('#modalRolEditar').data('principal', principal);
+		$('#modalRolEditar').data('token', token);
+		$('#modalRolEditarDescripcion').val(descripcion); // Establecer la descripción en el modal
 	});
 
 	// Botón para editar
-	$("#btnEditarRol").on("click", function () {
+	$('#btnEditarRol').on('click', function () {
 		// Recupera los valores almacenados en el modal
-		var numero = validarNumero($("#modalRolEditarNumero").val().trim());
-		var principal = $("#modalEditarRolPrincipal").is(":checked");
-		let token = $("#modalRolEditar").data("token");
-		const principal_inicial = $("#modalRolEditar").data("principal"); // 'Sí' o 'No'
+		var numero = validarNumero($('#modalRolEditarNumero').val().trim());
+		var principal = $('#modalEditarRolPrincipal').is(':checked');
+		let token = $('#modalRolEditar').data('token');
+		const principal_inicial = $('#modalRolEditar').data('principal'); // 'Sí' o 'No'
 
 		// Recupera la descripción
-		var descripcion = $("#modalRolDescripcion").val().trim();
+		var descripcion = $('#modalRolDescripcion').val().trim();
 
 		// Obtener token de la ficha
 		var url = window.location.href;
 		var parametros = new URL(url).searchParams;
-		var token_propiedad = parametros.get("token");
+		var token_propiedad = parametros.get('token');
 
 		// Obtener idPropiedad de manera asíncrona
 		grabarIdPropiedad(token_propiedad)
@@ -7372,12 +7468,12 @@ $(document).ready(function () {
 
 					// Si el número es válido
 					if (numero) {
-						if (principal_inicial === "Sí") {
+						if (principal_inicial === 'Sí') {
 							if (principal === false) {
 								Swal.fire({
-									icon: "info",
-									title: "Información",
-									text: "No se puede desmarcar este rol como principal. Debe haber un rol principal.",
+									icon: 'info',
+									title: 'Información',
+									text: 'No se puede desmarcar este rol como principal. Debe haber un rol principal.',
 								});
 							} else {
 								editarRoles(numero, true, token, descripcion); // Pasamos descripción
@@ -7390,13 +7486,19 @@ $(document).ready(function () {
 						}
 
 						// Registrar en historial
-						var jsonInformacionNueva = JSON.stringify({ numero: numero, principal: principal, descripcion: descripcion });
-						var jsonInformacionAntigua = JSON.stringify({ numero: principal_inicial }); // Captura la información anterior
+						var jsonInformacionNueva = JSON.stringify({
+							numero: numero,
+							principal: principal,
+							descripcion: descripcion,
+						});
+						var jsonInformacionAntigua = JSON.stringify({
+							numero: principal_inicial,
+						}); // Captura la información anterior
 						registroHistorial(
-							"Modificar",
+							'Modificar',
 							jsonInformacionAntigua,
 							jsonInformacionNueva,
-							"Rol",
+							'Rol',
 							id_propiedad,
 							id_propiedades_roles // Si no hay ID específico
 						);
@@ -7404,21 +7506,19 @@ $(document).ready(function () {
 						cargarDatos();
 					}
 				} else {
-					console.log("No se encontró la idPropiedad");
+					console.log('No se encontró la idPropiedad');
 				}
 			})
 			.catch((error) => {
-				console.error("Error al obtener idPropiedad:", error);
+				console.error('Error al obtener idPropiedad:', error);
 			});
 	});
-
-
 
 	function grabarIdPropiedad(token) {
 		return new Promise((resolve, reject) => {
 			$.ajax({
-				url: "components/propiedad/models/grabar_id_propiedad.php",
-				type: "get",
+				url: 'components/propiedad/models/grabar_id_propiedad.php',
+				type: 'get',
 				data: {
 					token: token,
 				},
@@ -7428,11 +7528,11 @@ $(document).ready(function () {
 						let data = JSON.parse(response);
 						resolve(data); // Resuelve la promesa con los datos
 					} catch (error) {
-						reject("Error al parsear la respuesta JSON: " + error);
+						reject('Error al parsear la respuesta JSON: ' + error);
 					}
 				},
 				error: function (xhr, status, error) {
-					reject("Error en la solicitud AJAX: " + error);
+					reject('Error en la solicitud AJAX: ' + error);
 				},
 			});
 		});
@@ -7441,54 +7541,54 @@ $(document).ready(function () {
 	function validarNumero(numero) {
 		let rolFormateado;
 		// validación de campos vacíos
-		if (numero === "") {
+		if (numero === '') {
 			Swal.fire({
-				icon: "info",
-				title: "Información",
-				text: "Faltaron Algunos Datos",
+				icon: 'info',
+				title: 'Información',
+				text: 'Faltaron Algunos Datos',
 			});
 			return;
 		}
 		// verificar si el rol excede los 11 dígitos
 		if (numero.length > 11) {
 			Swal.fire({
-				icon: "info",
-				title: "Información",
+				icon: 'info',
+				title: 'Información',
 				text: 'El rol excede el máximo de carácteres (10 y el "-")',
 			});
 			return;
-		} else if (!numero.includes("-")) {
+		} else if (!numero.includes('-')) {
 			Swal.fire({
-				icon: "info",
-				title: "Información",
-				text: "El rol debe incluir un guión (-)",
+				icon: 'info',
+				title: 'Información',
+				text: 'El rol debe incluir un guión (-)',
 			});
 			return;
 		} else {
 			// separar en dos partes, izquierda y derecha
-			let partes = numero.split("-");
+			let partes = numero.split('-');
 			let izquierda = partes[0];
 			let derecha = partes[1];
 
 			// verificar que cada parte no exceda 5 dígitos
 			if (izquierda.length > 5 || derecha.length > 5) {
 				Swal.fire({
-					icon: "info",
-					title: "Información",
-					text: "Cada parte del rol no debe exceder los 5 carácteres",
+					icon: 'info',
+					title: 'Información',
+					text: 'Cada parte del rol no debe exceder los 5 carácteres',
 				});
 				return;
 			} else if (izquierda.length <= 0 || derecha.length <= 0) {
 				Swal.fire({
-					icon: "info",
-					title: "Información",
-					text: "Cada parte del rol debe tener por lo menos un caracter",
+					icon: 'info',
+					title: 'Información',
+					text: 'Cada parte del rol debe tener por lo menos un caracter',
 				});
 				return;
 			} else {
 				// Rellenar con ceros si es necesario
-				izquierda = izquierda.padStart(5, "0");
-				derecha = derecha.padStart(5, "0");
+				izquierda = izquierda.padStart(5, '0');
+				derecha = derecha.padStart(5, '0');
 
 				// Concatenar y mostrar el rol formateado
 				rolFormateado = `${izquierda}-${derecha}`;
@@ -7496,7 +7596,13 @@ $(document).ready(function () {
 			}
 		}
 	}
-	function ingresarRol(id_propiedad, numero, principal, id_comuna, descripcion) {
+	function ingresarRol(
+		id_propiedad,
+		numero,
+		principal,
+		id_comuna,
+		descripcion
+	) {
 		// Validación: Solo permite números y el signo "-" en el campo de número
 		var regex = /^[0-9\-]+$/;
 
@@ -7505,28 +7611,28 @@ $(document).ready(function () {
 
 		if (containsLetters) {
 			Swal.fire({
-				icon: "warning",
-				title: "Número de rol inválido",
+				icon: 'warning',
+				title: 'Número de rol inválido',
 				text: "El número de rol no puede contener letras. Solo se permiten números y el signo '-'",
-				confirmButtonText: "Ok",
+				confirmButtonText: 'Ok',
 			});
 			return; // Detener la ejecución si se encuentran letras
 		}
 
 		if (!regex.test(numero)) {
 			Swal.fire({
-				icon: "warning",
-				title: "Número de rol inválido",
+				icon: 'warning',
+				title: 'Número de rol inválido',
 				text: "El número de rol solo puede contener dígitos y el signo '-'",
-				confirmButtonText: "Ok",
+				confirmButtonText: 'Ok',
 			});
 			return; // Detener la ejecución si no pasa la validación
 		}
 
 		// Enviar los datos a insert_rol.php mediante AJAX
 		$.ajax({
-			url: "components/propiedad/models/insert_rol.php", // Asegúrate de que la ruta es correcta
-			type: "post",
+			url: 'components/propiedad/models/insert_rol.php', // Asegúrate de que la ruta es correcta
+			type: 'post',
 			data: {
 				id_propiedad: id_propiedad,
 				numero: numero,
@@ -7535,63 +7641,59 @@ $(document).ready(function () {
 				descripcion: descripcion, // Añadir la descripción a los datos enviados
 			},
 			success: function (response) {
-				console.log("Respuesta de insert_rol.php:", response); // Registra la respuesta
+				console.log('Respuesta de insert_rol.php:', response); // Registra la respuesta
 
 				try {
 					let respuesta = JSON.parse(response);
-					if (respuesta.status === "success") {
+					if (respuesta.status === 'success') {
 						// Confirmación de que se ha guardado el rol
 						Swal.fire({
-							icon: "success",
-							title: "Los datos se han guardado con éxito.",
-							confirmButtonText: "Ok",
+							icon: 'success',
+							title: 'Los datos se han guardado con éxito.',
+							confirmButtonText: 'Ok',
 						});
 
 						// Registrar en el historial
 						registroHistorial(
-							"crear",
+							'crear',
 							`Rol creado: ${numero} - Descripción: ${descripcion}`, // Incluir la descripción en el mensaje del historial
-							"",
-							"Rol",
+							'',
+							'Rol',
 							id_propiedad,
 							id_propiedad
-						)
-							.then(() => {
-								cargarDatos(); // Actualizar los datos después de crear el rol
-							});
+						).then(() => {
+							cargarDatos(); // Actualizar los datos después de crear el rol
+						});
 					} else {
 						Swal.fire({
-							icon: "error",
-							title: "Error",
-							text: "No se pudo guardar el rol.",
+							icon: 'error',
+							title: 'Error',
+							text: 'No se pudo guardar el rol.',
 						});
 					}
 				} catch (error) {
-					console.error("Error al analizar la respuesta JSON:", error);
+					console.error('Error al analizar la respuesta JSON:', error);
 				}
 			},
 			error: function (xhr, status, error) {
-				console.error("Error en la solicitud AJAX:", error);
+				console.error('Error en la solicitud AJAX:', error);
 				Swal.fire({
-					icon: "error",
-					title: "Error",
-					text: "Hubo un problema al guardar el rol.",
+					icon: 'error',
+					title: 'Error',
+					text: 'Hubo un problema al guardar el rol.',
 				});
 			},
 		});
 	}
 
-
-
 	function editarRoles(numero, principal, token) {
 		// Obtener token de la ficha
 		var url = window.location.href;
 		var parametros = new URL(url).searchParams;
-		var token_propiedad = parametros.get("token");
+		var token_propiedad = parametros.get('token');
 
-		var descripcion = $("#modalRolDescripcion").val().trim();
-		console.log("Descripción capturada: ", descripcion); // Añade esto para verificar el valor
-
+		var descripcion = $('#modalRolDescripcion').val().trim();
+		console.log('Descripción capturada: ', descripcion); // Añade esto para verificar el valor
 
 		// Obtener idPropiedad de manera asíncrona
 		grabarIdPropiedad(token_propiedad)
@@ -7601,43 +7703,47 @@ $(document).ready(function () {
 
 					// Llamada AJAX para editar el rol
 					$.ajax({
-						url: "components/propiedad/models/editar_rol.php",
-						type: "post",
+						url: 'components/propiedad/models/editar_rol.php',
+						type: 'post',
 						data: {
 							numero: numero,
 							principal: principal,
 							token: token, // Aquí pasamos el token de la propiedad
-							descripcion: descripcion // Aquí pasamos la descripción
+							descripcion: descripcion, // Aquí pasamos la descripción
 						},
 						success: function (response) {
-							console.log("Respuesta del servidor:", response);
-							if (response === "OK") {
+							console.log('Respuesta del servidor:', response);
+							if (response === 'OK') {
 								// Registro en historial
 								registroHistorial(
-									"Modificar", // Acción
+									'Modificar', // Acción
 									JSON.stringify({ numero: numero, principal: principal }), // Información anterior
-									JSON.stringify({ numero: numero, principal: principal, descripcion: descripcion }), // Nueva información incluyendo descripción
-									"Rol", // Item
+									JSON.stringify({
+										numero: numero,
+										principal: principal,
+										descripcion: descripcion,
+									}), // Nueva información incluyendo descripción
+									'Rol', // Item
 									id_propiedad, // id_recurso, el ID de la propiedad
 									id_propiedad // id_item, si aplica
 								);
 
 								// Confirmación de que se ha guardado el rol
 								Swal.fire({
-									icon: "success",
-									title: "Los datos se han guardado con éxito.",
-									confirmButtonText: "Ok",
+									icon: 'success',
+									title: 'Los datos se han guardado con éxito.',
+									confirmButtonText: 'Ok',
 								}).then((result) => {
 									if (result.isConfirmed) {
-										$("#modalRolEditar").modal("hide");
+										$('#modalRolEditar').modal('hide');
 									}
 								});
 							} else {
 								// Mensaje si no se guardó correctamente
 								Swal.fire({
-									position: "center",
-									icon: "info",
-									title: "No ha sido guardado",
+									position: 'center',
+									icon: 'info',
+									title: 'No ha sido guardado',
 									showConfirmButton: false,
 									timer: 1500,
 								});
@@ -7645,49 +7751,46 @@ $(document).ready(function () {
 						},
 						error: function (xhr, status, error) {
 							// Manejo de errores
-							console.error("Error:", error);
+							console.error('Error:', error);
 						},
 					});
 				} else {
-					console.log("No se encontró la idPropiedad");
+					console.log('No se encontró la idPropiedad');
 				}
 			})
 			.catch((error) => {
-				console.error("Error al obtener idPropiedad:", error);
+				console.error('Error al obtener idPropiedad:', error);
 			});
 	}
 
-
 	function cambiarEstadoRol(id_propiedad) {
 		$.ajax({
-			url: "components/propiedad/models/actualizar_estados.php",
-			type: "post",
+			url: 'components/propiedad/models/actualizar_estados.php',
+			type: 'post',
 			data: {
 				id_propiedad: id_propiedad,
 			},
 			success: function (response) {
 				// Registro en historial para cambiar estado
 				registroHistorial(
-					"Modificar", // Acción
-					JSON.stringify({ estadoAnterior: "estado viejo" }), // Información anterior, debes capturar el estado anterior si es posible
+					'Modificar', // Acción
+					JSON.stringify({ estadoAnterior: 'estado viejo' }), // Información anterior, debes capturar el estado anterior si es posible
 					JSON.stringify({ id_propiedad: id_propiedad }), // Nueva información
-					"Estado Rol", // Item
+					'Estado Rol', // Item
 					id_propiedad, // id_recurso, puedes usar id_propiedad si aplica
-					id_propiedad  // id_item, si aplica
+					id_propiedad // id_item, si aplica
 				);
 
-				console.log("Roles actualizados exitosamente:", response);
+				console.log('Roles actualizados exitosamente:', response);
 			},
 			error: function (jqXHR, textStatus, errorThrown) {
-				console.error("Error al actualizar el rol:", textStatus, errorThrown);
+				console.error('Error al actualizar el rol:', textStatus, errorThrown);
 			},
 		});
 	}
 });
 
 function ValidarClienteCuentasBancarias(id) {
-
-
 	return new Promise((resolve, reject) => {
 		$.ajax({
 			url: 'components/propiedad/models/ValidarClienteCuentasBancarias.php',
@@ -7696,7 +7799,6 @@ function ValidarClienteCuentasBancarias(id) {
 				id: id,
 			},
 			success: function (response) {
-
 				var res = JSON.parse(response);
 				var estado = res[0].estado_cuenta;
 
@@ -7716,7 +7818,6 @@ function ValidarClienteCuentasBancarias(id) {
 
 // jhernandez - funcion para bajar excel con js
 function GrabarValorRol() {
-
 	// defino mis variables a guardar
 	let id_propiedad = $('#id_propiedad').val();
 	var valorRolAño = $('#valorRolAño').val();
@@ -7733,17 +7834,15 @@ function GrabarValorRol() {
 			ValorRol: ValorRol,
 			mes: mes,
 			id_propiedades_roles: id_propiedades_roles,
-
 		},
 		success: function (response) {
-
 			var res = JSON.parse(response);
 			var estado = res[0].estado_cuenta;
 
 			if (estado == 'true') {
-				alert("datos guardo con exito.");
+				alert('datos guardo con exito.');
 			} else {
-				alert("error al guardar datos.");
+				alert('error al guardar datos.');
 			}
 		},
 		error: function (jqXHR, textStatus, errorThrown) {
@@ -7751,23 +7850,16 @@ function GrabarValorRol() {
 			reject(false); // O puedes resolver con false si hay un error
 		},
 	});
-
-
-
-
 }
-
 
 // jhernandez funcion para listar los tipos de movimientos de cuentas corrientes cargos.
 function CargarSelectTipoMovimientosCC() {
-
 	// Realizar la solicitud AJAX
 	$.ajax({
 		url: 'components/propiedad/models/TipoMovimientos.php',
 		method: 'GET', // Método de la solicitud (puede ser GET o POST según sea necesario)
 		dataType: 'json', // Esperamos una respuesta en formato JSON
 		success: function (data) {
-
 			// Limpiar el contenido previo del <select>
 			$('#ccTipoMovimiento').empty();
 
@@ -7779,7 +7871,7 @@ function CargarSelectTipoMovimientosCC() {
 				$('#ccTipoMovimiento').append(
 					$('<option>', {
 						value: item.id,
-						text: item.descripcion
+						text: item.descripcion,
 					})
 				);
 			});
@@ -7787,21 +7879,18 @@ function CargarSelectTipoMovimientosCC() {
 		error: function (xhr, status, error) {
 			// Manejo de errores
 			console.error('Error al obtener los datos: ', error);
-		}
+		},
 	});
-
 }
 
 // jhernandez funcion para listar los tipos de movimientos de cuentas corrientes abonos.
 function CargarSelectTipoMovimientosCCAbono() {
-
 	// Realizar la solicitud AJAX
 	$.ajax({
 		url: 'components/propiedad/models/TipoMovimientosAbono.php',
 		method: 'GET', // Método de la solicitud (puede ser GET o POST según sea necesario)
 		dataType: 'json', // Esperamos una respuesta en formato JSON
 		success: function (data) {
-
 			// Limpiar el contenido previo del <select>
 			$('#ccTipoMovimientoAbono').empty();
 
@@ -7812,7 +7901,7 @@ function CargarSelectTipoMovimientosCCAbono() {
 				$('#ccTipoMovimientoAbono').append(
 					$('<option>', {
 						value: movimiento.id,
-						text: movimiento.descripcion
+						text: movimiento.descripcion,
 					})
 				);
 			});
@@ -7820,12 +7909,9 @@ function CargarSelectTipoMovimientosCCAbono() {
 		error: function (xhr, status, error) {
 			// Manejo de errores
 			console.error('Error al obtener los datos: ', error);
-		}
+		},
 	});
-
 }
-
-
 
 //listado notificaciones.
 // function ListadoNotificaciones() {
@@ -7897,24 +7983,32 @@ function ListadoNotificaciones() {
 	// Validar si la tabla ya está inicializada
 	if ($.fn.DataTable.isDataTable('#ListadoRecordatiorios')) {
 		// Si ya está inicializada, actualiza el contenido con una nueva URL
-		$('#ListadoRecordatiorios').DataTable().ajax.url(
-			"components/propiedad/models/ListadoNotificaciones.php?ficha_tecnica=" + ficha_tecnica
-		).load();
+		$('#ListadoRecordatiorios')
+			.DataTable()
+			.ajax.url(
+				'components/propiedad/models/ListadoNotificaciones.php?ficha_tecnica=' +
+					ficha_tecnica
+			)
+			.load();
 	} else {
 		// Si no está inicializada, crea la tabla
 		$('#ListadoRecordatiorios').DataTable({
 			ajax: {
-				url: "components/propiedad/models/ListadoNotificaciones.php?ficha_tecnica=" + ficha_tecnica,
+				url:
+					'components/propiedad/models/ListadoNotificaciones.php?ficha_tecnica=' +
+					ficha_tecnica,
 				dataSrc: function (json) {
 					if (!json || json.length === 0) {
-						console.warn("No se encontraron datos para la ficha técnica seleccionada.");
+						console.warn(
+							'No se encontraron datos para la ficha técnica seleccionada.'
+						);
 						return []; // Retorna un arreglo vacío para evitar errores
 					}
 					return json; // Devuelve los datos si existen
 				},
 				error: function (xhr, status, error) {
-					console.error("Error en la solicitud AJAX:", error);
-				}
+					console.error('Error en la solicitud AJAX:', error);
+				},
 			},
 			columns: [
 				{
@@ -7922,55 +8016,54 @@ function ListadoNotificaciones() {
 					render: function (data) {
 						// Formatear la fecha si es necesario
 						return new Date(data).toLocaleDateString('es-CL');
-					}
+					},
 				},
 				{
 					data: 'repeticiones',
 					render: function (data) {
 						return data == 1 ? 'Única' : 'Recurrente';
-					}
+					},
 				},
 				{ data: 'descripcion' },
 				{ data: 'ejecutivo' },
 				{
 					data: 'frecuencia_recordatorio',
 					render: function (data) {
-						return data === "1" || data === 1 ? 'Sí' : 'No';
-					}
-				}
+						return data === '1' || data === 1 ? 'Sí' : 'No';
+					},
+				},
 			],
 			dom: 'Bfrtip',
 			buttons: [
 				{
 					extend: 'excelHtml5',
 					title: 'Listado de Notificaciones',
-					text: 'Descargar Excel'
-				}
+					text: 'Descargar Excel',
+				},
 			],
 			language: {
-				emptyTable: "No hay notificaciones disponibles.",
-				lengthMenu: "Mostrar _MENU_ registros",
-				info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-				infoEmpty: "Mostrando 0 a 0 de 0 registros",
-				search: "Buscar:",
+				emptyTable: 'No hay notificaciones disponibles.',
+				lengthMenu: 'Mostrar _MENU_ registros',
+				info: 'Mostrando _START_ a _END_ de _TOTAL_ registros',
+				infoEmpty: 'Mostrando 0 a 0 de 0 registros',
+				search: 'Buscar:',
 				paginate: {
-					first: "Primero",
-					last: "Último",
-					next: "Siguiente",
-					previous: "Anterior"
-				}
+					first: 'Primero',
+					last: 'Último',
+					next: 'Siguiente',
+					previous: 'Anterior',
+				},
 			},
 			initComplete: function (settings, json) {
 				if (!json || json.length === 0) {
-					console.warn("No se encontraron datos para la ficha técnica seleccionada.");
+					console.warn(
+						'No se encontraron datos para la ficha técnica seleccionada.'
+					);
 				}
-			}
+			},
 		});
 	}
 }
-
-
-
 
 $(document).ready(function () {
 	cargarRetencionesList(); // Llama a la función al cargar la página
@@ -7982,10 +8075,14 @@ function cargarRetencionesList() {
 
 	// Manejo de ID desde localStorage
 	if (!idFicha) {
-		console.warn("ID de ficha no encontrado en el DOM. Verificando localStorage...");
+		console.warn(
+			'ID de ficha no encontrado en el DOM. Verificando localStorage...'
+		);
 		idFicha = localStorage.getItem('idFicha');
 		if (!idFicha) {
-			console.error("ID de ficha no disponible en localStorage. No se puede cargar la información.");
+			console.error(
+				'ID de ficha no disponible en localStorage. No se puede cargar la información.'
+			);
 			return;
 		}
 	} else {
@@ -8010,36 +8107,42 @@ function cargarRetencionesList() {
 					render: function (data) {
 						if (data) {
 							const formattedDate = data.replace(/\\\//g, '/');
-							return moment(formattedDate, "DD/MM/YYYY HH:mm:ss").format("DD-MM-YYYY");
+							return moment(formattedDate, 'DD/MM/YYYY HH:mm:ss').format(
+								'DD-MM-YYYY'
+							);
 						}
-						return "N/A";
-					}
+						return 'N/A';
+					},
 				},
 				{ data: 'motivo' },
 				{
 					data: 'montoretencion',
 					render: function (data) {
 						return formatCurrency(parseNumber(data));
-					}
+					},
 				},
 				{
 					data: 'montoretenido',
 					render: function (data) {
 						return formatCurrency(parseNumber(data));
-					}
+					},
 				},
 				{
 					data: 'saldo',
 					render: function (data) {
 						return formatCurrency(parseNumber(data));
-					}
+					},
 				},
 				{ data: 'estado' },
 				{
 					data: null,
 					render: function (data, type, row) {
 						// Verificar si el estado_retencion es 'false', 'POR RETENER' o 'RETENIDO' para permitir la eliminación
-						if (row.estado_retencion === false || row.estado_retencion === 'POR RETENER' || row.estado_retencion === 'RETENIDO') {
+						if (
+							row.estado_retencion === false ||
+							row.estado_retencion === 'POR RETENER' ||
+							row.estado_retencion === 'RETENIDO'
+						) {
 							// Mostrar el estado_retencion y el botón de eliminación
 							return `
 								
@@ -8055,41 +8158,44 @@ function cargarRetencionesList() {
 						return `<span>${row.estado_retencion}</span>`;
 					},
 					orderable: false,
-					searchable: false
-				}
-
-
+					searchable: false,
+				},
 			];
 
 			// Inicializar DataTable con datos o mensaje de vacío
 			$('#retenciones').DataTable({
-				data: response && Array.isArray(response) && response.length > 0 ? response : [],
+				data:
+					response && Array.isArray(response) && response.length > 0
+						? response
+						: [],
 				columns: columns,
 				ordering: false,
 				language: {
-					lengthMenu: "Mostrar _MENU_ registros",
-					zeroRecords: "No se encontraron resultados",
-					info: "Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros",
-					infoEmpty: "No hay registros disponibles",
-					infoFiltered: "(filtrado de un total de _MAX_ registros)",
-					search: "Buscar:",
+					lengthMenu: 'Mostrar _MENU_ registros',
+					zeroRecords: 'No se encontraron resultados',
+					info: 'Mostrando registros del _START_ al _END_ de un total de _TOTAL_ registros',
+					infoEmpty: 'No hay registros disponibles',
+					infoFiltered: '(filtrado de un total de _MAX_ registros)',
+					search: 'Buscar:',
 					paginate: {
-						first: "Primero",
-						last: "Último",
-						next: "Siguiente",
-						previous: "Anterior"
-					}
+						first: 'Primero',
+						last: 'Último',
+						next: 'Siguiente',
+						previous: 'Anterior',
+					},
 				},
 				createdRow: function (row, data, dataIndex) {
 					if (!response || !response.length) {
-						$(row).html('<td colspan="7" style="text-align: center;">No hay resultados disponibles</td>');
+						$(row).html(
+							'<td colspan="7" style="text-align: center;">No hay resultados disponibles</td>'
+						);
 					}
-				}
+				},
 			});
 		},
 		error: function (jqXHR, textStatus, errorThrown) {
-			console.error("Error en la llamada AJAX:", textStatus, errorThrown);
-		}
+			console.error('Error en la llamada AJAX:', textStatus, errorThrown);
+		},
 	});
 }
 
@@ -8101,7 +8207,10 @@ function parseNumber(data) {
 
 // Función para formatear números como moneda
 function formatCurrency(value) {
-	return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(value);
+	return new Intl.NumberFormat('es-CL', {
+		style: 'currency',
+		currency: 'CLP',
+	}).format(value);
 }
 
 $(document).on('click', '.eliminar-retencion-btn', function () {
@@ -8119,7 +8228,7 @@ $(document).on('click', '.eliminar-retencion-btn', function () {
 		Swal.fire({
 			title: 'No se puede eliminar',
 			text: "Solo se puede eliminar si el estado es 'false'.",
-			icon: 'warning'
+			icon: 'warning',
 		});
 		return;
 	}
@@ -8135,13 +8244,13 @@ $(document).on('click', '.eliminar-retencion-btn', function () {
 	// Confirmación con SweetAlert2
 	Swal.fire({
 		title: '¿Estás seguro?',
-		text: "¡No podrás revertir esto!",
+		text: '¡No podrás revertir esto!',
 		icon: 'info',
 		showCancelButton: true,
 		confirmButtonColor: '#3085d6',
 		cancelButtonColor: '#d33',
 		confirmButtonText: 'Sí, ¡eliminar!',
-		cancelButtonText: 'Cancelar'
+		cancelButtonText: 'Cancelar',
 	}).then((result) => {
 		if (result.isConfirmed) {
 			// Llamada AJAX para eliminar la retención
@@ -8157,8 +8266,10 @@ $(document).on('click', '.eliminar-retencion-btn', function () {
 						if (parsedResponse.success) {
 							Swal.fire({
 								title: '¡Eliminada!',
-								text: parsedResponse.message || 'La retención ha sido eliminada correctamente.',
-								icon: 'success'
+								text:
+									parsedResponse.message ||
+									'La retención ha sido eliminada correctamente.',
+								icon: 'success',
 							});
 
 							// Aquí pasamos el mensaje de eliminación
@@ -8166,20 +8277,21 @@ $(document).on('click', '.eliminar-retencion-btn', function () {
 
 							// Llamada a registroHistorial para registrar la eliminación
 							registroHistorial(
-								"Eliminar",               // Tipo de registro
-								"",                       // Información antigua vacía
-								mensajeEliminacion,       // El mensaje de eliminación
-								"Retención",              // El ítem es "Retención"
-								id_propiedad,             // ID del recurso (id_propiedad)
-								id_retencion              // ID del comentario relacionado (id_retencion)
+								'Eliminar', // Tipo de registro
+								'', // Información antigua vacía
+								mensajeEliminacion, // El mensaje de eliminación
+								'Retención', // El ítem es "Retención"
+								id_propiedad, // ID del recurso (id_propiedad)
+								id_retencion // ID del comentario relacionado (id_retencion)
 							);
 
 							cargarRetencionesList(); // Recargar la lista después de eliminar
 						} else {
 							Swal.fire({
 								title: 'Error',
-								text: parsedResponse.message || 'No se pudo eliminar la retención.',
-								icon: 'error'
+								text:
+									parsedResponse.message || 'No se pudo eliminar la retención.',
+								icon: 'error',
 							});
 						}
 					} catch (e) {
@@ -8187,200 +8299,210 @@ $(document).on('click', '.eliminar-retencion-btn', function () {
 						Swal.fire({
 							title: 'Error',
 							text: 'Respuesta inesperada del servidor.',
-							icon: 'error'
+							icon: 'error',
 						});
 					}
 				},
 				error: function (jqXHR, textStatus, errorThrown) {
-					console.error('Error en la eliminación de la retención:', textStatus, errorThrown);
+					console.error(
+						'Error en la eliminación de la retención:',
+						textStatus,
+						errorThrown
+					);
 					Swal.fire({
 						title: 'Error',
 						text: 'Hubo un problema al procesar la solicitud.',
-						icon: 'error'
+						icon: 'error',
 					});
-				}
+				},
 			});
 		}
 	});
 });
 
-
-
-
 // Función para formatear los montos como moneda chilena
 function formatCurrency(value) {
-	return '$' + parseFloat(value).toLocaleString('es-CL', { minimumFractionDigits: 0 });
+	return (
+		'$' +
+		parseFloat(value).toLocaleString('es-CL', { minimumFractionDigits: 0 })
+	);
 }
 function abrirModalAgregarRetencion(id_arriendo, id_propiedad) {
-
 	localStorage.setItem('id_arriendo', id_arriendo);
 	localStorage.setItem('id_propiedad', id_propiedad);
 
 	document.getElementById('id_arriendo').value = id_arriendo;
 	document.getElementById('id_propiedad').value = id_propiedad;
 
-	var modal = new bootstrap.Modal(document.getElementById('agregarRetencionModal'));
+	var modal = new bootstrap.Modal(
+		document.getElementById('agregarRetencionModal')
+	);
 	modal.show();
 }
 
 // Formatear monto como dinero
 function formatearDinero(monto) {
-	return new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(monto);
+	return new Intl.NumberFormat('es-CL', {
+		style: 'currency',
+		currency: 'CLP',
+	}).format(monto);
 }
-
 
 //******************* insertar retenciones cristobal saez */
 document.addEventListener('DOMContentLoaded', function () {
-
-	alert("........");
-
 	const tipoRetencion = document.getElementById('tipo_retencion');
 	const fechasContainer = document.getElementById('fechasContainer');
 	const montoInput = document.getElementById('monto_total');
 
 	tipoRetencion.addEventListener('change', function () {
-		fechasContainer.style.display = tipoRetencion.value === '2' ? 'flex' : 'none';
+		fechasContainer.style.display =
+			tipoRetencion.value === '2' ? 'flex' : 'none';
 	});
 
-	document.getElementById('formAgregarRetencion').addEventListener('submit', function (e) {
-		e.preventDefault();
+	document
+		.getElementById('formAgregarRetencion')
+		.addEventListener('submit', function (e) {
+			e.preventDefault();
 
-		const id_arriendo = localStorage.getItem('id_arriendo');
-		const id_propiedad = localStorage.getItem('id_propiedad');
-		const tipo_retencion = document.getElementById('tipo_retencion').value;
-		let monto_retencion = document.getElementById('monto_total').value;
+			const id_arriendo = localStorage.getItem('id_arriendo');
+			const id_propiedad = localStorage.getItem('id_propiedad');
+			const tipo_retencion = document.getElementById('tipo_retencion').value;
+			let monto_retencion = document.getElementById('monto_total').value;
 
-		// Limpiar el monto y convertirlo a numérico
-		monto_retencion = parseFloat(monto_retencion.replace(/\./g, '').replace(/\$/g, ''));
+			// Limpiar el monto y convertirlo a numérico
+			monto_retencion = parseFloat(
+				monto_retencion.replace(/\./g, '').replace(/\$/g, '')
+			);
 
-		// Validaciones
-		if (!tipo_retencion) {
-			Swal.fire({
-				icon: 'info',
-				title: 'Tipo de Retención no válido',
-				text: 'Por favor, seleccione un tipo de retención.'
-			});
-			return;
-		}
-
-		if (isNaN(monto_retencion) || monto_retencion <= 0) {
-			Swal.fire({
-				icon: 'info',
-				title: 'Monto no válido',
-				text: 'Por favor, ingrese un monto válido mayor que cero.'
-			});
-			return;
-		}
-
-		const fechaActual = new Date().toISOString().split('T')[0];
-		const fecha_desde = document.getElementById('fecha_desde').value || fechaActual;
-		const fecha_hasta = document.getElementById('fecha_hasta').value || fechaActual;
-
-		if (fecha_desde < fechaActual || fecha_hasta < fechaActual) {
-			Swal.fire({
-				icon: 'info',
-				title: 'Fechas no válidas',
-				text: 'Las fechas no pueden ser anteriores a la fecha actual.'
-			});
-			return;
-		}
-
-		if (tipo_retencion === '2' && fecha_desde && fecha_hasta) {
-			const fechaDesdeObj = new Date(fecha_desde);
-			const fechaHastaObj = new Date(fecha_hasta);
-			if (fechaDesdeObj.getMonth() === fechaHastaObj.getMonth() && fechaDesdeObj.getFullYear() === fechaHastaObj.getFullYear()) {
+			// Validaciones
+			if (!tipo_retencion) {
 				Swal.fire({
 					icon: 'info',
-					title: 'Ingreso inválido',
-					text: 'No se permitirá el ingreso de cuotas dentro del mismo mes, ya que se considerará inválido.'
+					title: 'Tipo de Retención no válido',
+					text: 'Por favor, seleccione un tipo de retención.',
 				});
 				return;
 			}
-		}
 
-		const data = {
-			id_arriendo,
-			id_propiedad,
-			tipo_retencion,
-			monto_retencion,
-			fecha_desde: tipo_retencion === '2' ? fecha_desde : fechaActual,
-			fecha_hasta: tipo_retencion === '2' ? fecha_hasta : fechaActual
-		};
+			if (isNaN(monto_retencion) || monto_retencion <= 0) {
+				Swal.fire({
+					icon: 'info',
+					title: 'Monto no válido',
+					text: 'Por favor, ingrese un monto válido mayor que cero.',
+				});
+				return;
+			}
 
-		// Llamada a fetch para insertar los datos de retención
-		fetch('components/propiedad/models/insert_retenciones.php', {
-			method: 'POST',
-			headers: {
-				'Content-Type': 'application/json',
-			},
-			body: JSON.stringify(data)
-		})
-			.then(response => response.json())
-			.then(result => {
+			const fechaActual = new Date().toISOString().split('T')[0];
+			const fecha_desde =
+				document.getElementById('fecha_desde').value || fechaActual;
+			const fecha_hasta =
+				document.getElementById('fecha_hasta').value || fechaActual;
 
+			if (fecha_desde < fechaActual || fecha_hasta < fechaActual) {
+				Swal.fire({
+					icon: 'info',
+					title: 'Fechas no válidas',
+					text: 'Las fechas no pueden ser anteriores a la fecha actual.',
+				});
+				return;
+			}
 
-				if (result.status === 'success') {
-					const retencionStatus = result.data[0].fn_genera_retencion;
-
-				
-
-					if (retencionStatus === '-1') {
-						Swal.fire({
-							icon: 'warning',
-							title: 'Retención ya existente',
-							text: 'Ya se encuentran retenciones en la tabla.'
-						});
-					} else if (retencionStatus === '-2') {
-						Swal.fire({
-							icon: 'warning',
-							title: 'Monto de Retención Excesivo',
-							text: 'El monto de retención es mayor al valor del arriendo.'
-						});
-					} else {
-						$('#agregarRetencionModal').modal('hide'); // Cerrar el modal
-
-						setTimeout(() => {
-							Swal.fire({
-								position: 'center',
-								icon: 'success',
-								title: 'La retención ha sido agregada exitosamente.',
-								showConfirmButton: false,
-								timer: 1500
-							});
-						}, 500);
-						limpiarCampos(); // Limpiar campos después de agregar la retención
-						cargarRetencionesList(); // Recargar la lista de retenciones
-
-						// Registrar en historial
-						const jsonInformacionNueva = JSON.stringify({
-							tipo_retencion,
-							monto_retencion,
-							fecha_desde,
-							fecha_hasta
-						});
-
-						// Aquí usamos id_arriendo en vez de id_retencion
-						registroHistorial(
-							"Crear",               // Acción
-							'',                    // Información anterior
-							jsonInformacionNueva,  // Información nueva
-							"Retención",           // Tipo de entidad
-							id_propiedad,          // id_propiedad
-							id_arriendo            // id_arriendo como id_comentario
-						);
-					}
-				} else {
+			if (tipo_retencion === '2' && fecha_desde && fecha_hasta) {
+				const fechaDesdeObj = new Date(fecha_desde);
+				const fechaHastaObj = new Date(fecha_hasta);
+				if (
+					fechaDesdeObj.getMonth() === fechaHastaObj.getMonth() &&
+					fechaDesdeObj.getFullYear() === fechaHastaObj.getFullYear()
+				) {
 					Swal.fire({
-						icon: 'error',
-						title: 'Error al agregar la retención',
-						text: result.message || 'Error desconocido.'
+						icon: 'info',
+						title: 'Ingreso inválido',
+						text: 'No se permitirá el ingreso de cuotas dentro del mismo mes, ya que se considerará inválido.',
 					});
+					return;
 				}
+			}
+
+			const data = {
+				id_arriendo,
+				id_propiedad,
+				tipo_retencion,
+				monto_retencion,
+				fecha_desde: tipo_retencion === '2' ? fecha_desde : fechaActual,
+				fecha_hasta: tipo_retencion === '2' ? fecha_hasta : fechaActual,
+			};
+
+			// Llamada a fetch para insertar los datos de retención
+			fetch('components/propiedad/models/insert_retenciones.php', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+				body: JSON.stringify(data),
 			})
-			.catch(error => {
-				console.error('Error:', error);
-			});
-	});
+				.then((response) => response.json())
+				.then((result) => {
+					if (result.status === 'success') {
+						const retencionStatus = result.data[0].fn_genera_retencion;
+
+						if (retencionStatus === '-1') {
+							Swal.fire({
+								icon: 'warning',
+								title: 'Retención ya existente',
+								text: 'Ya se encuentran retenciones en la tabla.',
+							});
+						} else if (retencionStatus === '-2') {
+							Swal.fire({
+								icon: 'warning',
+								title: 'Monto de Retención Excesivo',
+								text: 'El monto de retención es mayor al valor del arriendo.',
+							});
+						} else {
+							$('#agregarRetencionModal').modal('hide'); // Cerrar el modal
+
+							setTimeout(() => {
+								Swal.fire({
+									position: 'center',
+									icon: 'success',
+									title: 'La retención ha sido agregada exitosamente.',
+									showConfirmButton: false,
+									timer: 1500,
+								});
+							}, 500);
+							limpiarCampos(); // Limpiar campos después de agregar la retención
+							cargarRetencionesList(); // Recargar la lista de retenciones
+
+							// Registrar en historial
+							const jsonInformacionNueva = JSON.stringify({
+								tipo_retencion,
+								monto_retencion,
+								fecha_desde,
+								fecha_hasta,
+							});
+
+							// Aquí usamos id_arriendo en vez de id_retencion
+							registroHistorial(
+								'Crear', // Acción
+								'', // Información anterior
+								jsonInformacionNueva, // Información nueva
+								'Retención', // Tipo de entidad
+								id_propiedad, // id_propiedad
+								id_arriendo // id_arriendo como id_comentario
+							);
+						}
+					} else {
+						Swal.fire({
+							icon: 'error',
+							title: 'Error al agregar la retención',
+							text: result.message || 'Error desconocido.',
+						});
+					}
+				})
+				.catch((error) => {
+					console.error('Error:', error);
+				});
+		});
 
 	function limpiarCampos() {
 		montoInput.value = '';
@@ -8390,9 +8512,11 @@ document.addEventListener('DOMContentLoaded', function () {
 		fechasContainer.style.display = 'none';
 	}
 
-	document.querySelector('.btn-secondary[data-bs-dismiss="modal"]').addEventListener('click', function () {
-		limpiarCampos();
-	});
+	document
+		.querySelector('.btn-secondary[data-bs-dismiss="modal"]')
+		.addEventListener('click', function () {
+			limpiarCampos();
+		});
 
 	montoInput.addEventListener('input', function () {
 		let valor = montoInput.value.replace(/\./g, '').replace(/\$/g, '');
@@ -8423,12 +8547,11 @@ document.addEventListener('DOMContentLoaded', function () {
 			style: 'currency',
 			currency: 'CLP',
 			minimumFractionDigits: 0,
-			maximumFractionDigits: 0
+			maximumFractionDigits: 0,
 		});
 		return formatter.format(valor);
 	}
 });
-
 
 function cargarInfoPropiedad() {
 	cargarInfoComentario();

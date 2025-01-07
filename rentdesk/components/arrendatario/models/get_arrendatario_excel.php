@@ -70,8 +70,6 @@ try {
             // Retornamos true si 'nombreCompleto' contiene la subcadena de búsqueda
             return (strpos($nombreCompleto, $searchTermLower) !== false
                 || strpos($dni, $searchTermLower) !== false);
-
-            // Retornamos true si 'nombreCompleto' contiene la subcadena de búsqueda
         });
 
         // array_filter deja los índices originales. array_values reindexa el arreglo desde 0, 1, 2...
@@ -86,7 +84,6 @@ try {
     //  - Con JSON_UNESCAPED_UNICODE evitamos que se escapen caracteres acentuados.
     header('Content-Type: application/json; charset=utf-8');
     echo json_encode($filteredResult, JSON_UNESCAPED_UNICODE);
-   
 } catch (Exception $e) {
     // Si ocurre un error, lo mostramos en pantalla (o podrías manejarlo de otra forma en producción)
     echo "Error: " . $e->getMessage();
