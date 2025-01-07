@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<EnvioBOLETA xmlns="http://www.sii.cl/SiiDte" version="1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.sii.cl/SiiDte EnvioBOLETA_v11.xsd">
+  <SetDTE ID="ENVBOL-20241216132753">
+    <Caratula version="1.0">
+      <RutEmisor/>
+      <RutEnvia>6285461-8</RutEnvia>
+      <RutReceptor>60803000-K</RutReceptor>
+      <FchResol>2014-08-22</FchResol>
+      <NroResol>80</NroResol>
+      <TmstFirmaEnv>2024-12-16T13:27:53</TmstFirmaEnv>
+      <SubTotDTE>
+        <TpoDTE>39</TpoDTE>
+        <NroDTE>1</NroDTE>
+      </SubTotDTE>
+    </Caratula>
+    <DTE version="1.0">
+      <Documento ID="RT39F1427">
+        <Encabezado>
+          <IdDoc>
+            <TipoDTE>39</TipoDTE>
+            <Folio>1427</Folio>
+            <FchEmis>2024-12-16</FchEmis>
+            <IndServicio>3</IndServicio>
+            <FchVenc>2024-12-16</FchVenc>
+          </IdDoc>
+          <Emisor>
+            <RUTEmisor/>
+            <RznSocEmisor/>
+            <GiroEmisor/>
+            <CdgSIISucur>999999999</CdgSIISucur>
+            <DirOrigen/>
+            <CmnaOrigen/>
+            <CiudadOrigen/>
+          </Emisor>
+          <Receptor>
+            <RUTRecep/>
+            <RznSocRecep/>
+            <DirRecep/>
+            <CmnaRecep/>
+            <CiudadRecep/>
+            <Contacto/>
+            <DirPostal/>
+            <CmnaPostal/>
+          </Receptor>
+          <Totales>
+            <MntNeto>36051</MntNeto>
+            <IVA>6850</IVA>
+            <MntTotal>42901</MntTotal>
+          </Totales>
+        </Encabezado>
+        <Detalle>
+          <NroLinDet>1</NroLinDet>
+          <NmbItem/>
+          <QtyItem/>
+          <PrcItem>36051</PrcItem>
+          <MontoItem>42901</MontoItem>
+        </Detalle>
+        <TmstFirma>2024-12-16T13:27:53</TmstFirma>
+      </Documento>
+    </DTE>
+  </SetDTE>
+</EnvioBOLETA>
