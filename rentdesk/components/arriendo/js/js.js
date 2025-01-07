@@ -1,73 +1,80 @@
 $(document).ready(function () {
-
-	$('#descargarExcelArriendo').on('click', function (e) {
+	$('#descargarExcelPersonas').on('click', function (e) {
 		e.preventDefault();
 
-		// Capturamos los valores de los tres inputs
-		var codigoPropiedad = $('#codigo_propiedad').val();
-		var propietario = $('#Propietario').val();
-		var arrendatario = $('#Arrendatario').val();
+		// Tomamos los valores del input y del select múltiple
+		let codPropiedad = $('#cod_propiedad').val();
+
+		// Para select2 con multiple, podemos obtener el array de valores así:
+		let tiposSeleccionados = $('[name="tiposFiltro2[]"]').val() || [];
+		// Si no usas select2, ajusta la forma de leer el value múltiple.
 
 		$.ajax({
-			url: 'components/arriendo/models/get_arriendo_excel.php',
+			url: 'ruta/a/get_personas.php', // Ajusta la ruta a tu PHP
 			type: 'GET',
-			// Enviamos los tres parámetros
 			data: {
-				codigo_propiedad: codigoPropiedad,
-				propietario: propietario,
-				arrendatario: arrendatario,
+				cod_propiedad: codPropiedad,
+				tiposFiltro2: tiposSeleccionados,
 			},
 			dataType: 'json',
 			success: function (response) {
-				// 1) Transforma la respuesta para renombrar y ordenar columnas en el Excel
+				// 1) Validar si está vacío
+				if (!response || response.length === 0) {
+					Swal.fire({
+						icon: 'info',
+						title: 'No se encontraron resultados',
+						showConfirmButton: true,
+					});
+					return;
+				}
+
+				// 2) Construimos el array para Excel (renombrando columnas)
 				var formattedData = response.map(function (row) {
 					return {
-						'Propiedad ID': row.propiedad_id,
+						'ID Persona': row.id_persona,
+						'Nombre Completo': row.nombre_completo,
+						DNI: row.dni,
+						Correo: row.correo,
 						Dirección: row.direccion,
-						'Estado Propiedad': row.estado_propiedad,
-						Estado: row.estado,
-						Propietario: row.propietario,
-						Arrendatario: row.arrendatario,
-						Precio: row.precio,
+						'Tipo Cliente': row.tipo_cliente, // <= Aquí mostramos "Propietario, Arrendatario", etc.
 					};
 				});
 
-				// 2) Crear la hoja (worksheet) usando los datos formateados
+				// 3) Crear la hoja (worksheet) usando los datos formateados
 				var worksheet = XLSX.utils.json_to_sheet(formattedData);
 
-				// 3) Ajustar el ancho de columnas (opcional)
+				// 4) Ajustar ancho de columnas (opcional)
 				worksheet['!cols'] = [
-					{ wpx: 120 }, // Propiedad ID
-					{ wpx: 200 }, // Dirección
-					{ wpx: 150 }, // Estado Propiedad
-					{ wpx: 100 }, // Estado
-					{ wpx: 180 }, // Propietario
-					{ wpx: 180 }, // Arrendatario
-					{ wpx: 120 }, // Precio
+					{ wpx: 80 }, // ID
+					{ wpx: 200 }, // Nombre
+					{ wpx: 120 }, // DNI
+					{ wpx: 200 }, // Correo
+					{ wpx: 250 }, // Dirección
+					{ wpx: 150 }, // Tipo Cliente
 				];
 
-				// 4) Crear un nuevo libro de trabajo (workbook)
+				// 5) Crear un nuevo libro de trabajo (workbook)
 				var workbook = XLSX.utils.book_new();
-				XLSX.utils.book_append_sheet(workbook, worksheet, 'Arriendos');
+				XLSX.utils.book_append_sheet(workbook, worksheet, 'Personas');
 
-				// 5) Generar el archivo XLSX (binario / array)
+				// 6) Generar el archivo XLSX (binario / array)
 				var wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
 
-				// 6) Crear un Blob a partir del workbook
+				// 7) Crear un Blob a partir del workbook
 				var blob = new Blob([wbout], { type: 'application/octet-stream' });
 
-				// 7) Crear un objeto URL para la descarga
+				// 8) Crear un objeto URL para la descarga
 				var url = URL.createObjectURL(blob);
 
-				// 8) Crear un enlace temporal y forzar la descarga
+				// 9) Crear un enlace temporal y forzar la descarga
 				var a = document.createElement('a');
 				a.href = url;
-				a.download = 'arriendos.xlsx';
+				a.download = 'personas.xlsx';
 				document.body.appendChild(a);
 				a.click();
 				document.body.removeChild(a);
 
-				// 9) Liberar el objeto URL
+				// 10) Liberar el objeto URL
 				URL.revokeObjectURL(url);
 			},
 			error: function (xhr, status, error) {
@@ -75,7 +82,6 @@ $(document).ready(function () {
 			},
 		});
 	});
-
 
 	inicializarTablaArriendos();
 
@@ -167,7 +173,7 @@ $(document).ready(function () {
 
 	try {
 		document.getElementById('botonEliminaSeccion').style.display = 'none';
-	} catch (error) { }
+	} catch (error) {}
 	//botonEliminar.style.display = 'none';
 	onChangePersona();
 });
@@ -235,51 +241,64 @@ function salirArriendo() {
 
 function loadArriendo_List() {
 	$(document).ready(function () {
+		// Recuperar valores de los elementos del DOM de forma segura
+		var filtro_codigo_propiedad =
+			document.getElementById('codigo_propiedad')?.value.toUpperCase() ?? '';
+		var estadoPropiedad =
+			document.getElementById('estadoPropiedad')?.value.toUpperCase() ?? '';
+		var estadoContrato =
+			document.getElementById('estadoContrato')?.value.toUpperCase() ?? '';
+		var propietario =
+			document.getElementById('Propietario')?.value.toUpperCase() ?? '';
+		var Arrendatario =
+			document.getElementById('Arrendatario')?.value.toUpperCase() ?? '';
+		var tipoPropiedad =
+			document.getElementById('tipoPropiedad')?.value.toUpperCase() ?? '';
+		var FichaArriendo = document.getElementById('FichaArriendo')?.value ?? '';
 
-		// Recuperar valores de los elementos del DOM de forma segura    
-		var filtro_codigo_propiedad = document.getElementById("codigo_propiedad")?.value.toUpperCase() ?? '';
-		var estadoPropiedad = document.getElementById("estadoPropiedad")?.value.toUpperCase() ?? '';
-		var estadoContrato = document.getElementById("estadoContrato")?.value.toUpperCase() ?? '';
-		var propietario = document.getElementById("Propietario")?.value.toUpperCase() ?? '';
-		var Arrendatario = document.getElementById("Arrendatario")?.value.toUpperCase() ?? '';
-		var tipoPropiedad = document.getElementById("tipoPropiedad")?.value.toUpperCase() ?? '';
-		var FichaArriendo = document.getElementById("FichaArriendo")?.value ?? '';
+		// Guardar filtros en sessionStorage
+		sessionStorage.setItem('filtro_codigo_propiedad', filtro_codigo_propiedad);
+		sessionStorage.setItem('estadoPropiedad', estadoPropiedad);
+		sessionStorage.setItem('estadoContrato', estadoContrato);
+		sessionStorage.setItem('propietario', propietario);
+		sessionStorage.setItem('Arrendatario', Arrendatario);
+		sessionStorage.setItem('tipoPropiedad', tipoPropiedad);
 
-		// Guardar filtros en sessionStorage    
-		sessionStorage.setItem("filtro_codigo_propiedad", filtro_codigo_propiedad);
-		sessionStorage.setItem("estadoPropiedad", estadoPropiedad);
-		sessionStorage.setItem("estadoContrato", estadoContrato);
-		sessionStorage.setItem("propietario", propietario);
-		sessionStorage.setItem("Arrendatario", Arrendatario);
-		sessionStorage.setItem("tipoPropiedad", tipoPropiedad);
+		var ajaxUrl =
+			'components/arriendo/models/arriendo_list_procesa.php?' +
+			'activos=1' +
+			'&Propietario=' +
+			encodeURIComponent(propietario) +
+			'&tipoPropiedad=' +
+			encodeURIComponent(tipoPropiedad) +
+			'&Arrendatario=' +
+			encodeURIComponent(Arrendatario) +
+			'&estadoContrato=' +
+			encodeURIComponent(estadoContrato) +
+			'&estadoPropiedad=' +
+			encodeURIComponent(estadoPropiedad) +
+			'&FichaArriendo=' +
+			encodeURIComponent(FichaArriendo) +
+			'&codigo_propiedad=' +
+			encodeURIComponent(filtro_codigo_propiedad);
 
-		var ajaxUrl = "components/arriendo/models/arriendo_list_procesa.php?" +
-			"activos=1" +
-			"&Propietario=" + encodeURIComponent(propietario) +
-			"&tipoPropiedad=" + encodeURIComponent(tipoPropiedad) +
-			"&Arrendatario=" + encodeURIComponent(Arrendatario) +
-			"&estadoContrato=" + encodeURIComponent(estadoContrato) +
-			"&estadoPropiedad=" + encodeURIComponent(estadoPropiedad) +
-			"&FichaArriendo=" + encodeURIComponent(FichaArriendo) +
-			"&codigo_propiedad=" + encodeURIComponent(filtro_codigo_propiedad);
-
-		// Comprobar si la tabla ya ha sido inicializada    
+		// Comprobar si la tabla ya ha sido inicializada
 		if ($.fn.DataTable.isDataTable('#arriendos-activos')) {
 			var table = $('#arriendos-activos').DataTable();
 			table.ajax.url(ajaxUrl).load();
 		} else {
 			$('#arriendos-activos').DataTable({
-				"order": [[0, "desc"]],
-				"processing": true,
-				"serverSide": true,
-				"pageLength": 25,
+				order: [[0, 'desc']],
+				processing: true,
+				serverSide: true,
+				pageLength: 25,
 				columnDefs: [
 					{ orderable: false, targets: [0, 1, 2, 3, 4, 5, 6, 7] },
 					{
 						targets: [7], // Cambia este índice según la posición de tu columna de precio
 						render: function (data, type, row) {
-							if (!data || data === null || data === "0" || data === 0) {
-								return "$ 0"; // Manejar caso de valor nulo o vacío
+							if (!data || data === null || data === '0' || data === 0) {
+								return '$ 0'; // Manejar caso de valor nulo o vacío
 							}
 							// Asegurarse de que el valor no tenga comas ni símbolos antes de formatearlo
 							// let precioLimpio = parseFloat(data.toString().replace(/[$,.]/g, ''));
@@ -288,33 +307,35 @@ function loadArriendo_List() {
 							// 	return "$ 0";
 							// }
 							return data; // Usar la función formateoDivisa
-						}
-					}],
-				"ajax": {
-					"url": ajaxUrl,
-					"type": "POST",
-					"error": function (xhr, error, thrown) {
-						console.error("Error al cargar los datos:", error, thrown);
-					}
+						},
+					},
+				],
+				ajax: {
+					url: ajaxUrl,
+					type: 'POST',
+					error: function (xhr, error, thrown) {
+						console.error('Error al cargar los datos:', error, thrown);
+					},
 				},
-				"language": {
-					"lengthMenu": "Mostrar _MENU_ registros por página",
-					"zeroRecords": "No encontrado",
-					"info": "Mostrando página _PAGE_ de _PAGES_ (Total de registros: _MAX_)",
-					"infoEmpty": "Sin resultados",
-					"infoFiltered": " <strong>Total de registros filtrados: _TOTAL_ </strong>",
-					"loadingRecords": "Cargando...",
-					"search": "",
-					"processing": "Procesando...",
-					"paginate": {
-						"first": "Primero",
-						"last": "Último",
-						"next": "siguiente",
-						"previous": "anterior"
-					}
+				language: {
+					lengthMenu: 'Mostrar _MENU_ registros por página',
+					zeroRecords: 'No encontrado',
+					info: 'Mostrando página _PAGE_ de _PAGES_ (Total de registros: _MAX_)',
+					infoEmpty: 'Sin resultados',
+					infoFiltered:
+						' <strong>Total de registros filtrados: _TOTAL_ </strong>',
+					loadingRecords: 'Cargando...',
+					search: '',
+					processing: 'Procesando...',
+					paginate: {
+						first: 'Primero',
+						last: 'Último',
+						next: 'siguiente',
+						previous: 'anterior',
+					},
 				},
-				"drawCallback": function (settings) {
-					// Inicializar tooltips después de que la tabla se haya redibujado          
+				drawCallback: function (settings) {
+					// Inicializar tooltips después de que la tabla se haya redibujado
 					$('[data-bs-toggle="tooltip"]').tooltip();
 				},
 				dom: 'Bfrtip',
@@ -331,42 +352,43 @@ function loadArriendo_List() {
 									// Asegurarse de convertir cada dato a mayúsculas y limpiar links
 									let cleanData = $(node).text().toUpperCase();
 									return cleanData;
-								}
-							}
-						}
-					}
-				]
-
+								},
+							},
+						},
+					},
+				],
 			});
-			// Desactiva la búsqueda al presionar una tecla      
-			$("div.dataTables_filter input").unbind();
-			// Agrega el botón de búsqueda si no existe      
+			// Desactiva la búsqueda al presionar una tecla
+			$('div.dataTables_filter input').unbind();
+			// Agrega el botón de búsqueda si no existe
 			if (!$('#divbotonbuscar').length) {
-				$("<div id='divbotonbuscar'><button id='buscar' class='btn btn-light btn-buscar-tablas'>Buscar</button></div>").insertBefore('.dataTables_filter input');
+				$(
+					"<div id='divbotonbuscar'><button id='buscar' class='btn btn-light btn-buscar-tablas'>Buscar</button></div>"
+				).insertBefore('.dataTables_filter input');
 			}
-			$(".dataTables_filter").css("display", "none");
-			// Configura el evento de clic para el botón de búsqueda      
-			$('#buscar').off('click').on('click', function (e) {
-
-				loadArriendo_List();
-			});
+			$('.dataTables_filter').css('display', 'none');
+			// Configura el evento de clic para el botón de búsqueda
+			$('#buscar')
+				.off('click')
+				.on('click', function (e) {
+					loadArriendo_List();
+				});
 		}
 	});
 	// function formateoDivisa(valor) {
-	// 	// Convertir el valor a un número flotante para asegurar el formato  
+	// 	// Convertir el valor a un número flotante para asegurar el formato
 	// 	var numero = parseFloat(valor);
-	// 	// Verificar si el número es válido  
+	// 	// Verificar si el número es válido
 	// 	if (isNaN(numero)) {
 	// 		return "$ 0";
 	// 	}
-	// 	// Formatear el número con separador de miles y sin decimales  
+	// 	// Formatear el número con separador de miles y sin decimales
 	// 	return "$ " + numero.toLocaleString("es-CL", {
-	// 		minimumFractionDigits: 0, // Esto elimina los decimales      
-	// 		maximumFractionDigits: 0, // Esto elimina los decimales  
+	// 		minimumFractionDigits: 0, // Esto elimina los decimales
+	// 		maximumFractionDigits: 0, // Esto elimina los decimales
 	// 	});
 	// }
 }
-
 
 function generarExcel(urlbase) {
 	// Recuperar valores de los elementos del DOM de forma segura
@@ -404,35 +426,42 @@ function generarExcel(urlbase) {
 }
 
 function loadArriendo_List_Inactivos() {
-
 	$(document).ready(function () {
 		// Recuperar valores de los elementos del DOM de forma segura
-		var filtro_codigo_propiedad = document.getElementById("codigo_propiedad")?.value ?? '';
-		var estadoPropiedad = document.getElementById("estadoPropiedad")?.value ?? '';
+		var filtro_codigo_propiedad =
+			document.getElementById('codigo_propiedad')?.value ?? '';
+		var estadoPropiedad =
+			document.getElementById('estadoPropiedad')?.value ?? '';
 		//var estadoContrato = document.getElementById("estadoContrato")?.value ?? '';
-		var propietario = document.getElementById("propietario")?.value ?? '';
-		var Arrendatario = document.getElementById("Arrendatario")?.value ?? '';
-		var tipoPropiedad = document.getElementById("tipoPropiedad")?.value ?? '';
-		var FichaArriendo = document.getElementById("FichaArriendo")?.value ?? '';
+		var propietario = document.getElementById('propietario')?.value ?? '';
+		var Arrendatario = document.getElementById('Arrendatario')?.value ?? '';
+		var tipoPropiedad = document.getElementById('tipoPropiedad')?.value ?? '';
+		var FichaArriendo = document.getElementById('FichaArriendo')?.value ?? '';
 
 		// Guardar filtros en sessionStorage
-		sessionStorage.setItem("filtro_codigo_propiedad", filtro_codigo_propiedad);
-		sessionStorage.setItem("estadoPropiedad", estadoPropiedad);
+		sessionStorage.setItem('filtro_codigo_propiedad', filtro_codigo_propiedad);
+		sessionStorage.setItem('estadoPropiedad', estadoPropiedad);
 		//sessionStorage.setItem("estadoContrato", estadoContrato);
-		sessionStorage.setItem("propietario", propietario);
-		sessionStorage.setItem("Arrendatario", Arrendatario);
-		sessionStorage.setItem("tipoPropiedad", tipoPropiedad);
+		sessionStorage.setItem('propietario', propietario);
+		sessionStorage.setItem('Arrendatario', Arrendatario);
+		sessionStorage.setItem('tipoPropiedad', tipoPropiedad);
 
-		var ajaxUrl = "components/arriendo/models/arriendo_list_procesa.php?" +
-			"activos=2" +
-			"&Propietario=" + encodeURIComponent(propietario) +
-			"&tipoPropiedad=" + encodeURIComponent(tipoPropiedad) +
-			"&Arrendatario=" + encodeURIComponent(Arrendatario) +
+		var ajaxUrl =
+			'components/arriendo/models/arriendo_list_procesa.php?' +
+			'activos=2' +
+			'&Propietario=' +
+			encodeURIComponent(propietario) +
+			'&tipoPropiedad=' +
+			encodeURIComponent(tipoPropiedad) +
+			'&Arrendatario=' +
+			encodeURIComponent(Arrendatario) +
 			//"&estadoContrato=" + encodeURIComponent(estadoContrato) +
-			"&estadoPropiedad=" + encodeURIComponent(estadoPropiedad) +
-			"&codigo_propiedad=" + encodeURIComponent(filtro_codigo_propiedad) +
-			"&FichaArriendo=" + encodeURIComponent(FichaArriendo);
-
+			'&estadoPropiedad=' +
+			encodeURIComponent(estadoPropiedad) +
+			'&codigo_propiedad=' +
+			encodeURIComponent(filtro_codigo_propiedad) +
+			'&FichaArriendo=' +
+			encodeURIComponent(FichaArriendo);
 
 		// Comprobar si la tabla ya ha sido inicializada
 		if ($.fn.DataTable.isDataTable('#arriendos-inactivos')) {
@@ -440,18 +469,18 @@ function loadArriendo_List_Inactivos() {
 			table.ajax.url(ajaxUrl).load();
 		} else {
 			$('#arriendos-inactivos').DataTable({
-				"order": [[0, "desc"]],
-				"processing": true,
-				"serverSide": true,
-				"pageLength": 25,
-				"columnDefs": [
+				order: [[0, 'desc']],
+				processing: true,
+				serverSide: true,
+				pageLength: 25,
+				columnDefs: [
 					{ orderable: false, targets: [0, 1, 2, 3, 4, 5, 6] },
 					{ targets: 2, visible: false },
 					{
 						targets: [6], // Cambia este índice según la posición de tu columna de precio
 						render: function (data, type, row) {
-							if (!data || data === null || data === "0" || data === 0) {
-								return "$ 0"; // Manejar caso de valor nulo o vacío
+							if (!data || data === null || data === '0' || data === 0) {
+								return '$ 0'; // Manejar caso de valor nulo o vacío
 							}
 
 							// // Asegurarse de que el valor no tenga comas ni símbolos antes de formatearlo
@@ -463,34 +492,35 @@ function loadArriendo_List_Inactivos() {
 							// }
 
 							return data; // Usar la función formateoDivisa
-						}
-					}
+						},
+					},
 				],
 
-				"ajax": {
-					"url": ajaxUrl,
-					"type": "POST",
-					"error": function (xhr, error, thrown) {
-						console.error("Error al cargar los datos:", error, thrown);
-					}
+				ajax: {
+					url: ajaxUrl,
+					type: 'POST',
+					error: function (xhr, error, thrown) {
+						console.error('Error al cargar los datos:', error, thrown);
+					},
 				},
-				"language": {
-					"lengthMenu": "Mostrar _MENU_ registros por página",
-					"zeroRecords": "No encontrado",
-					"info": "Mostrando página _PAGE_ de _PAGES_ (Total de registros: _MAX_)",
-					"infoEmpty": "Sin resultados",
-					"infoFiltered": " <strong>Total de registros filtrados: _TOTAL_ </strong>",
-					"loadingRecords": "Cargando...",
-					"search": "",
-					"processing": "Procesando...",
-					"paginate": {
-						"first": "Primero",
-						"last": "Último",
-						"next": "siguiente",
-						"previous": "anterior"
-					}
+				language: {
+					lengthMenu: 'Mostrar _MENU_ registros por página',
+					zeroRecords: 'No encontrado',
+					info: 'Mostrando página _PAGE_ de _PAGES_ (Total de registros: _MAX_)',
+					infoEmpty: 'Sin resultados',
+					infoFiltered:
+						' <strong>Total de registros filtrados: _TOTAL_ </strong>',
+					loadingRecords: 'Cargando...',
+					search: '',
+					processing: 'Procesando...',
+					paginate: {
+						first: 'Primero',
+						last: 'Último',
+						next: 'siguiente',
+						previous: 'anterior',
+					},
 				},
-				"drawCallback": function (settings) {
+				drawCallback: function (settings) {
 					// Inicializar tooltips después de que la tabla se haya redibujado
 					$('[data-bs-toggle="tooltip"]').tooltip();
 				},
@@ -510,28 +540,31 @@ function loadArriendo_List_Inactivos() {
 									// Asegurarse de convertir cada dato a mayúsculas y limpiar links
 									let cleanData = $(node).text().toUpperCase();
 									return cleanData;
-								}
-							}
-
+								},
+							},
 						},
-					}
-				]
+					},
+				],
 			});
 
 			// Desactiva la búsqueda al presionar una tecla
-			$("div.dataTables_filter input").unbind();
+			$('div.dataTables_filter input').unbind();
 
 			// Agrega el botón de búsqueda si no existe
 			if (!$('#divbotonbuscar').length) {
-				$("<div id='divbotonbuscar'><button id='buscar' class='btn btn-light btn-buscar-tablas'>Buscar</button></div>").insertBefore('.dataTables_filter input');
+				$(
+					"<div id='divbotonbuscar'><button id='buscar' class='btn btn-light btn-buscar-tablas'>Buscar</button></div>"
+				).insertBefore('.dataTables_filter input');
 			}
 
-			$(".dataTables_filter").css("display", "none");
+			$('.dataTables_filter').css('display', 'none');
 
 			// Configura el evento de clic para el botón de búsqueda
-			$('#buscar').off('click').on('click', function (e) {
-				loadArriendo_List_Inactivos(); // Asegúrate de que llame a esta función
-			});
+			$('#buscar')
+				.off('click')
+				.on('click', function (e) {
+					loadArriendo_List_Inactivos(); // Asegúrate de que llame a esta función
+				});
 		}
 	});
 }
@@ -542,14 +575,17 @@ function formateoDivisa(valor) {
 
 	// Verificar si el número es válido
 	if (isNaN(numero)) {
-		return "$ 0";
+		return '$ 0';
 	}
 
 	// Formatear el número con separador de miles y sin decimales
-	return "$ " + numero.toLocaleString("es-CL", {
-		minimumFractionDigits: 0, // Esto elimina los decimales
-		maximumFractionDigits: 0, // Esto elimina los decimales
-	});
+	return (
+		'$ ' +
+		numero.toLocaleString('es-CL', {
+			minimumFractionDigits: 0, // Esto elimina los decimales
+			maximumFractionDigits: 0, // Esto elimina los decimales
+		})
+	);
 }
 
 //*********************   Limpia   **************************/
@@ -566,7 +602,7 @@ function limpiarFiltros() {
 	document.getElementById('FichaArriendo').value = '';
 
 	$('#FichaArriendo').val('');
-	$(".spinnerArrendatario").css("display", "none");
+	$('.spinnerArrendatario').css('display', 'none');
 
 	localStorage.clear();
 	document.location.href = 'index.php?component=arriendo&view=arriendo_list';
@@ -1692,7 +1728,7 @@ function buscarPropiedadAutocompleteGenerica(valor, tipo) {
 function ingresaBusqueda(elemento) {
 	ocultarAutocomplete('codigo_propiedad');
 	var codigo = $(elemento).attr('id');
-	
+
 	document.getElementById('codigo_propiedad').value = codigo;
 
 	$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
@@ -1755,15 +1791,12 @@ function ocultarAutocomplete(tipo) {
 /*Funciones de busqueda Personas (clientes)*/
 
 function buscarPersonaAutocomplete(valor, tipo) {
-
-
 	var codigo = document.getElementById(tipo).value;
 
 	var caracteres = codigo.length;
 	//Si por lo menos ha ingresado 3 caracteres comenzamos a autocompletar
 	if (caracteres >= 3) {
-
-		$(".spinnerArrendatario").css("display", "block");
+		$('.spinnerArrendatario').css('display', 'block');
 
 		$.ajax({
 			type: 'POST',
@@ -1778,16 +1811,14 @@ function buscarPersonaAutocomplete(valor, tipo) {
 					var primerValor = valorSugerido.split('|')[1].trim(); // Obtener el primer valor antes del '/'
 					$('#' + tipo).val(primerValor); // Llenar el campo con el valor sugerido
 					$('#suggestions_' + tipo).fadeOut(500); // Ocultar las sugerencias
-					$(".spinnerArrendatario").css("display", "none");
+					$('.spinnerArrendatario').css('display', 'none');
 					return false;
-
 				});
 			},
 		});
-
 	} else {
 		ocultarAutocomplete(tipo);
-		$(".spinnerArrendatario").css("display", "none");
+		$('.spinnerArrendatario').css('display', 'none');
 	}
 }
 
@@ -1867,22 +1898,26 @@ function cargarCheques() {
 					newRow.append(
 						`<td><div class="d-flex">
                       <label class="switch">
-                        <input name="desposito" class="form-check-input switchCheques" type="checkbox" role="switch" ${desposito} data-token="${item.token
+                        <input name="desposito" class="form-check-input switchCheques" type="checkbox" role="switch" ${desposito} data-token="${
+							item.token
 						}">
                         <span class="slider round"></span>
-                        <span class="switchText">${item.desposito ? 'Si' : 'No'
-						}</span>
+                        <span class="switchText">${
+													item.desposito ? 'Si' : 'No'
+												}</span>
                       </label>
                   </div></td>`
 					);
 					newRow.append(
 						`<td><div class="d-flex">
                       <label class="switch">
-                        <input name="cobrar" class="form-check-input switchCheques" type="checkbox" role="switch" ${cobrar} data-token="${item.token
+                        <input name="cobrar" class="form-check-input switchCheques" type="checkbox" role="switch" ${cobrar} data-token="${
+							item.token
 						}">
                         <span class="slider round"></span>
-                        <span class="switchText">${item.cobrar ? 'Si' : 'No'
-						}</span>
+                        <span class="switchText">${
+													item.cobrar ? 'Si' : 'No'
+												}</span>
                       </label>
                   </div></td>`
 					);
@@ -1890,23 +1925,32 @@ function cargarCheques() {
 					newRow.append(
 						`<td>
                       <div class='d-flex align-items-center' style='gap: .5rem;'>
-                        <a href="#" type="button" class="btn btn-secondary m-0" style="padding: .5rem;${item.comentario === '' ? 'visibility: hidden;' : ''
-						}"  aria-label="Info" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${item.comentario
+                        <a href="#" type="button" class="btn btn-secondary m-0" style="padding: .5rem;${
+													item.comentario === '' ? 'visibility: hidden;' : ''
+												}"  aria-label="Info" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${
+							item.comentario
 						}">
                           <i class="fa-solid fa-circle-info" style="font-size: .75rem;"></i>
                         </a>
-                        <a data-bs-toggle='modal' onclick='cargarChequesEditar(${item.id
-						}, ${item.monto}, "${item.razon}", ${item.banco
-						}, "${moment(item.fecha_cobro).format('YYYY-MM-DD')}", "${item.girador
-						}", ${item.numero_documento}, ${item.cantidad}, "${item.comentario
+                        <a data-bs-toggle='modal' onclick='cargarChequesEditar(${
+													item.id
+												}, ${item.monto}, "${item.razon}", ${
+							item.banco
+						}, "${moment(item.fecha_cobro).format('YYYY-MM-DD')}", "${
+							item.girador
+						}", ${item.numero_documento}, ${item.cantidad}, "${
+							item.comentario
 						}")' data-bs-target='#modalChequesEditar' type='button' class='btn btn-info m-0 d-flex align-items-center' style='padding: .5rem;' aria-label='Editar' title='Editar'>
                           <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i>
                         </a>
-                        <button onclick='eliminarCheques(${item.id}, ${item.monto
+                        <button onclick='eliminarCheques(${item.id}, ${
+							item.monto
 						}, "${item.razon}", ${item.banco}, "${moment(
 							item.fecha_cobro
-						).format('YYYY-MM-DD')}", "${item.girador}", ${item.numero_documento
-						}, ${item.cantidad
+						).format('YYYY-MM-DD')}", "${item.girador}", ${
+							item.numero_documento
+						}, ${
+							item.cantidad
 						})' type='button' class='btn btn-danger m-0 d-flex align-items-center' style='padding: .5rem;' title='Eliminar'>
                           <i class='fa-regular fa-trash-can' style='font-size: .75rem;'></i>
                         </button>
@@ -2127,12 +2171,12 @@ function cargarDocumentos() {
 					if (item.token_agrupador != previousId) {
 						newRow.append(
 							"<td><div class='d-flex align-items-center' style='gap: .5rem;'> <a data-bs-toggle='modal' data-bs-target='#modalTituloEditar' type='button' onclick='cargarTituloDocumentosEditar(\"" +
-							item.titulo +
-							'","' +
-							item.token_agrupador +
-							"\")' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='Editar' title='Editar'> <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i></a><label style='font-size: 1em; text-align: center; color: black;'>" +
-							item.titulo +
-							'</label></div></td>'
+								item.titulo +
+								'","' +
+								item.token_agrupador +
+								"\")' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='Editar' title='Editar'> <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i></a><label style='font-size: 1em; text-align: center; color: black;'>" +
+								item.titulo +
+								'</label></div></td>'
 						);
 						previousId = item.token_agrupador;
 					} else {
@@ -2141,8 +2185,8 @@ function cargarDocumentos() {
 					if (item.nombre_archivo != null && item.nombre_archivo != '') {
 						newRow.append(
 							"<td><i class='fa-solid fa-chevron-right'></i> " +
-							item.nombre_archivo +
-							'</td>'
+								item.nombre_archivo +
+								'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -2156,8 +2200,8 @@ function cargarDocumentos() {
 					) {
 						newRow.append(
 							'<td>' +
-							moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
-							'</td>'
+								moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
+								'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -2166,8 +2210,8 @@ function cargarDocumentos() {
 					//console.log(item.link);
 					newRow.append(
 						"<td><div class='d-flex' style='gap: .5rem;'><a href='" +
-						item.link +
-						"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
+							item.link +
+							"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
 					);
 					if (
 						item.fecha_ultima_actualizacion != null &&
@@ -2175,12 +2219,12 @@ function cargarDocumentos() {
 					) {
 						newRow.append(
 							'<td>' +
-							(item.fecha_ultima_actualizacion
-								? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
-								: '-') +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								(item.fecha_ultima_actualizacion
+									? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
+									: '-') +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -2489,19 +2533,15 @@ function resetearFieldsetDocumento() {
 
 //*****************************  SERVICIO Y PAGOS  ****************************************
 
-
-
 function guardaServicio() {
 	// Capturar valores de los campos
-	const tipoServicio = document.getElementById("TipoServicio").value;
-	const proveedor = document.getElementById("TipoProveedorServicio").value;
-	const numeroCliente = document.getElementById("numeroCliente").value;
+	const tipoServicio = document.getElementById('TipoServicio').value;
+	const proveedor = document.getElementById('TipoProveedorServicio').value;
+	const numeroCliente = document.getElementById('numeroCliente').value;
 
 	var url = window.location.href;
 	var parametros = new URL(url).searchParams;
 	var token_arrendatario = parametros.get('token');
-
-
 
 	// Validar campos requeridos
 	if (!tipoServicio) {
@@ -2526,7 +2566,7 @@ function guardaServicio() {
 		TipoServicio: tipoServicio,
 		TipoProveedorServicio: proveedor,
 		numeroCliente: numeroCliente,
-		token_arrendatario: token_arrendatario
+		token_arrendatario: token_arrendatario,
 	};
 
 	// Enviar datos con AJAX
@@ -2564,11 +2604,9 @@ function guardaServicio() {
 				text: 'No se pudo conectar con el servidor.',
 				icon: 'error',
 			});
-		}
+		},
 	});
 }
-
-
 
 function guardaSeguro() {
 	var formData = new FormData(document.getElementById('formulario'));
@@ -2813,7 +2851,6 @@ function buscaProveedor(tipo) {
 } //function enviarRentdesk
 
 function buscaProveedorEditar(tipo) {
-
 	var formData = new FormData(document.getElementById('formulario'));
 	var url = window.location.href;
 	var parametros = new URL(url).searchParams;
@@ -2821,7 +2858,8 @@ function buscaProveedorEditar(tipo) {
 	formData.append('token_arrendatario', parametros.get('token'));
 
 	if (tipo == 'basico') {
-		const TipoEditarServicio_input = document.getElementById('TipoEditarServicio');
+		const TipoEditarServicio_input =
+			document.getElementById('TipoEditarServicio');
 		var TipoServicioSeguro = TipoEditarServicio_input.value;
 		formData.append('TipoServicioEditar', TipoServicioSeguro);
 	}
@@ -2898,8 +2936,8 @@ function cargarServicios() {
 					if (item.tipo_moneda == 'UF') {
 						newRow.append(
 							"<td style='text-align: right; max-width:120px; width:120px;'>" +
-							item.monto +
-							'</td>'
+								item.monto +
+								'</td>'
 						);
 					} else {
 						var montoFormateado = item.monto.toLocaleString('es-CL', {
@@ -2908,8 +2946,8 @@ function cargarServicios() {
 						});
 						newRow.append(
 							"<td style='text-align: right; max-width:120px; width:120px;'>" +
-							montoFormateado +
-							'</td>'
+								montoFormateado +
+								'</td>'
 						);
 					}
 
@@ -2920,8 +2958,8 @@ function cargarServicios() {
 					);
 					newRow.append(
 						'<td>' +
-						moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
-						'</td>'
+							moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
+							'</td>'
 					);
 					if (
 						item.fecha_modificacion != null &&
@@ -2929,12 +2967,12 @@ function cargarServicios() {
 					) {
 						newRow.append(
 							'<td>' +
-							(item.fecha_modificacion
-								? moment(item.fecha_modificacion).format('DD-MM-YYYY')
-								: '-') +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' data-bs-title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								(item.fecha_modificacion
+									? moment(item.fecha_modificacion).format('DD-MM-YYYY')
+									: '-') +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' data-bs-title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3006,8 +3044,8 @@ function cargarSeguros() {
 					if (item.tipo_moneda == 'UF') {
 						newRow.append(
 							"<td style='text-align: right; max-width:120px; width:120px;'>" +
-							item.monto +
-							'</td>'
+								item.monto +
+								'</td>'
 						);
 					} else {
 						var montoFormateado = item.monto.toLocaleString('es-CL', {
@@ -3016,8 +3054,8 @@ function cargarSeguros() {
 						});
 						newRow.append(
 							"<td style='text-align: right; max-width:120px; width:120px;'>" +
-							montoFormateado +
-							'</td>'
+								montoFormateado +
+								'</td>'
 						);
 					}
 
@@ -3028,8 +3066,8 @@ function cargarSeguros() {
 					);
 					newRow.append(
 						'<td>' +
-						moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
-						'</td>'
+							moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
+							'</td>'
 					);
 					if (
 						item.fecha_modificacion != null &&
@@ -3037,12 +3075,12 @@ function cargarSeguros() {
 					) {
 						newRow.append(
 							'<td>' +
-							(item.fecha_modificacion
-								? moment(item.fecha_modificacion).format('DD-MM-YYYY')
-								: '-') +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								(item.fecha_modificacion
+									? moment(item.fecha_modificacion).format('DD-MM-YYYY')
+									: '-') +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3179,10 +3217,9 @@ function cargarServicioEditar(
 		id_proveedor,
 		id_tipo_servicio,
 		token,
-		numero_cliente
+		numero_cliente,
 	});
 }
-
 
 function cargarSeguroEditar(
 	idCheque,
@@ -3613,10 +3650,10 @@ function cargarInfoComentario() {
 					) {
 						newRow.append(
 							'<td>' +
-							formateoNulos(item.fecha_comentario) +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								formateoNulos(item.fecha_comentario) +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3794,7 +3831,11 @@ function cargarInfoArrendatario() {
 					var newRow = $('<tr>');
 					// Agregar celdas a la fila con los datos
 					newRow.append(
-						'<td><a href="index.php?component=persona&view=persona&token=' + item.token_persona + '" target="_blank">' + formateoNulos(item.dni) + '</a></td>'
+						'<td><a href="index.php?component=persona&view=persona&token=' +
+							item.token_persona +
+							'" target="_blank">' +
+							formateoNulos(item.dni) +
+							'</a></td>'
 					);
 
 					newRow.append(
@@ -3856,7 +3897,6 @@ function cargarInfoCuentaCorriente() {
 var ccMovimientosTable;
 
 function cargarCCMovimientos() {
-
 	var idFicha = $('#id_ficha').val();
 
 	// Si la tabla ya está inicializada, solo recarga los datos
@@ -3864,7 +3904,7 @@ function cargarCCMovimientos() {
 		ccMovimientosTable.ajax
 			.url(
 				'components/arriendo/models/listado_cc_movimientos.php?idFicha=' +
-				idFicha
+					idFicha
 			)
 			.load();
 		return;
@@ -3950,7 +3990,6 @@ function cargarCCMovimientos() {
 	});
 }
 
-
 function formateoDivisa(valor) {
 	// Convertir el valor a un número flotante para asegurar el formato
 	var numero = parseFloat(valor);
@@ -4014,7 +4053,6 @@ function cargarCCMovimientoSaldoActual() {
 		},
 	});
 }
-
 
 //FLAG
 function guardarCcCargo() {
@@ -4114,7 +4152,6 @@ function guardarCcCargo() {
 			Swal.fire('Atención', 'El pago no se registró', 'warning');
 		});
 }
-
 
 function GuardarAbonos() {
 	var formData = new FormData(document.getElementById('cc_pago_no_liquidable'));
@@ -5283,7 +5320,7 @@ function guardarGarantia(token, tipo) {
 	if (mensaje) {
 		$('.error-descuento-garantia').html(
 			"<strong><span style='color:#313131;'>Atención: </span></strong>" +
-			mensaje
+				mensaje
 		);
 		return; // Salir de la función si hay errores
 	}
@@ -5822,26 +5859,30 @@ function cargarCheques() {
 					newRow.append(`
 						<td>
 							<div class='d-flex align-items-center' style='gap: .5rem;'>
-								<a href="#" type="button" class="btn btn-secondary m-0" style="padding: .5rem; ${item.comentario === '' ? 'visibility: hidden;' : ''
-						}" 
-									aria-label="Info" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${item.comentario
-						}">
+								<a href="#" type="button" class="btn btn-secondary m-0" style="padding: .5rem; ${
+									item.comentario === '' ? 'visibility: hidden;' : ''
+								}" 
+									aria-label="Info" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${
+										item.comentario
+									}">
 									<i class="fa-solid fa-circle-info" style="font-size: .75rem;"></i>
 								</a>
-								<a data-bs-toggle='modal' onclick='cargarChequesEditar(${item.id
-						}, ${item.monto}, "${item.razon}", ${item.banco}, 
+								<a data-bs-toggle='modal' onclick='cargarChequesEditar(${
+									item.id
+								}, ${item.monto}, "${item.razon}", ${item.banco}, 
 									"${moment(item.fecha_cobro).format(
-							'YYYY-MM-DD'
-						)}", "${item.girador}", ${item.numero_documento}, ${item.cantidad}, 
+										'YYYY-MM-DD'
+									)}", "${item.girador}", ${item.numero_documento}, ${item.cantidad}, 
 									"${item.comentario}")' data-bs-target='#modalChequesEditar' type='button' 
 									class='btn btn-info m-0 d-flex align-items-center' style='padding: .5rem;' aria-label='Editar' title='Editar' ${disabled}>
 									<i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i>
 								</a>
-								<button onclick='eliminarCheques(${item.id
-						}, ${item.monto}, "${item.razon}", ${item.banco}, 
+								<button onclick='eliminarCheques(${
+									item.id
+								}, ${item.monto}, "${item.razon}", ${item.banco}, 
 									"${moment(item.fecha_cobro).format(
-							'YYYY-MM-DD'
-						)}", "${item.girador}", ${item.numero_documento}, ${item.cantidad})' 
+										'YYYY-MM-DD'
+									)}", "${item.girador}", ${item.numero_documento}, ${item.cantidad})' 
 									type='button' class='btn btn-danger m-0 d-flex align-items-center' style='padding: .5rem;' title='Eliminar' ${disabled}>
 									<i class='fa-regular fa-trash-can' style='font-size: .75rem;'></i>
 								</button>
@@ -5976,16 +6017,12 @@ function actualizarEstados(nombre, token, boolean) {
 
 // jhernandez funcion para listar los tipos de movimientos de cuentas corrientes cargos.
 function CargarSelectTipoMovimientosCC() {
-
-
-
 	// Realizar la solicitud AJAX
 	$.ajax({
 		url: 'components/arriendo/models/TipoMovimientos.php',
 		method: 'GET', // Método de la solicitud (puede ser GET o POST según sea necesario)
 		dataType: 'json', // Esperamos una respuesta en formato JSON
 		success: function (data) {
-
 			// Ordenar los datos por la descripción
 			data.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
 			// Si la solicitud es exitosa, llenamos el select con los datos
@@ -6013,7 +6050,6 @@ function CargarSelectTipoMovimientosCCAbono() {
 		method: 'GET', // Método de la solicitud (puede ser GET o POST según sea necesario)
 		dataType: 'json', // Esperamos una respuesta en formato JSON
 		success: function (data) {
-
 			// Ordenar los datos por la descripción
 			data.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
 
@@ -6028,7 +6064,7 @@ function CargarSelectTipoMovimientosCCAbono() {
 			});
 		},
 		error: function (xhr, status, error) {
-			// Manejo de errores	
+			// Manejo de errores
 			console.error('Error al obtener los datos: ', error);
 		},
 	});
@@ -6176,21 +6212,20 @@ function TipoFormularioAbonosMovimientos() {
 	}
 }
 
-
 function configurarSelectReajuste(tipoReajuste) {
-	$(".js-example-responsive").select2({
-		width: "100%",
-		placeholder: "Seleccione"
+	$('.js-example-responsive').select2({
+		width: '100%',
+		placeholder: 'Seleccione',
 	});
 
 	// Verifica si el tipo de reajuste es 'Sin reajuste' y deshabilita el campo de meses si es necesario
-	console.log("tipoReajuste inicio", tipoReajuste);
+	console.log('tipoReajuste inicio', tipoReajuste);
 	if (tipoReajuste === 'Sin reajuste') {
-		document.getElementById('CantidadReajuste').value = "";
+		document.getElementById('CantidadReajuste').value = '';
 		document.getElementById('CantidadReajuste').disabled = true;
 		document.getElementById('permiteReajusteNegativo').disabled = true;
 
-		$("#meses").val(null).trigger("change");
+		$('#meses').val(null).trigger('change');
 		document.getElementById('meses').disabled = true;
 	}
 }
@@ -6201,7 +6236,6 @@ $(document).ready(function () {
 	configurarSelectReajuste(tipoReajuste);
 });
 
-
 function habilitarFormSegunTipoDoc() {
 	var tipoServicio = $('#TipoServicio'); // Seleccionamos el elemento con jQuery
 	var tipoServiciosDiv = $('#tipo_servicios'); // Div relacionado con Plan, Fecha Inicio, Fecha Fin
@@ -6209,9 +6243,11 @@ function habilitarFormSegunTipoDoc() {
 	var montoDiv = $('#montoServicio').closest('.form-group'); // Seleccionamos el contenedor de Monto
 	var periocidadDiv = $('#periocidadServicio').closest('.form-group'); // Seleccionamos el contenedor de Periocidad
 
-	if (tipoServicio.length > 0) { // Verificamos que el elemento existe
+	if (tipoServicio.length > 0) {
+		// Verificamos que el elemento existe
 		var id = parseInt(tipoServicio.val()); // Obtenemos el valor como entero
-		if (id === 1 || id === 2 || id === 3) { // Agua, luz, gas
+		if (id === 1 || id === 2 || id === 3) {
+			// Agua, luz, gas
 			tipoServiciosDiv.addClass('d-none'); // Ocultar el div relacionado con servicios específicos
 			tipoMonedaDiv.addClass('d-none'); // Ocultar Tipo Moneda
 			montoDiv.addClass('d-none'); // Ocultar Monto
@@ -6227,7 +6263,6 @@ function habilitarFormSegunTipoDoc() {
 	}
 }
 
-
 // jhernandez
 function inicializarTablaArriendos() {
 	$.ajax({
@@ -6242,7 +6277,7 @@ function inicializarTablaArriendos() {
 			tbody.empty();
 
 			// Recorrer los datos con un foreach y construir las filas
-			morosos.forEach(item => {
+			morosos.forEach((item) => {
 				let deudaAlDia = `$${parseFloat(item.saldo).toLocaleString()}`; // Formatear como moneda
 
 				// Crear la fila
@@ -6266,14 +6301,13 @@ function inicializarTablaArriendos() {
 				info: true, // Mostrar información del estado de la tabla
 			});
 
-			console.log("Tabla inicializada con los datos:", morosos);
+			console.log('Tabla inicializada con los datos:', morosos);
 		},
 		error: function (xhr, status, error) {
 			alert('Error al obtener los datos: ' + error);
-		}
+		},
 	});
 }
-
 
 function LimpiarValorTipoMoneda() {
 	// limpia el campo precio al cambiar el tipo de moneda

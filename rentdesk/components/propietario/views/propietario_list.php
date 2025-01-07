@@ -1,13 +1,13 @@
 <script>
-   // loadPropietarios();
+    // loadPropietarios();
     //CargarListadoPropietarios();
 </script>
 
 <script type="text/javascript" charset="utf8" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.js"></script>
 <script>
-     $( document ).ready(function() {
-		loadPropietario_List();
-}); 
+    $(document).ready(function() {
+        loadPropietario_List();
+    });
 </script>
 <div id="header" class="header-page">
     <div>
@@ -56,25 +56,25 @@
     </div>
     <div class="row top-100">
         <div class="col p-0">
-                <fieldset class="form-group border p-3">
-                    <legend>
-                        <h5 class="mt-0" style="font-size:14px !important;margin-bottom:5px !important;">Criterios de Búsqueda</h5>
-                    </legend>
-                    <div class="row g-3">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label>Nombre</label>
-                                 <input type="text" class="form-control" id="nombre_propietario" name="nombre_propietario" value="" 
-                                placeholder="Nombre o Rut" 
-                                onblur="ocultarAutocomplete('nombre_propietario');" 
+            <fieldset class="form-group border p-3">
+                <legend>
+                    <h5 class="mt-0" style="font-size:14px !important;margin-bottom:5px !important;">Criterios de Búsqueda</h5>
+                </legend>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label>Nombre</label>
+                            <input type="text" class="form-control" id="nombre_propietario" name="nombre_propietario" value=""
+                                placeholder="Nombre o Rut"
+                                onblur="ocultarAutocomplete('nombre_propietario');"
                                 autocomplete='off' onkeyup='buscarPropietarioAutocompleteGenerica(this.value,"nombre_propietario");'>
-                                <div id='suggestions_nombre_propietario'  class="suggestionsAutoComplete"></div>
-                              </div>
+                            <div id='suggestions_nombre_propietario' class="suggestionsAutoComplete"></div>
                         </div>
+                    </div>
 
 
 
-                        <!--
+                    <!--
                         <div class="col-md-4">
                             <div class="form-group">
                                 <label> RUT/DNI</label>
@@ -89,43 +89,46 @@
                             </div>
                         </div>
                            -->
+                </div>
+                <div class="row g-3">
+                    <div class="col">
+                        <button type="button" class="btn btn-primary" onclick="loadPropietario_List()">Buscar</button>
                     </div>
-                    <div class="row g-3">
-                        <div class="col">
-                            <button type="button" class="btn btn-primary" onclick="loadPropietario_List()">Buscar</button>
-                        </div>
 
-                    </div>
-                </fieldset>
+                </div>
+            </fieldset>
 
 
         </div>
     </div>
-	
+
 
     <div class="card">
         <div class="card-body">
-           
 
-                <div class="table-responsive overflow-auto">
-                    <table id="propietarios" class="table table-striped" cellspacing="0" width="100%">
 
-                        <thead>
-                            <tr>
-                                <th>N°</th>
-                                <th>Nombre</th>
-                               <!-- <th>Tipo Documento</th> -->
-                                <th>Nro. Documento</th>
-                                <th>Tipo Persona</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-
-                    </table>
+            <div class="table-responsive overflow-auto">
+                <div class="col">
+                    <button id="descargarExcelPropietario" type="button" class="btn btn-outline-primary">Descargar Excel Completo</button>
                 </div>
-          
-              
-           
+                <table id="propietarios" class="table table-striped" cellspacing="0" width="100%">
+
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Nombre</th>
+                            <!-- <th>Tipo Documento</th> -->
+                            <th>Nro. Documento</th>
+                            <th>Tipo Persona</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+
+                </table>
+            </div>
+
+
+
         </div>
     </div>
 </div>

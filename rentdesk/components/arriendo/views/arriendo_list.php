@@ -188,14 +188,17 @@
             <button class="nav-link" id="pills-profile-tab" data-bs-toggle="pill" data-bs-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false" onclick="loadArriendo_List_Inactivos()">Inactivos</button>
         </li>
     </ul>
-    <div class="col">
-        <button id="descargarExcelArriendo" type="button" class="btn btn-secondary">Descargar Excel Completo</button>
-    </div>
+
     <div class="tab-content" id="nav-tabContent">
         <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="nav-home-tab">
             <div class="card">
                 <div class="card-body ">
                     <div class="table-responsive overflow-auto">
+
+                        <div class="col">
+                            <button id="descargarExcelArriendo" type="button" class="btn btn-outline-primary">Descargar Excel Completo</button>
+                        </div>
+
                         <table id="arriendos-activos" class="table table-striped" cellspacing="0" width="100%">
 
                             <thead>

@@ -150,6 +150,11 @@
         <div class="card-body">
 
             <div class="table-responsive overflow-auto">
+
+                <div class="col">
+                    <button id="descargarExcelPropiedad" type="button" class="btn btn-outline-primary mb-4">Descargar Excel Completo</button>
+                </div>
+
                 <table id="propiedades" class="table table-striped" cellspacing="0" width="100%">
 
                     <thead>
