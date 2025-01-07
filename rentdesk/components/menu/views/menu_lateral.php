@@ -12,8 +12,8 @@
  		<!-- <img src="images/icon-demo-user.jpg" alt="Fuenzalida"> -->
  		<div class="profile-card">
  			<div class="profile-info">
- 				<div class="avatar" style="width: 45px;height:45px;">
- 					<img src="images/avatar-profile.jpg" alt="Avatar">
+ 				<div class="avatar">
+ 					<i class="fa-solid fa-user"></i>
  				</div>
  				<div class="info">
  					<span style="font-weight: 700;"><?php echo "$current_usuario->nombres " . "$current_usuario->apellidoPaterno"  ?></span>
