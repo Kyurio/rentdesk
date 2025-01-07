@@ -7,9 +7,11 @@ include("../../../includes/sql_inyection.php");
 include("../../../configuration.php");
 include("../../../includes/funciones.php");
 include("../../../includes/services_util.php");
+
 $config        = new Config;
 $services   = new ServicesRestful;
 $url_services = $config->url_services;
+
 
 $id_propiedad = $_POST['idPropiedad'];
 $id_ejecutivo = $_POST['idEjecutivo'];
@@ -20,11 +22,11 @@ $repeticiones = $_POST['repeticionesRecordatorio'];
 $descripcion = $_POST['descripcionRecordatorio'];
 $frecuencia_recordatorio = $_POST['frecuenciaRecordatorio'];
 
-$query = "INSERT INTO propiedades.propiedad_recordatorios(id_propiedad, fecha_notificacion, ejecutivo, repeticiones, descripcion, id_ejecutivo, frecuencia_recordatorio) VALUES ($id_propiedad, '$fecha_notificacion', '$nombre_ejecutivo', $repeticiones, '$descripcion', $id_ejecutivo, '$frecuencia_recordatorio')";
+$query = "INSERT INTO propiedades.propiedad_recordatorios(id_propiedad, fecha_notificacion, ejecutivo, repeticiones, descripcion, id_ejecutivo, frecuencia_recordatorio) VALUES ($id_propiedad, '$fecha_notificacion', '$nombre_ejecutivo', $repeticiones, '$descripcion', '$id_ejecutivo', '$frecuencia_recordatorio')";
 $dataCab = array("consulta" => $query);
 $resultadoCab = $services->sendPostNoToken($url_services . '/util/dml', $dataCab, []);
 
-// echo $query;
+
 
 if ($resultadoCab) {
     echo true;
