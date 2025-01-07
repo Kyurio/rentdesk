@@ -130,8 +130,6 @@ $version_app = $config->version_app;
 
   <!-- bruno -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
 
 
 
