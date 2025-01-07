@@ -7895,6 +7895,7 @@ function CargarSelectTipoMovimientosCCAbono() {
 }
 
 function ListadoNotificaciones() {
+	// llena la tabla recordatiros
     const ficha_tecnica = document.getElementById('ficha_tecnica_id').value;
     const tablaId = '#ListadoRecordatiorios';
     const urlBase = 'components/propiedad/models/ListadoNotificaciones.php';
