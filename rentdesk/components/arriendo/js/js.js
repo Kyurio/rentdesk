@@ -1,20 +1,24 @@
 $(document).ready(function () {
-	$('#descargarExcelPersonas').on('click', function (e) {
+	//BRUNO TORRES
+	$('#descargarExcelArriendo').on('click', function (e) {
 		e.preventDefault();
 
-		// Tomamos los valores del input y del select múltiple
-		let codPropiedad = $('#cod_propiedad').val();
-
-		// Para select2 con multiple, podemos obtener el array de valores así:
-		let tiposSeleccionados = $('[name="tiposFiltro2[]"]').val() || [];
-		// Si no usas select2, ajusta la forma de leer el value múltiple.
+		// Capturamos los valores de los tres inputs
+		let codigoPropiedad = $('#codigo_propiedad').val();
+		let propietario = $('#Propietario').val();
+		let arrendatario = $('#Arrendatario').val();
+		let codigo_arriendo = $('#FichaArriendo').val();
 
 		$.ajax({
-			url: 'ruta/a/get_personas.php', // Ajusta la ruta a tu PHP
+			url: 'components/arriendo/models/get_arriendo_excel.php',
 			type: 'GET',
+			// Enviamos los tres parámetros
 			data: {
-				cod_propiedad: codPropiedad,
-				tiposFiltro2: tiposSeleccionados,
+				codigo_arriendo: codigo_arriendo,
+				codigo_propiedad: codigoPropiedad,
+				propietario: propietario,
+				arrendatario: arrendatario,
+				codigo_arriendo: codigo_arriendo,
 			},
 			dataType: 'json',
 			success: function (response) {
@@ -22,59 +26,63 @@ $(document).ready(function () {
 				if (!response || response.length === 0) {
 					Swal.fire({
 						icon: 'info',
-						title: 'No se encontraron resultados',
+						title: 'No se encontró ningún arriendo',
 						showConfirmButton: true,
 					});
-					return;
+					return; // Terminamos la ejecución de la función
 				}
 
-				// 2) Construimos el array para Excel (renombrando columnas)
+				// 1) Transforma la respuesta para renombrar y ordenar columnas en el Excel
 				var formattedData = response.map(function (row) {
 					return {
-						'ID Persona': row.id_persona,
-						'Nombre Completo': row.nombre_completo,
-						DNI: row.dni,
-						Correo: row.correo,
+						'Ficha Técnica': row.id_arriendo,
+						'Propiedad ID': row.propiedad_id,
 						Dirección: row.direccion,
-						'Tipo Cliente': row.tipo_cliente, // <= Aquí mostramos "Propietario, Arrendatario", etc.
+						'Estado Propiedad': row.estado_propiedad,
+						Estado: row.estado,
+						Propietario: row.propietario,
+						Arrendatario: row.arrendatario,
+						Precio: row.precio,
 					};
 				});
 
-				// 3) Crear la hoja (worksheet) usando los datos formateados
+				// 2) Crear la hoja (worksheet) usando los datos formateados
 				var worksheet = XLSX.utils.json_to_sheet(formattedData);
 
-				// 4) Ajustar ancho de columnas (opcional)
+				// 3) Ajustar el ancho de columnas (opcional)
 				worksheet['!cols'] = [
-					{ wpx: 80 }, // ID
-					{ wpx: 200 }, // Nombre
-					{ wpx: 120 }, // DNI
-					{ wpx: 200 }, // Correo
-					{ wpx: 250 }, // Dirección
-					{ wpx: 150 }, // Tipo Cliente
+					{ wpx: 120 }, // Arriendo ID
+					{ wpx: 120 }, // Propiedad Codigo
+					{ wpx: 200 }, // Dirección
+					{ wpx: 150 }, // Estado Propiedad
+					{ wpx: 100 }, // Estado
+					{ wpx: 180 }, // Propietario
+					{ wpx: 180 }, // Arrendatario
+					{ wpx: 120 }, // Precio
 				];
 
-				// 5) Crear un nuevo libro de trabajo (workbook)
+				// 4) Crear un nuevo libro de trabajo (workbook)
 				var workbook = XLSX.utils.book_new();
-				XLSX.utils.book_append_sheet(workbook, worksheet, 'Personas');
+				XLSX.utils.book_append_sheet(workbook, worksheet, 'Arriendos');
 
-				// 6) Generar el archivo XLSX (binario / array)
+				// 5) Generar el archivo XLSX (binario / array)
 				var wbout = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
 
-				// 7) Crear un Blob a partir del workbook
+				// 6) Crear un Blob a partir del workbook
 				var blob = new Blob([wbout], { type: 'application/octet-stream' });
 
-				// 8) Crear un objeto URL para la descarga
+				// 7) Crear un objeto URL para la descarga
 				var url = URL.createObjectURL(blob);
 
-				// 9) Crear un enlace temporal y forzar la descarga
+				// 8) Crear un enlace temporal y forzar la descarga
 				var a = document.createElement('a');
 				a.href = url;
-				a.download = 'personas.xlsx';
+				a.download = 'arriendos.xlsx';
 				document.body.appendChild(a);
 				a.click();
 				document.body.removeChild(a);
 
-				// 10) Liberar el objeto URL
+				// 9) Liberar el objeto URL
 				URL.revokeObjectURL(url);
 			},
 			error: function (xhr, status, error) {
