@@ -31,6 +31,7 @@ $(document).ready(function () {
 		var formData = new FormData(formElement);
 		var nombreEjecutivo = $('#nombreEjecutivo').val().trim();
 		formData.append('nombreEjecutivo', nombreEjecutivo);
+		console.log('formData:', formData);
 
 		$.ajax({
 			url: 'components/propiedad/models/insert_recordatorio.php',
@@ -7908,6 +7909,7 @@ function CargarSelectTipoMovimientosCCAbono() {
 	});
 }
 
+//bruno
 function ListadoNotificaciones() {
 	const ficha_tecnica = document.getElementById('ficha_tecnica_id').value;
 	const tablaId = '#ListadoRecordatiorios';
@@ -7925,26 +7927,34 @@ function ListadoNotificaciones() {
 			},
 		},
 		columns: [
-			{ data: 'fecha_notificacion' },
-			{ data: 'repeticiones' },
+			{
+				data: 'fecha_notificacion',
+				render: function (data, type, row) {
+					if (!data) return '';
+					const dateParts = data.split('-');
+					if (dateParts.length === 3) {
+						const [year, month, day] = dateParts;
+						return `${day}-${month}-${year}`;
+					}
+					return data;
+				},
+			},
+			{ data: 'tipo_recordatorio' },
 			{ data: 'descripcion' },
 			{ data: 'ejecutivo' },
-			{ data: 'frecuencia_recordatorio' },
 			{
-				// Columna de acciones
-				data: null, // no necesitamos una propiedad específica de row
-				orderable: false, // para que no intente ordenar esta columna
+				data: null,
+				orderable: false,
 				render: function (data, type, row) {
-					// Asumiendo que en el JSON viene un campo 'id_recordatorio' para identificar el registro
 					const id = row.id;
 					return `
-                        <button 
-                            class="btn btn-danger btn-sm"
-                            onclick="eliminarRecordatorio(${id})"
-                        >
-                            <i class="fa-solid fa-trash py-1"></i>
-                        </button>
-                    `;
+						<button 
+							class="btn btn-danger btn-sm"
+							onclick="eliminarRecordatorio(${id})"
+						>
+							<i class="fa-solid fa-trash py-1"></i>
+						</button>
+					`;
 				},
 			},
 		],

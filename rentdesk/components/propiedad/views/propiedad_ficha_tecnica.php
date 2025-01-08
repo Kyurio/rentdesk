@@ -1468,7 +1468,6 @@
 															<th>Tipo</th>
 															<th>Descripción</th>
 															<th>Ejecutivo</th>
-															<th>Realizado</th>
 															<th>Acciones</th>
 														</tr>
 													</thead>

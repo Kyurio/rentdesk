@@ -33,7 +33,8 @@ $dataToInsert = [
     'fecha_notificacion' => $fecha_notificacion,
     'ejecutivo'          => $nombre_ejecutivo,
     'descripcion'        => $descripcion,
-    'id_ejecutivo'       => $id_ejecutivo
+    'id_ejecutivo'       => $id_ejecutivo,
+    'tipo_recordatorio'   => $tipo_recordatorio
 ];
 
 // 4) Llamamos a insert en nuestro QueryBuilder
