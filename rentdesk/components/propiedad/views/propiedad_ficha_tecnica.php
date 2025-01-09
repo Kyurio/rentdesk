@@ -1468,15 +1468,12 @@
 															<th>Tipo</th>
 															<th>Descripción</th>
 															<th>Ejecutivo</th>
-															<th>Realizado</th>
-															<!-- <th>Acciones</th> -->
+															<th>Acciones</th>
 														</tr>
 													</thead>
 													<tbody>
 
 													</tbody>
-
-
 												</table>
 											</div>
 										</div>
@@ -1818,23 +1815,7 @@
 							</div>
 						</div>
 
-						<div class="row mb-3">
-							<div class="col-md-6">
-								<label for="frecuenciaRecordatorio" class="form-label">
-									<span class="obligatorio">*</span> Frecuencia Recordatorio
-								</label>
-								<select class="form-control" id="frecuenciaRecordatorio" name="frecuenciaRecordatorio" required>
-									<option value="">Selecciona una frecuencia</option>
-									<option value="DIARIAMENTE">Diariamente</option>
-									<option value="SEMANALMENTE">Semanalmente</option>
-								</select>
 
-							</div>
-							<div class="col-md-6">
-								<label for="repeticionesRecordatorio" class="form-label">Repetir</label>
-								<input type="text" class="form-control" id="repeticionesRecordatorio" name="repeticionesRecordatorio" placeholder="0" required>
-							</div>
-						</div>
 
 						<div class="row mb-3">
 							<div class="col-md-6">
@@ -2027,7 +2008,7 @@
 						<div class="row">
 							<div class="col mb-3">
 								<label for="ccTipoMovimientoAbono" class="form-label"><span class="obligatorio">*</span> Tipo Movimiento</label>
-								<select class="form-select form-select-sm"  name="ccTipoMovimientoAbono" id="ccTipoMovimientoAbono">
+								<select class="form-select form-select-sm" name="ccTipoMovimientoAbono" id="ccTipoMovimientoAbono">
 								</select>
 							</div>
 						</div>
@@ -2097,7 +2078,7 @@
 
 							<div class="col mb-3">
 								<label for="ccTipoMovimiento" class="form-label"><span class="obligatorio">*</span> Tipo Movimiento</label>
-								<select class="form-select form-select-sm"  name="ccTipoMovimiento" id="ccTipoMovimiento">
+								<select class="form-select form-select-sm" name="ccTipoMovimiento" id="ccTipoMovimiento">
 								</select>
 							</div>
 

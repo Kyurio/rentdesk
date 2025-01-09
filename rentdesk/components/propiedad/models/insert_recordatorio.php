@@ -1,35 +1,53 @@
 <?php
 
-// ************** bruno ****************
-
 session_start();
+
+// Asegúrate de cargar tu QueryBuilder y la configuración necesaria
+require "../../../app/model/QuerysBuilder.php"; // <-- Ajusta la ruta
+use app\database\QueryBuilder;
+
 include("../../../includes/sql_inyection.php");
 include("../../../configuration.php");
 include("../../../includes/funciones.php");
 include("../../../includes/services_util.php");
 
-$config        = new Config;
-$services   = new ServicesRestful;
+// Instanciamos la configuración si la necesitas
+$config       = new Config;
+$services     = new ServicesRestful;
 $url_services = $config->url_services;
 
+// 1) Recuperamos los datos del formulario (POST)
+$id_propiedad        = $_POST['idPropiedad'];
+$id_ejecutivo        = $_POST['idEjecutivo'];
+$tipo_recordatorio   = $_POST['tipoRecordatorio'];
+$nombre_ejecutivo    = $_POST['nombreEjecutivo'];
+$fecha_notificacion  = $_POST['fechaNotificacion'];
+$descripcion         = $_POST['descripcionRecordatorio'];
 
-$id_propiedad = $_POST['idPropiedad'];
-$id_ejecutivo = $_POST['idEjecutivo'];
-$tipo_recordatorio = $_POST['tipoRecordatorio'];
-$nombre_ejecutivo = $_POST['nombreEjecutivo'];
-$fecha_notificacion = $_POST['fechaNotificacion'];
-$repeticiones = $_POST['repeticionesRecordatorio'];
-$descripcion = $_POST['descripcionRecordatorio'];
-$frecuencia_recordatorio = $_POST['frecuenciaRecordatorio'];
+// 2) Instanciamos el QueryBuilder
+$QueryBuilder = new QueryBuilder();
 
-$query = "INSERT INTO propiedades.propiedad_recordatorios(id_propiedad, fecha_notificacion, ejecutivo, repeticiones, descripcion, id_ejecutivo, frecuencia_recordatorio) VALUES ($id_propiedad, '$fecha_notificacion', '$nombre_ejecutivo', $repeticiones, '$descripcion', '$id_ejecutivo', '$frecuencia_recordatorio')";
-$dataCab = array("consulta" => $query);
-$resultadoCab = $services->sendPostNoToken($url_services . '/util/dml', $dataCab, []);
+// 3) Creamos un array con la información a insertar
+$dataToInsert = [
+    'id_propiedad'       => $id_propiedad,
+    'fecha_notificacion' => $fecha_notificacion,
+    'ejecutivo'          => $nombre_ejecutivo,
+    'descripcion'        => $descripcion,
+    'id_ejecutivo'       => $id_ejecutivo,
+    'tipo_recordatorio'   => $tipo_recordatorio
+];
 
+// 4) Llamamos a insert en nuestro QueryBuilder
+try {
+    $insertResult = $QueryBuilder->insert('propiedades.propiedad_recordatorios', $dataToInsert);
 
-
-if ($resultadoCab) {
-    echo true;
-} else {
+    // 5) Verificamos el resultado 
+    if ($insertResult) {
+        echo true;
+    } else {
+        echo false;
+    }
+} catch (Exception $e) {
+    // Manejo de errores en caso de excepciones
     echo false;
 }
