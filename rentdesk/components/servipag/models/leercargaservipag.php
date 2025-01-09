@@ -12,59 +12,45 @@ use app\database\QueryBuilder;
 $QueryBuilder = new QueryBuilder();
 $config = new Config();
 
-// Definir columnas
+$table = 'propiedades.ficha_arriendo fa';
+
 $columns = "
-
-    fa.id_propiedad,
-    fa.id AS ficha_arriendo,
-    fa.id_propiedad,
-    fa.id as ficha_arriendo,
-    fa.token as token,
-    fa.token as rut,
-
+    se.rut_cliente AS rut,
+    fa.id_propiedad AS ficha_arriendo,
+    fa.id AS id_arriendo,
     UPPER(
         CONCAT(
-            COALESCE(CONCAT(pro.direccion, ' ', pro.numero), ''), 
-            CASE 
-                WHEN pro.numero_depto IS NOT NULL AND pro.numero_depto <> '' THEN CONCAT(' Dpto ', pro.numero_depto) 
-                ELSE '' 
-            END, 
-            CASE 
-                WHEN pro.piso IS NOT NULL AND pro.piso <> 0 THEN CONCAT(' Piso ', pro.piso) 
-                ELSE '' 
-            END
+            COALESCE(CONCAT(pro.direccion, ' ', pro.numero), ''),
+            CONCAT(
+                CASE 
+                    WHEN pro.numero_depto IS NOT NULL AND pro.numero_depto <> '' 
+                    THEN CONCAT(' Dpto ', pro.numero_depto) 
+                    ELSE '' 
+                END, 
+                CASE 
+                    WHEN pro.piso IS NOT NULL AND pro.piso <> 0 
+                    THEN CONCAT(' Piso ', pro.piso) 
+                    ELSE '' 
+                END
+            )
         )
     ) AS direccion,
-    fa.precio,
-    (
-        SELECT ROUND(valor, 0) 
-        FROM propiedades.indicadores 
-        WHERE fecha = se.fecha_pago
-    ) AS valor_indicador,
+    fa.precio AS arriendo,
+    (SELECT ROUND(valor, 0) FROM propiedades.indicadores WHERE fecha = se.fecha_pago) AS indicador_valor,
     CASE fa.id_moneda_precio
-        WHEN 3 THEN ROUND(fa.precio * (
-            SELECT ROUND(valor, 0) 
-            FROM propiedades.indicadores 
-            WHERE fecha = se.fecha_pago
-        ), 0)
+        WHEN 3 THEN ROUND((fa.precio * (SELECT ROUND(valor, 0) FROM propiedades.indicadores WHERE fecha = se.fecha_pago)), 0)
         ELSE fa.precio
-    END AS Valor_arriendo,
-    se.monto AS Monto_Pagado,
+    END AS valor_arriendo,
+    se.monto AS monto_pagado,
     CASE fa.id_moneda_precio
-        WHEN 3 THEN (
-            se.monto - ROUND(fa.precio * (
-                SELECT ROUND(valor, 0) 
-                FROM propiedades.indicadores 
-                WHERE fecha = se.fecha_pago
-            ), 0)
-        )
+        WHEN 3 THEN (se.monto - ROUND((fa.precio * (SELECT ROUND(valor, 0) FROM propiedades.indicadores WHERE fecha = se.fecha_pago)), 0))
         ELSE (se.monto - fa.precio)
-    END AS Diferencia,
-    fa.id_moneda_precio AS Tipo_moneda,
-    se.fecha_pago
+    END AS diferencia,
+    fa.id_moneda_precio AS tipo_moneda,
+    se.fecha_pago,
+    ec.estado_contrato AS estado
 ";
 
-// Definir joins
 $joins = [
     [
         'type' => 'INNER',
@@ -75,24 +61,30 @@ $joins = [
         'type' => 'INNER',
         'table' => 'propiedades.propiedad pro',
         'on' => 'pro.id = fa.id_propiedad'
+    ],
+    [
+        'type' => 'INNER',
+        'table' => 'propiedades.tp_estado_contrato ec',
+        'on' => 'ec.idestado_contrato = fa.id_estado_contrato'
     ]
 ];
 
-// Llamar a la función selectAdvanced
+$conditions = [
+    'id_estado_contrato' => ['=', 1]
+];
+
+$orderBy = 'se.rut_cliente';
+
 $data = $QueryBuilder->selectAdvanced(
-    'propiedades.ficha_arriendo fa', // Tabla principal con alias
-    $columns,                       // Columnas
-    $joins,                         // Joins
-    [],                             // Condiciones
-    '',                             // Group By
-    'se.rut_cliente',               // Order By
-    null,                           // Límite
-    false,                          // isCount
-    false                           // Debug
+    $table,
+    $columns,
+    $joins,
+    $conditions,
+    '',
+    $orderBy
 );
+
 
 // Retornar los datos como JSON
 header('Content-Type: application/json');
 echo json_encode($data);
-
-?>

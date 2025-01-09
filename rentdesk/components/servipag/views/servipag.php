@@ -39,7 +39,6 @@
                         <td>fecha pago</td>
                         <td>Arriendo</td>
                         <td>Monto Pagado</td>
-                        <td>UF a PESOS</td>
                         <td>Diferencia</td>
                         <td>procesar</td>
                     </tr>

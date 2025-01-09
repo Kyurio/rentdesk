@@ -6,17 +6,6 @@ function formatoMonedaChile(valor) {
     }).format(valor);
 }
 
-// Función para dar formato dependiendo del tipo de moneda
-function FormatoSegunTipo(tipoMoneda, valor) {
-    if (tipoMoneda === 3) {
-        // Si es UF, no aplicar formato de moneda
-        return "UF " + valor; // Puedes decidir cómo mostrarlo, por ejemplo, solo con 2 decimales o sin formato
-    } else {
-        // Si no es UF, aplicar formato de moneda
-        return formatoMonedaChile(valor);
-    }
-}
-
 // Función para formatear la fecha en el formato día/mes/año
 function formatoFecha(fecha) {
     const opciones = { day: '2-digit', month: '2-digit', year: 'numeric' };
@@ -45,10 +34,10 @@ function LeerServipag() {
                         <td><a href="index.php?component=arriendo&view=arriendo_ficha_tecnica&token=${item.token}" target="_blank"> ${item.ficha_arriendo}</a> ${item.direccion}</td>
                         <td>${item.estado}</td>
                         <td>${formatoFecha(item.fecha_pago)}</td>
-                        <td>${FormatoSegunTipo(item.tipo_moneda, item.precio)}</td>
+                        <td>${formatoMonedaChile(item.valor_arriendo)}</td>
                         <td>${formatoMonedaChile(item.monto_pagado)}</td>
-                        <td>${formatoMonedaChile(item.valor_ajustado)}</td>
                         <td>${formatoMonedaChile(item.diferencia)}</td>
+              
                         <td>          
 
                             <div class="d-flex">
