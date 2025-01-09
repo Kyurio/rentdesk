@@ -253,7 +253,7 @@ if ($existe == 1) {
     }
 
     if ($component == "servipag") {
-        echo "<script>alert('llego')</script>";
+        
         include("components/servipag/servipag.php");
     }
 

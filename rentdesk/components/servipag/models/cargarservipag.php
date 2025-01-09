@@ -1,9 +1,7 @@
 <?php
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
 
 include("../../../app/model/QuerysBuilder.php");
 include("../../../configuration.php");
@@ -13,18 +11,14 @@ use app\database\QueryBuilder;
 $QueryBuilder = new QueryBuilder();
 $config = new Config();
 
-
-$data = [];
-
-function formatearRut($rut)
-{
-    $rut = preg_replace('/[^0-9kK]/', '', $rut); // Eliminar cualquier carácter que no sea número o 'K'
-    $cuerpo = ltrim(substr($rut, 0, -1), '0');  // Parte numérica sin ceros a la izquierda
-    $dv = substr($rut, -1);                     // Dígito verificador
-
-    // Agregar el guion y retornar el RUT formateado
+function formatearRut($rut) {
+    $rut = preg_replace('/[^0-9kK]/', '', $rut);
+    $cuerpo = ltrim(substr($rut, 0, -1), '0');
+    $dv = substr($rut, -1);
     return $cuerpo . '-' . strtoupper($dv);
 }
+
+$response = ["success" => false, "message" => ""];
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['file'])) {
     $file = $_FILES['file']['tmp_name'];
@@ -53,20 +47,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['file'])) {
                 'procesado' => 0
             ];
 
-
-            // Insertar el registro en la tabla
             try {
                 $result = $QueryBuilder->insert('propiedades.servipag', $data);
-                if ($result) {
-                    echo true;
-                }  // Para ver si el resultado es exitoso
+                if (!$result) {
+                    throw new Exception("Error al insertar datos.");
+                }
             } catch (Exception $e) {
-                echo "Error: " . $e->getMessage();
+                $response["message"] = $e->getMessage();
+                echo json_encode($response);
+                exit;
             }
-
         }
         fclose($handle);
+        $response["success"] = true;
+        $response["message"] = "Archivo procesado con éxito.";
+    } else {
+        $response["message"] = "Error al abrir el archivo.";
     }
+} else {
+    $response["message"] = "No se recibió un archivo válido.";
 }
 
-?>
+echo json_encode($response);
