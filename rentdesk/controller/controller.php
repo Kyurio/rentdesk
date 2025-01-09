@@ -252,5 +252,11 @@ if ($existe == 1) {
         include("components/ctacontables/ctacontables.php");
     }
 
+    if ($component == "servipag") {
+        
+        include("components/servipag/servipag.php");
+    }
+
+
 
 } // Fin $existe == 1
