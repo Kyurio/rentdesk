@@ -8329,11 +8329,18 @@ function formatearDinero(monto) {
 document.addEventListener('DOMContentLoaded', function () {
 	const tipoRetencion = document.getElementById('tipo_retencion');
 	const fechasContainer = document.getElementById('fechasContainer');
+	const razonContainer = document.getElementById('razonContainer');
 	const montoInput = document.getElementById('monto_total');
 
 	tipoRetencion.addEventListener('change', function () {
-		fechasContainer.style.display =
-			tipoRetencion.value === '2' ? 'flex' : 'none';
+		// fechasContainer.style.display =
+		// 	tipoRetencion.value === '2' ? 'flex' : 'none';
+		if (tipoRetencion.value === '2') {
+			fechasContainer.style.display = 'flex';
+		} else if (tipoRetencion.value === '3') {
+			fechasContainer.style.display = 'flex';
+			razonContainer.style.display = 'flex';
+		}
 	});
 
 	document

@@ -749,6 +749,15 @@
 										</div>
 									</div>
 
+
+									<div id="razonContainer" class="row mb-2" style="display: none;">
+
+										<div class="col">
+											<label for="razonRetencion" class="form-label">Razón Retencion</label>
+											<input type="text" class="form-control" id="razonRetencion" />
+										</div>
+									</div>
+
 									<div class="d-flex justify-content-between">
 
 										<button type="button" class="m-3 ms-0 btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
