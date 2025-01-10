@@ -728,6 +728,7 @@
 										<select class="form-select form-select-sm" id="tipo_retencion" required>
 											<option value="1">Monto Total a Retener</option>
 											<option value="2">Retener en Cuotas</option>
+											<option value="3">Retener el 100%</option>
 										</select>
 									</div>
 
