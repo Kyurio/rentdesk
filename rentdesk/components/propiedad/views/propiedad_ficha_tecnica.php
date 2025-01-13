@@ -732,9 +732,11 @@
 										</select>
 									</div>
 
-									<div class="mb-2">
-										<label for="monto_total" class="form-label">Monto</label>
-										<input type="text" class="form-control" id="monto_total" required />
+									<div id="montoContainer" class="row mb-2" style="display: flex;">
+										<div class="mb-2">
+											<label for="monto_total" class="form-label">Monto</label>
+											<input type="text" class="form-control" id="monto_total" required />
+										</div>
 									</div>
 
 									<div id="fechasContainer" class="row mb-2" style="display: none;">
@@ -751,7 +753,6 @@
 
 
 									<div id="razonContainer" class="row mb-2" style="display: none;">
-
 										<div class="col">
 											<label for="razonRetencion" class="form-label">Razón Retencion</label>
 											<input type="text" class="form-control" id="razonRetencion" />

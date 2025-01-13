@@ -8330,6 +8330,7 @@ document.addEventListener('DOMContentLoaded', function () {
 	const tipoRetencion = document.getElementById('tipo_retencion');
 	const fechasContainer = document.getElementById('fechasContainer');
 	const razonContainer = document.getElementById('razonContainer');
+	const montoContainer = document.getElementById('montoContainer');
 	const montoInput = document.getElementById('monto_total');
 
 	tipoRetencion.addEventListener('change', function () {
@@ -8340,6 +8341,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		} else if (tipoRetencion.value === '3') {
 			fechasContainer.style.display = 'flex';
 			razonContainer.style.display = 'flex';
+			montoContainer.style.display = 'none';
 		}
 	});
 
@@ -8494,6 +8496,8 @@ document.addEventListener('DOMContentLoaded', function () {
 		document.getElementById('fecha_hasta').value = '';
 		tipoRetencion.value = '1';
 		fechasContainer.style.display = 'none';
+		montoContainer.style.display = 'flex';
+		razonContainer.style.display = 'none';
 	}
 
 	document
