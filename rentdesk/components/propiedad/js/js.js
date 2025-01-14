@@ -13,11 +13,19 @@ sessionStorage.clear();
 
 $(document).ready(function () {
 	// bruno
+
+	$('#nombreEjecutivo').select2({
+		placeholder: 'Seleccione uno o más ejecutivos', // Placeholder
+		allowClear: true, // Botón para limpiar selección
+		tags: true, // Permitir agregar valores no listados
+		tokenSeparators: [','], // Separar por coma
+	});
+
 	// Guardar nuevo recordatorio
 	$('#btnGuardarRecordatorio').on('click', function () {
 		// Validaciones
 		let camposVacios = [
-			$('#nombreEjecutivo').val().trim(),
+			// $('#nombreEjecutivo').val().trim(),
 			$('#fechaRecordatorio').val(),
 			$('#tipoRecordatorio').val(),
 		].some((campo) => campo === '');
@@ -27,10 +35,16 @@ $(document).ready(function () {
 			return;
 		}
 
+		var url = window.location.href;
+		var parametros = new URL(url).searchParams;
+		var token_propiedad = parametros.get('token');
+
 		var formElement = $('#formRecordatorio').get(0);
 		var formData = new FormData(formElement);
-		var nombreEjecutivo = $('#nombreEjecutivo').val().trim();
-		formData.append('nombreEjecutivo', nombreEjecutivo);
+
+		let idEjecutivos = $('#nombreEjecutivo').val();
+		formData.append('idEjecutivos', idEjecutivos);
+		formData.append('token', token_propiedad);
 		console.log('formData:', formData);
 
 		$.ajax({
@@ -40,27 +54,30 @@ $(document).ready(function () {
 			processData: false,
 			contentType: false,
 			success: function (response) {
-				if (response == 1) {
-					Swal.fire('Los datos se han guardado con éxito.', '', 'success').then(
-						(result) => {
+				try {
+					var result = JSON.parse(response);
+					console.log();
+
+					if (result.success) {
+						Swal.fire(result.message, '', 'success').then((result) => {
 							if (result.isConfirmed) {
 								$('#modalRecordatoriosNuevo').modal('hide');
 								$('#formRecordatorio')[0].reset();
 								$('#ListadoRecordatiorios')
 									.DataTable()
-									.ajax.reload(null, false); // Recargar la tabla
+									.ajax.reload(null, false);
 							}
-						}
+						});
+					} else {
+						Swal.fire(result.message, '', 'error');
+					}
+				} catch (error) {
+					Swal.fire(
+						'Error al procesar la respuesta del servidor.',
+						'',
+						'error'
 					);
-				} else {
-					Swal.fire('Error al guardar', '', 'error');
 				}
-			},
-			error: function (error) {
-				console.error('Error al guardar el recordatorio:', error);
-			},
-			complete: function () {
-				$('#nombreEjecutivo').prop('disabled', true);
 			},
 		});
 	});
@@ -81,13 +98,23 @@ $(document).ready(function () {
 			method: 'GET',
 			data: { token: token },
 			success: function (response) {
-				var data = JSON.parse(response);
-				$('#idPropiedad').val(data[0].id_propiedad);
-				$('#idEjecutivo').val(data[0].id_ejecutivo);
-				$('#nombreEjecutivo').val(data[0].ejecutivo);
+				let data = response; // Ya está parseado en JSON
+
+				$('#nombreEjecutivo')
+					.empty()
+					.append('<option value="">Seleccione uno o más ejecutivos</option>');
+
+				data.forEach(function (ejecutivo) {
+					$('#nombreEjecutivo').append(
+						`<option value="${ejecutivo.id}">${ejecutivo.nombre_completo}</option>`
+					);
+				});
+
+				// Recargar el select2 para reflejar los nuevos datos
+				$('#nombreEjecutivo').select2();
 			},
 			error: function (error) {
-				console.error('Error al obtener el nombre del ejecutivo:', error);
+				console.error('Error al obtener los ejecutivos:', error);
 			},
 		});
 
@@ -96,15 +123,20 @@ $(document).ready(function () {
 			url: 'components/propiedad/models/buscar_tipo_recordatorio.php',
 			method: 'GET',
 			success: function (response) {
-				var tipos = JSON.parse(response);
-				$('#tipoRecordatorio')
-					.empty()
-					.append('<option value="">Seleccione un tipo</option>');
-				tipos.forEach(function (tipo) {
-					$('#tipoRecordatorio').append(
-						'<option value="' + tipo.nombre + '">' + tipo.nombre + '</option>'
-					);
-				});
+				try {
+					var tipos = JSON.parse(response);
+					$('#tipoRecordatorio')
+						.empty()
+						.append('<option value="">Seleccione un tipo</option>'); // Opción por defecto
+
+					tipos.forEach(function (tipo) {
+						$('#tipoRecordatorio').append(
+							'<option value="' + tipo.nombre + '">' + tipo.nombre + '</option>'
+						);
+					});
+				} catch (error) {
+					console.error('Error al procesar los datos JSON de tipos:', error);
+				}
 			},
 			error: function (xhr, status, error) {
 				console.error('Error al obtener los tipos de recordatorio:', error);
@@ -3315,7 +3347,6 @@ function eliminarSeccion(id) {
 function cargarDocumentos() {
 	// Realizar la solicitud AJAX para obtener los datos
 	var url = window.location.href;
-	//console.log(url);
 	var parametros = new URL(url).searchParams;
 	var token_propiedad = parametros.get('token');
 	// console.log(parametros.get('token'));
@@ -8329,11 +8360,26 @@ function formatearDinero(monto) {
 document.addEventListener('DOMContentLoaded', function () {
 	const tipoRetencion = document.getElementById('tipo_retencion');
 	const fechasContainer = document.getElementById('fechasContainer');
+	const razonContainer = document.getElementById('razonContainer');
+	const montoContainer = document.getElementById('montoContainer');
 	const montoInput = document.getElementById('monto_total');
 
 	tipoRetencion.addEventListener('change', function () {
-		fechasContainer.style.display =
-			tipoRetencion.value === '2' ? 'flex' : 'none';
+		// Ocultar todos los elementos primero
+		fechasContainer.style.display = 'none';
+		razonContainer.style.display = 'none';
+		montoContainer.style.display = 'none';
+
+		// Mostrar los elementos basados en el valor seleccionado
+		if (tipoRetencion.value === '2') {
+			fechasContainer.style.display = 'flex';
+			montoContainer.style.display = 'flex';
+		} else if (tipoRetencion.value === '3') {
+			fechasContainer.style.display = 'flex';
+			razonContainer.style.display = 'flex';
+		} else {
+			montoContainer.style.display = 'flex';
+		}
 	});
 
 	document
@@ -8345,6 +8391,7 @@ document.addEventListener('DOMContentLoaded', function () {
 			const id_propiedad = localStorage.getItem('id_propiedad');
 			const tipo_retencion = document.getElementById('tipo_retencion').value;
 			let monto_retencion = document.getElementById('monto_total').value;
+			const razon_retencion = document.getElementById('razonRetencion').value;
 
 			// Limpiar el monto y convertirlo a numérico
 			monto_retencion = parseFloat(
@@ -8408,6 +8455,7 @@ document.addEventListener('DOMContentLoaded', function () {
 				monto_retencion,
 				fecha_desde: tipo_retencion === '2' ? fecha_desde : fechaActual,
 				fecha_hasta: tipo_retencion === '2' ? fecha_hasta : fechaActual,
+				razon_retencion,
 			};
 
 			// Llamada a fetch para insertar los datos de retención
@@ -8487,6 +8535,8 @@ document.addEventListener('DOMContentLoaded', function () {
 		document.getElementById('fecha_hasta').value = '';
 		tipoRetencion.value = '1';
 		fechasContainer.style.display = 'none';
+		montoContainer.style.display = 'flex';
+		razonContainer.style.display = 'none';
 	}
 
 	document

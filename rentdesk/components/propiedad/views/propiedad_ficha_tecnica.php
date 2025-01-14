@@ -728,12 +728,15 @@
 										<select class="form-select form-select-sm" id="tipo_retencion" required>
 											<option value="1">Monto Total a Retener</option>
 											<option value="2">Retener en Cuotas</option>
+											<option value="3">Retener el 100%</option>
 										</select>
 									</div>
 
-									<div class="mb-2">
-										<label for="monto_total" class="form-label">Monto</label>
-										<input type="text" class="form-control" id="monto_total" required />
+									<div id="montoContainer" class="row mb-2" style="display: flex;">
+										<div class="mb-2">
+											<label for="monto_total" class="form-label">Monto</label>
+											<input type="text" class="form-control" id="monto_total" required />
+										</div>
 									</div>
 
 									<div id="fechasContainer" class="row mb-2" style="display: none;">
@@ -745,6 +748,14 @@
 										<div class="col">
 											<label for="fecha_hasta" class="form-label">Fecha Hasta</label>
 											<input type="date" class="form-control" id="fecha_hasta" />
+										</div>
+									</div>
+
+
+									<div id="razonContainer" class="row mb-2" style="display: none;">
+										<div class="col">
+											<label for="razonRetencion" class="form-label">Razón Retencion</label>
+											<input type="text" class="form-control" id="razonRetencion" />
 										</div>
 									</div>
 
@@ -1809,33 +1820,33 @@
 									<!-- Opciones de tipo de recordatorio aquí -->
 								</select>
 							</div>
-							<div class="col-md-6">
-								<label for="nombreEjecutivo" class="form-label">Ejecutivo</label>
-								<input type="text" class="form-control" id="nombreEjecutivo" name="nombreEjecutivo" disabled>
+
+							<label for="nombreEjecutivo" class="form-label">Ejecutivo</label>
+							<select class="form-control" id="nombreEjecutivo" name="nombreEjecutivo[]" multiple="multiple" required>
+								<option value="">Seleccione uno o más ejecutivos</option>
+							</select>
+
+
+
+							<div class="row mb-3">
+								<div class="col-md-6">
+									<label for="fechaNotificacion" class="form-label">
+										<span class="obligatorio">*</span> Fecha Notificación
+									</label>
+									<input type="date" class="form-control" id="fechaNotificacion" name="fechaNotificacion" required>
+								</div>
 							</div>
-						</div>
 
-
-
-						<div class="row mb-3">
-							<div class="col-md-6">
-								<label for="fechaNotificacion" class="form-label">
-									<span class="obligatorio">*</span> Fecha Notificación
-								</label>
-								<input type="date" class="form-control" id="fechaNotificacion" name="fechaNotificacion" required>
+							<div class="row mb-3">
+								<div class="col-md-12">
+									<label for="descripcionRecordatorio" class="form-label">Descripción</label>
+									<input type="text" class="form-control" id="descripcionRecordatorio" name="descripcionRecordatorio" placeholder="Descripción" required>
+								</div>
 							</div>
-						</div>
 
-						<div class="row mb-3">
-							<div class="col-md-12">
-								<label for="descripcionRecordatorio" class="form-label">Descripción</label>
-								<input type="text" class="form-control" id="descripcionRecordatorio" name="descripcionRecordatorio" placeholder="Descripción" required>
-							</div>
-						</div>
-
-						<!-- Otros campos del formulario -->
-						<input type="hidden" id="idPropiedad" name="idPropiedad">
-						<input type="hidden" id="idEjecutivo" name="idEjecutivo">
+							<!-- Otros campos del formulario -->
+							<input type="hidden" id="idPropiedad" name="idPropiedad">
+							<input type="hidden" id="idEjecutivo" name="idEjecutivo">
 					</form>
 
 					<div class="modal-footer">
