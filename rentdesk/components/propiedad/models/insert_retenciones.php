@@ -1,5 +1,6 @@
 <?php
 require "../../../app/model/QuerysBuilder.php";
+
 use app\database\QueryBuilder;
 
 $QueryBuilder = new QueryBuilder();
@@ -19,6 +20,7 @@ $tipo_retencion = $data['tipo_retencion'] ?? null;
 $monto_retencion = $data['monto_retencion'] ?? null;
 $fecha_desde = $data['fecha_desde'] ?? null;
 $fecha_hasta = $data['fecha_hasta'] ?? null;
+$razon_retencion = $data['razon_retencion'] ?? null;
 
 // Establecer la fecha actual
 $fecha_actual = date('Y-m-d');
@@ -26,7 +28,7 @@ $fecha_actual = date('Y-m-d');
 // Validar datos recibidos
 if (!isset($id_arriendo, $id_propiedad, $tipo_retencion, $monto_retencion)) {
     echo json_encode([
-        'status' => 'error', 
+        'status' => 'error',
         'message' => 'Datos incompletos',
         'missing_data' => [
             'id_arriendo' => $id_arriendo ?? 'null',
@@ -34,7 +36,8 @@ if (!isset($id_arriendo, $id_propiedad, $tipo_retencion, $monto_retencion)) {
             'tipo_retencion' => $tipo_retencion ?? 'null',
             'monto_retencion' => $monto_retencion ?? 'null',
             'fecha_desde' => $fecha_desde ?? 'null',
-            'fecha_hasta' => $fecha_hasta ?? 'null'
+            'fecha_hasta' => $fecha_hasta ?? 'null',
+            'razon_retencion' => $razon_retencion ?? 'null'
         ]
     ]);
     exit; // Termina la ejecución si los datos son incompletos
@@ -45,17 +48,19 @@ $monto_retencion = str_replace(['$', '.'], '', $monto_retencion);
 $monto_retencion = floatval($monto_retencion); // Convertir a número
 
 // Función que utiliza el QueryBuilder para ejecutar la función SQL
-function generarRetencion($id_arriendo, $id_propiedad, $tipo_retencion, $monto_retencion, $fecha_desde, $fecha_hasta, $fecha_actual) {
+function generarRetencion($id_arriendo, $id_propiedad, $tipo_retencion, $monto_retencion, $fecha_desde, $fecha_hasta, $fecha_actual, $razon_retencion)
+{
     global $QueryBuilder;
 
     // Ejecutar la función SQL utilizando el QueryBuilder
     $result = $QueryBuilder->executeFunction('propiedades.fn_genera_retencion', [
-        $id_arriendo, 
-        $id_propiedad, 
-        $tipo_retencion, 
-        $monto_retencion, 
-        $fecha_desde ?? $fecha_actual, 
-        $fecha_hasta ?? $fecha_actual
+        $id_arriendo,
+        $id_propiedad,
+        $tipo_retencion,
+        $monto_retencion,
+        $fecha_desde ?? $fecha_actual,
+        $fecha_hasta ?? $fecha_actual,
+        $razon_retencion
     ]);
 
     // Manejo de la respuesta
@@ -71,6 +76,4 @@ function generarRetencion($id_arriendo, $id_propiedad, $tipo_retencion, $monto_r
 }
 
 // Ejecutar la función para generar la retención
-generarRetencion($id_arriendo, $id_propiedad, $tipo_retencion, $monto_retencion, $fecha_desde, $fecha_hasta, $fecha_actual);
-
-?>
+generarRetencion($id_arriendo, $id_propiedad, $tipo_retencion, $monto_retencion, $fecha_desde, $fecha_hasta, $fecha_actual, $razon_retencion);

@@ -1,25 +1,74 @@
 <?php
 
-// **** bruno  ******/
+// Mostrar errores (solo para desarrollo, no en producción)
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 
-session_start();
-include("../../../includes/sql_inyection.php");
-include("../../../configuration.php");
-include("../../../includes/funciones.php");
-include("../../../includes/services_util.php");
+require "../../../app/model/QuerysBuilder.php";
 
-$config     = new Config;
-$services   = new ServicesRestful;
-$url_services = $config->url_services;
+use app\database\QueryBuilder;
 
-$token = @$_GET['token'];
+// Instanciamos el QueryBuilder
+$QueryBuilder = new QueryBuilder();
 
-// Construir y ejecutar la consulta SQL
-$query = "SELECT propie.id AS id_propiedad, eje.id AS id_ejecutivo, upper(eje.nombres || ' ' || eje.apellido_paterno || ' ' || eje.apellido_materno) AS ejecutivo FROM propiedades.propiedad propie INNER JOIN propiedades.cuenta_usuario eje ON propie.id_ejecutivo = eje.id WHERE propie.token = '$token'";
+try {
+    // Definir la consulta con las columnas solicitadas
+    $table = 'propiedades.cuenta_usuario';
+    $columns = "
+        id,
+        id_empresa,
+        dni,
+        id_tipo_dni,
+        CONCAT(nombres, ' ', apellido_paterno, ' ', apellido_materno) AS nombre_completo,
+        correo,
+        token,
+        habilitado,
+        activo,
+        autorizador
+    ";
 
+    // Definir los JOINs necesarios (si fueran necesarios, de lo contrario, dejar vacío)
+    $joins = [];
 
-$data = array("consulta" => $query);
-$resultado = $services->sendPostNoToken($url_services . '/util/objeto', $data);
+    // Definir condiciones
+    $conditions = [
+        'habilitado' => ['=', true]
+    ];
 
+    // Ejecutar la consulta
+    $result = $QueryBuilder->selectAdvanced(
+        $table,
+        $columns,
+        $joins,
+        $conditions,
+        '',   // orderBy
+        '',   // groupBy
+        null, // limit
+        false,
+        false
+    );
 
-echo $resultado;
+    // Validación adicional para asegurar que es un array
+    $filteredResult = is_array($result) ? $result : [$result];
+
+    // Filtrado de datos (opcional si se quiere filtrar en PHP)
+    $filteredResult = array_filter($filteredResult, function ($row) {
+        // Garantizar valores válidos y sin espacios extra
+        return isset($row['id']) && !empty(trim($row['nombre_completo']));
+    });
+
+    // Reindexar el array
+    $filteredResult = array_values($filteredResult);
+
+    // Limpiar cualquier salida previa
+    ob_clean();
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($filteredResult, JSON_UNESCAPED_UNICODE | JSON_PRETTY_PRINT);
+    exit;
+} catch (Exception $e) {
+    // Manejo de errores
+    http_response_code(500);
+    echo json_encode(['error' => true, 'message' => $e->getMessage()], JSON_UNESCAPED_UNICODE);
+    exit;
+}
