@@ -126,66 +126,73 @@ async function CargarServipag() {
 // procesar listado
 function ProcesarListado() {
 
-	const tableRows = $("#servipagTable tbody tr");
-	const dataToSend = [];
+    const tableRows = $("#servipagTable tbody tr");
+    
+    // Verificar si la tabla está vacía
+    if (tableRows.length === 0) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'Tabla vacía',
+            text: 'No hay datos para procesar.',
+        });
+        return; // Detener la ejecución si no hay filas
+    }
 
-	// Recorrer cada fila de la tabla para capturar los datos
-	tableRows.each(function () {
-		const row = $(this).find("td");
-		const dataRow = {
-			id_servipag: row.eq(0).text().trim(),
-			id_propiedad: row.eq(2).text().trim(),
-			fecha_pago: row.eq(5).text().trim(),
-			monto_pagado: row.eq(7).text().replace(/\D/g, '')
-		};
-		dataToSend.push(dataRow);
-	});
+    const dataToSend = [];
 
-	// Mostrar mensaje de "Procesando"
-	Swal.fire({
-		title: 'Procesando',
-		text: 'Por favor, espera mientras procesamos los datos...',
-		icon: 'info',
-		allowOutsideClick: false,
-		showConfirmButton: false,
-		didOpen: () => {
-			Swal.showLoading();
-		}
-	});
+    // Recorrer cada fila de la tabla para capturar los datos
+    tableRows.each(function () {
+        const row = $(this).find("td");
+        const dataRow = {
+            id_servipag: row.eq(0).text().trim(),
+            id_propiedad: row.eq(2).text().trim(),
+            fecha_pago: row.eq(5).text().trim(),
+            monto_pagado: row.eq(7).text().replace(/\D/g, '')
+        };
+        dataToSend.push(dataRow);
+    });
 
-	// Enviar los datos al backend
-	$.ajax({
-		url: 'components/servipag/models/pago_transferencias.php', // Reemplaza con la ruta correcta
-		method: 'POST',
-		contentType: 'application/json',
-		data: JSON.stringify(dataToSend),
-		success: function (response) {
-			Swal.close();
-			Swal.fire({
-				icon: 'success',
-				title: 'Procesado',
-				text: 'Los datos se enviaron correctamente.',
-			});
+    // Mostrar mensaje de "Procesando"
+    Swal.fire({
+        title: 'Procesando',
+        text: 'Por favor, espera mientras procesamos los datos...',
+        icon: 'info',
+        allowOutsideClick: false,
+        showConfirmButton: false,
+        didOpen: () => {
+            Swal.showLoading();
+        }
+    });
 
+    // Enviar los datos al backend
+    $.ajax({
+        url: 'components/servipag/models/pago_transferencias.php', // Reemplaza con la ruta correcta
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(dataToSend),
+        success: function (response) {
+            Swal.close();
+            Swal.fire({
+                icon: 'success',
+                title: 'Procesado',
+                text: 'Los datos se enviaron correctamente.',
+            });
 
-			LeerServipag();
+            LeerServipag();
+        },
+        error: function (xhr, status, error) {
+            Swal.close();
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Hubo un error al procesar los datos.',
+            });
+        }
+    });
 
-		},
-		error: function (xhr, status, error) {
-			Swal.close();
-			Swal.fire({
-				icon: 'error',
-				title: 'Error',
-				text: 'Hubo un error al procesar los datos.',
-			});
-		}
-
-
-	});
-
-
-	LeerServipag();
+    LeerServipag();
 }
+
 
 // ejecucion automatica
 $(document).ready(function () {
