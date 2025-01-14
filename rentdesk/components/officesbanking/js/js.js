@@ -275,7 +275,7 @@ function descargarTxt(datos, id_officebanking, tasks) {
 		const segundo = String(fecha.getSeconds()).padStart(2, '0');
 		const milisegundos = String(fecha.getMilliseconds()).padStart(3, '0');
 
-		const nombreArchivo = `manager-${anio}${mes}${dia}${hora}${minuto}${segundo}${milisegundos}-0300.txt`;
+		const nombreArchivo = `ERP-${anio}${mes}${dia}${hora}${minuto}${segundo}${milisegundos}-0300.txt`;
 
 		// Descargar el archivo en el navegador
 		const url = URL.createObjectURL(blob);
