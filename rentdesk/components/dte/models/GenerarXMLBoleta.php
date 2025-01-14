@@ -447,22 +447,22 @@ try {
                 $CmnaPostal = $row['comuna'];
                 $CiudadRecep = $row['comuna'];
 
-                // Datos adicionales
-                $CmnaRecep = $row['comuna'];;
-                $DirRecep = $row['direccion'];
-                $razon_social_emisor = '1';
-                $giro_emisor = '1'; // Fuenzalida
-                $dir_origen = '1'; // Fuenzalida
-                $comuna_origen = $row['direccion'];;
-                $ciudad_origen = '1';
-                $cdg_item_tipo = $row['ficha_propiedad'];
+       
+                // datos adicionales
+                $razon_social_emisor = $config->razon_social_emisor;
+                $giro_emisor = $config->giro_emisor; // Fuenzalida
+                $dir_origen = $config->dir_origen;; // Fuenzalida
+                $comuna_origen = $config->comuna_origen;
+                $ciudad_origen = $config->ciudad_origen;
+                $cdg_item_tipo = $config->cdg_item_tipo;
+             
 
                 // Preparar datos para el XML
                 $data = [
 
                     'rut_emisor' => $rut, // rut fuenzalida
-                    'rut_envia' => '6285461-8', // rut certificado
-                    'rut_receptor' => '60803000-K', // rut sii
+                    'rut_envia' => $rut_certificado, // rut certificado
+                    'rut_receptor' => $rut_sii, // rut sii
                     'fch_resol' => '2014-08-22',
                     'nro_resol' => '80',
                     'folio' =>  $NroFolio,
@@ -481,7 +481,7 @@ try {
                     'razon_social_receptor' => substr(eliminarTildes(strtoupper($NombrePropietario)), 0, 100),
                     'fechahora' => $fecha,
                     'rutrecep' => $rutPropietario, // rut del pripietario  
-                    'CdgIntRecep' => $CdgIntRecep,
+                    'CdgIntRecep' => eliminarTildes(strtoupper($CdgIntRecep)),
                     'Contacto' => '', // datos de contacto
                     'DirPostal' => eliminarTildes(strtoupper($DirPostal)),
                     'CmnaPostal' =>  eliminarTildes(strtoupper($CmnaPostal)),

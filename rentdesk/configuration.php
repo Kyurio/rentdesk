@@ -8,11 +8,19 @@
 class Config
 {
 
-
+	// variables globlaes dte
 	public $url_DTE = 'https://dteqa.arpis.cl/WSFactLocal/DteLocal.asmx?WSDL';
 	public $rut = '77367969-K';
 	public $rut_empresa = '77367969K';
-
+	public $rut_certificado = '6285461-8';
+	public $rut_receptor = '60803000-K';
+	public $rut_sii = '60803000-K';
+	public $razon_social_emisor = 'MEDITERRANEO RENTAS INMOBILIARIAS SPA';
+	public $giro_emisor = 'Negocios Inmobiliarios';
+	public $dir_origen = 'Av. Andres Bello 2777 Oficina 1902'; 
+	public $comuna_origen = 'Las Condes';
+	public $ciudad_origen = 'Santiago';
+	public $cdg_item_tipo = '';
 
 
 	

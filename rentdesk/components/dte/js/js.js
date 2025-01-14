@@ -1,7 +1,6 @@
 // Cargar los datos en la tabla
 async function TablaLlenarLiquidaciones() {
     try {
-
         const response = await fetch('components/dte/models/GetDTE.php');
         if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`);
 
@@ -9,42 +8,42 @@ async function TablaLlenarLiquidaciones() {
         const tableBody = document.getElementById("cierre-liquidaciones-tab-pane");
         tableBody.innerHTML = ''; // Limpiar la tabla antes de llenar
 
+        // Crear fragmento para mejor rendimiento
+        const fragment = document.createDocumentFragment();
+
         data.forEach(item => {
             const fecha = new Date(item.fecha_liquidacion);
             const fechaFormateada = `${('0' + fecha.getDate()).slice(-2)}-${('0' + (fecha.getMonth() + 1)).slice(-2)}-${fecha.getFullYear()}`;
             const montoFormateadoArrinedo = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(item.comision_arriendo);
             const montoFormateadoAdministracion = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(item.comision_administracion);
 
-            // Agregar una fila a la tabla con checkbox
-            const row = `
-                <tr>
-                        <td>
-                            <div class="d-flex">
-                                <label class="switch">
-                                    <input type="checkbox" class="row-check" onchange="toggleGenerarDTE()">
-                                    <span class="slider round"></span>
-                                </label>
-                            </div>
-                            <input type="hidden" value="${item.id_liquidacion}">
-                            <input type="hidden" value="${item.documento_comision}">
-                            <input type="hidden" value="${item.documento_arriendo}">
-                        </td>
-                        <td>${item.id_liquidacion}</td>
-                        <td>${montoFormateadoArrinedo}</td>
-                        <td>${montoFormateadoAdministracion}</td>
-                        <td>${item.direccion}</td>
-                        <td>${fechaFormateada}</td>
-                </tr>
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>
+                    <div class="d-flex">
+                        <label class="switch">
+                            <input type="checkbox" class="row-check" onchange="toggleGenerarDTE()">
+                            <span class="slider round"></span>
+                        </label>
+                    </div>
+                    <input type="hidden" value="${item.id_liquidacion}">
+                    <input type="hidden" value="${item.documento_comision}">
+                    <input type="hidden" value="${item.documento_arriendo}">
+                </td>
+                <td>${item.id_liquidacion}</td>
+                <td>${montoFormateadoArrinedo}</td>
+                <td>${montoFormateadoAdministracion}</td>
+                <td>${item.direccion}</td>
+                <td>${fechaFormateada}</td>
             `;
-            tableBody.insertAdjacentHTML('beforeend', row);
+            fragment.appendChild(row);
         });
-        // <td><a href="${item.url_liquidacion.replace('../../../', '')}" target="_blank">Ver PDF</a></td>
 
-        // Inicializar DataTables solo si no está ya inicializada
-        if (!$.fn.DataTable.isDataTable('#liq-generacion-masiva-table')) {
-            $('#liq-generacion-masiva-table').DataTable();
-        }
+        tableBody.appendChild(fragment);
 
+        // Reinicializar DataTable
+        $('#liq-generacion-masiva-table').DataTable().destroy();
+        $('#liq-generacion-masiva-table').DataTable();
 
     } catch (error) {
         console.error('Error al obtener los datos:', error);
@@ -63,14 +62,23 @@ function toggleGenerarDTE() {
 
 // Función para seleccionar o deseleccionar todas las filas
 function toggleSelectAll() {
+
+
+    alert("_.....hola.....");
+
+    // Selección de todos los checkboxes
     const checkboxes = document.querySelectorAll('.row-check');
+    const button = document.getElementById('select-all');
+
+    // Determina si todos están seleccionados
     const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
 
+    // Cambia el estado de los checkboxes
     checkboxes.forEach(checkbox => {
-        checkbox.checked = !allChecked; // Cambia el estado de selección
+        checkbox.checked = !allChecked;
     });
 
-    const button = document.getElementById('select-all');
+    // Cambia el texto y color del botón
     if (!allChecked) {
         button.innerHTML = 'Deseleccionar todos';
         button.classList.remove('btn-info');
@@ -81,6 +89,7 @@ function toggleSelectAll() {
         button.classList.add('btn-info');
     }
 
+    // Actualiza el botón Generar DTE
     toggleGenerarDTE();
 }
 
@@ -215,8 +224,6 @@ async function GenerarDocumento() {
         console.error('Error general:', error);
     }
 }
-
-
 
 // listado historial liquidacione
 async function HistorialLiquidaciones() {
