@@ -141,7 +141,7 @@ $(document).ready(function () {
 			const monitorTasks = setInterval(() => {
 				if (allTasksCompleted.generarExcel && allTasksCompleted.descargarTxt) {
 					clearInterval(monitorTasks);
-					//location.reload();
+					location.reload();
 				}
 			}, 500);
 		});
