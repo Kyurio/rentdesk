@@ -7972,7 +7972,7 @@ function ListadoNotificaciones() {
 			},
 			{ data: 'tipo_recordatorio' },
 			{ data: 'descripcion' },
-			{ data: 'ejecutivo' },
+			{ data: 'id_ejecutivo' },
 			{
 				data: null,
 				orderable: false,
