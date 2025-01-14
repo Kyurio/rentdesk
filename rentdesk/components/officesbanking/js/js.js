@@ -114,13 +114,13 @@ $(document).ready(function () {
 						const thomsonData = await $.ajax({
 							url: 'components/officesbanking/models/GenerarThompson.php',
 							method: 'GET',
-							data: { id_liquidacion: id_liquidacion },
+							data: { cierre: cierre },
 							dataType: 'json',
 						});
 						const thomsonDoc = await $.ajax({
 							url: 'components/officesbanking/models/GenerarDocumentosThomson.php',
 							method: 'GET',
-							data: { id_liquidacion: id_liquidacion },
+							data: { cierre: cierre },
 							dataType: 'json',
 						});
 						thomson.push(thomsonDoc);
@@ -141,7 +141,7 @@ $(document).ready(function () {
 			const monitorTasks = setInterval(() => {
 				if (allTasksCompleted.generarExcel && allTasksCompleted.descargarTxt) {
 					clearInterval(monitorTasks);
-					location.reload();
+					//location.reload();
 				}
 			}, 500);
 		});
@@ -550,7 +550,6 @@ function CargarDetalleLiquidaciones(cierre) {
 			tableBody.empty(); // Limpiar el contenido anterior
 
 			$.each(data, function (index, item) {
-
 				// Agregar una fila a la tabla
 				tableBody.append(
 					`<tr>

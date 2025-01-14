@@ -16,7 +16,7 @@ $url_services   = $config->url_services;
 
 // Obtener el método de la solicitud
 $metodo = $_SERVER['REQUEST_METHOD'];
-$id_liquidacion = $_GET["id_liquidacion"];
+$cierre = $_GET["cierre"];
 
 /*Consulta Cantidad de registros 0= solo lectura 1= ejecuta Office Banking*/
 $query_count = "SELECT propiedades.fn_genera_archivo_thomson(0)";
