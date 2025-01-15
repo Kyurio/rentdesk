@@ -438,7 +438,14 @@
 						<div class="card">
 							<div class="card-body">
 								<h3>Propietarios</h3>
-						
+								<!-- <div class="row">
+										<ul>
+											<li><span>Saldo al día: $0</span></li>
+											<li><span>Saldo histórico: $0</span></li>
+										</ul>
+
+
+									</div> -->
 								<div class="row">
 									<!-- <h6 class="text-muted my-4 display-6">Movimientos</h6> -->
 
@@ -470,7 +477,7 @@
 														</thead>
 														<tbody>
 
-														
+												
 														</tbody>
 														<tfoot>
 															<td></td>
@@ -500,7 +507,6 @@
 										</div>
 									</div>
 								</div>
-
 								<div class="row">
 
 									<form name="formulario-propietario" id="formulario-propietario" method="post" action="" enctype="multipart/form-data" class="my-3" style="padding-left:0px; padding-right:0px;">
@@ -1719,46 +1725,58 @@
 				</div>
 			</div>
 		</div> -->
+		
 
 	<!-- Modal Liquidaciones CO-Propietarios - Liquidar-->
 	<div class="modal fade" data-bs-backdrop="static" id="modalLiqCoPropsLiquidar" tabindex="-1" aria-labelledby="modalLiqCoPropsLiquidarLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
+
 				<div class="modal-header">
 					<h5 class="modal-title" id="modalLiqCoPropsLiquidarLabel">Liquidación</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
-				<div class="modal-body">
 					<!-- <form action="./components/propiedad/models/liquidar_pdf_fpdf.php" method="POST" id="formLiquidar" target="_blank"> -->
 					<form action="./components/officesbanking/models/Api.php" method="POST" id="formLiquidar" target="_blank">
-						<div class="row">
-							<input type="hidden" name="ficha_tecnica" id="ficha_tecnica" value="<?php echo $ficha_tecnica; ?>">
+				<div class="modal-body">
 
-							<div class="col-md-12 mb-3">
-								<label for="modalRazon" class="form-label"><span class="obligatorio">*</span> Liquidación</label>
-								<input type="text" class="form-control" id="motivoLiquidacion" placeholder="Ingrese texto">
-							</div>
+				
+						
+										<div class="row">
+											<input type="hidden" name="ficha_tecnica" id="ficha_tecnica" value="<?php echo $ficha_tecnica; ?>">
 
-						</div>
-						<div class="row">
-							<div class="col-md-12 mb-3">
-								<label for="modalRazon" class="form-label"><span class="obligatorio">*</span> Mes Liquidación</label>
-								<input type="month" class="form-control" id="mesLiquidacion" placeholder="">
-							</div>
+											<div class="col-md-12 mb-3">
+												<label for="modalRazon" class="form-label"><span class="obligatorio">*</span> Liquidación</label>
+												<input type="text" class="form-control" id="motivoLiquidacion" placeholder="Ingrese texto">
+											</div>
 
-						</div>
-						<div class="row">
-							<div class="col-md-12 mb-3">
-								<label for="exampleFormControlTextarea1" class="form-label">Nota</label>
-								<textarea class="form-control" id="mensajeLiquidacion" style="padding:1rem" placeholder="Ingrese una nota..."></textarea>
-							</div>
-						</div>
+										</div>
+
+
+										<div class="row">
+											<div class="col-md-12 mb-3">
+												<label for="modalRazon" class="form-label"><span class="obligatorio">*</span> Mes Liquidación</label>
+												<input type="month" class="form-control" id="mesLiquidacion" placeholder="">
+											</div>
+
+										</div>
+
+										<div class="row">
+											<div class="col-md-12 mb-3">
+												<label for="exampleFormControlTextarea1" class="form-label">Nota</label>
+												<textarea class="form-control" id="mensajeLiquidacion" style="padding:1rem" placeholder="Ingrese una nota..."></textarea>
+											</div>
+										</div>
 
 				</div>
+								
+				
 				<div class="modal-footer">
 					<button type="button" class="btn btn-info" data-bs-dismiss="modal">Cerrar</button>
 					<button type="submit" class="btn btn-primary">Crear</button>
 				</div>
+				
+
 				</form>
 			</div>
 		</div>
@@ -1774,95 +1792,113 @@
 	<div class="modal fade" data-bs-backdrop="static" id="modalRecordatoriosNuevo" tabindex="-1" aria-labelledby="modalRecordatoriosNuevoLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="modalRecordatoriosNuevoLabel">Nuevo Recordatorio</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
 
-					<form action="POST" id="formRecordatorio">
-						<div class="row mb-3">
-							<div class="col-md-6">
-								<label for="tipoRecordatorio" class="form-label">
-									<span class="obligatorio">*</span> Tipo Recordatorio
-								</label>
-								<select class="form-control" id="tipoRecordatorio" name="tipoRecordatorio" required>
-									<option value="">Selecciona un tipo</option>
-									<!-- Opciones de tipo de recordatorio aquí -->
-								</select>
-							</div>
-
-							<label for="nombreEjecutivo" class="form-label">Ejecutivo</label>
-							<select class="form-control" id="nombreEjecutivo" name="nombreEjecutivo[]" multiple="multiple" required>
-								<option value="">Seleccione uno o más ejecutivos</option>
-							</select>
-
-
-
-							<div class="row mb-3">
-								<div class="col-md-6">
-									<label for="fechaNotificacion" class="form-label">
-										<span class="obligatorio">*</span> Fecha Notificación
-									</label>
-									<input type="date" class="form-control" id="fechaNotificacion" name="fechaNotificacion" required>
+								<div class="modal-header">
+									<h5 class="modal-title" id="modalRecordatoriosNuevoLabel">Nuevo Recordatorio</h5>
+									<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 								</div>
-							</div>
 
-							<div class="row mb-3">
-								<div class="col-md-12">
-									<label for="descripcionRecordatorio" class="form-label">Descripción</label>
-									<input type="text" class="form-control" id="descripcionRecordatorio" name="descripcionRecordatorio" placeholder="Descripción" required>
+								<div class="modal-body">
+
+												<form action="POST" id="formRecordatorio">
+													<div class="row mb-3">
+														
+																	<div class="col-md-6">
+																			<label for="tipoRecordatorio" class="form-label">
+																				<span class="obligatorio">*</span> Tipo Recordatorio
+																			</label>
+																			<select class="form-control" id="tipoRecordatorio" name="tipoRecordatorio" required>
+																				<option value="">Selecciona un tipo</option>
+																				<!-- Opciones de tipo de recordatorio aquí -->
+																			</select>
+																	</div>
+
+																	<label for="nombreEjecutivo" class="form-label">Ejecutivo</label>
+																	<select class="form-control" id="nombreEjecutivo" name="nombreEjecutivo[]" multiple="multiple" required>
+																		<option value="">Seleccione uno o más ejecutivos</option>
+																	</select>
+
+
+
+																	<div class="row mb-3">
+																		<div class="col-md-6">
+																			<label for="fechaNotificacion" class="form-label">
+																				<span class="obligatorio">*</span> Fecha Notificación
+																			</label>
+																			<input type="date" class="form-control" id="fechaNotificacion" name="fechaNotificacion" required>
+																		</div>
+																	</div>
+
+																	<div class="row mb-3">
+																		<div class="col-md-12">
+																			<label for="descripcionRecordatorio" class="form-label">Descripción</label>
+																			<input type="text" class="form-control" id="descripcionRecordatorio" name="descripcionRecordatorio" placeholder="Descripción" required>
+																		</div>
+																	</div>
+
+														<!-- Otros campos del formulario -->
+														<input type="hidden" id="idPropiedad" name="idPropiedad">
+														<input type="hidden" id="idEjecutivo" name="idEjecutivo">
+													</div>
+												</form>
+
+											<div class="modal-footer">
+												<button type="button" class="btn btn-info" data-bs-dismiss="modal">Cerrar</button>
+												<button id="btnGuardarRecordatorio" type="button" class="btn btn-primary">Guardar</button>
+											</div>
 								</div>
-							</div>
-
-							<!-- Otros campos del formulario -->
-							<input type="hidden" id="idPropiedad" name="idPropiedad">
-							<input type="hidden" id="idEjecutivo" name="idEjecutivo">
-					</form>
-
-					<div class="modal-footer">
-						<button type="button" class="btn btn-info" data-bs-dismiss="modal">Cerrar</button>
-						<button id="btnGuardarRecordatorio" type="button" class="btn btn-primary">Guardar</button>
-					</div>
-				</div>
 			</div>
 		</div>
 	</div>
+ 
 
+
+
+
+	
+
+	
+
+ 
+ 
 
 	<!-- Modal ROLES - Ingresar Rol-->
 	<div class="modal fade" data-bs-backdrop="static" id="modalRolIngreso" tabindex="-1" aria-labelledby="modalRolIngresoLabel" aria-hidden="true">
 		<div class="modal-dialog">
 			<div class="modal-content">
-				<div class="modal-header">
-					<h5 class="modal-title" id="modalRolIngresoLabel">Ingresar Rol</h5>
-					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-				</div>
-				<div class="modal-body">
-					<form action="">
-						<div class="row">
-							<div class="col-md mb-3">
-								<label for="modalRazon" class="form-label"><span class="obligatorio">*</span> Descripción o Razón</label>
-								<input type="email" class="form-control" id="modalRazon" placeholder="Ingrese Descripción o Razón">
-							</div>
+						<div class="modal-header">
+							<h5 class="modal-title" id="modalRolIngresoLabel">Ingresar Rol</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 						</div>
-						<div class="row">
-							<div class="col-md mb-3">
-								<label for="modalMonto" class="form-label"><span class="obligatorio">*</span> Número</label>
-								<input type="email" class="form-control" id="modalMonto" placeholder="Ingrese Número">
+							<div class="modal-body">
+											<form action="">
+												<div class="row">
+													<div class="col-md mb-3">
+														<label for="modalRazon" class="form-label"><span class="obligatorio">*</span> Descripción o Razón</label>
+														<input type="email" class="form-control" id="modalRazon" placeholder="Ingrese Descripción o Razón">
+													</div>
+												</div>
+												
+												<div class="row">
+														<div class="col-md mb-3">
+															<label for="modalMonto" class="form-label"><span class="obligatorio">*</span> Número</label>
+															<input type="email" class="form-control" id="modalMonto" placeholder="Ingrese Número">
+														</div>
+												</div>
+
+											</form>
 							</div>
-
+						<div class="modal-footer">
+							<button type="button" class="btn btn-info" data-bs-dismiss="modal">Cerrar</button>
+							<button type="button" class="btn btn-primary">Guardar</button>
 						</div>
-
-					</form>
-				</div>
-				<div class="modal-footer">
-					<button type="button" class="btn btn-info" data-bs-dismiss="modal">Cerrar</button>
-					<button type="button" class="btn btn-primary">Guardar</button>
-				</div>
 			</div>
 		</div>
 	</div>
+
+	 
+	 
+																
 	<!-- Modal Propietarios - Ingresar Beneficiario-->
 	<div class="modal fade" data-bs-backdrop="static" id="modalBeneficiarioIngreso" tabindex="-1" aria-labelledby="modalBeneficiarioIngresoLabel" aria-hidden="true">
 		<div class="modal-dialog modal-lg">
