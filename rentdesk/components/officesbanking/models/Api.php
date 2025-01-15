@@ -65,7 +65,7 @@ function obtenerInfoPropiedad($services, $url_services, $ficha_tecnica_propiedad
         INNER JOIN propiedades.tp_pais tp ON tp.id = tr.id_pais
         WHERE nivel_propietario = 1 AND p.id = " . $ficha_tecnica_propiedad;
     $data = array("consulta" => $queryPropiedad, "cantRegistros" => 50, "numPagina" => 1);
- 
+
     $resultado = $services->sendPostNoToken($url_services . '/util/objeto', $data, []);
     return json_decode($resultado);
 }
@@ -162,7 +162,6 @@ function ObtenerIdCuotaGarantia($services, $url_services, $id_ficha_arriendo)
     $data = array("consulta" => $queryPorcentajeParticipacion, "cantRegistros" => 50, "numPagina" => 1);
     $resultado = $services->sendPostNoToken($url_services . '/util/objeto', $data, []);
     return json_decode($resultado);
-
 }
 
 function ObtenerPorcentajeParticipacion($services, $url_services, $ficha_tecnica_propiedad)
@@ -597,7 +596,57 @@ function ObtenerAnticiposCalculado($QueryBuilder, $id)
 
     return $result;
 }
+/***
+ * 
+ * 
+ *  
+ * consulta si se cobra adm arriendo y corretaje arriendo 
+ * 
+ * 
+ * 
+ */
+function CobrarAdministracionArriendo($QueryBuilder, $id_ficha_arriendo)
+{
 
+    // Datos para la consulta
+    $table = 'propiedades.ficha_arriendo';
+    $columns = 'adm_comision_cobro';
+    $joins = []; // No hay joins
+    $conditions = [
+        'id' => ['=', $id_ficha_arriendo],
+    ];
+    $groupBy = ''; // No se usa GROUP BY
+    $orderBy = ''; // Ordenar por
+    $limit = ''; // Límite de 1 registro
+    $isCount = false; // No es un conteo
+    $debug = false; // Activar depuración
+
+    // Llamar a la función
+    $result = $QueryBuilder->selectAdvanced($table, $columns, $joins, $conditions, $groupBy, $orderBy, $limit, $isCount, $debug);
+
+    return $result;
+}
+function CobrarAdministraCorretaje($QueryBuilder, $id_ficha_arriendo)
+{
+
+    // Datos para la consulta
+    $table = 'propiedades.ficha_arriendo';
+    $columns = 'arriendo_comision_cobro';
+    $joins = []; // No hay joins
+    $conditions = [
+        'id' => ['=', $id_ficha_arriendo],
+    ];
+    $groupBy = ''; // No se usa GROUP BY
+    $orderBy = ''; // Ordenar por
+    $limit = ''; // Límite de 1 registro
+    $isCount = false; // No es un conteo
+    $debug = false; // Activar depuración
+
+    // Llamar a la función
+    $result = $QueryBuilder->selectAdvanced($table, $columns, $joins, $conditions, $groupBy, $orderBy, $limit, $isCount, $debug);
+
+    return $result;
+}
 
 
 /***
@@ -646,7 +695,9 @@ function generarPDF(
     $flagCantidadRegistrosGrabados,
     $NumeroCierre,
     $flagRetencion,
-    $id_liquidacion_para_consulta
+    $id_liquidacion_para_consulta,
+    $adm_comision_cobro,
+    $arriendo_comision_cobro
 
 ) {
 
@@ -662,6 +713,7 @@ function generarPDF(
         $sumAbonos = 0;
         $TotalAnticipos = 0;
         $TotalRetenciones = 0;
+        $estado_pago_liquidacion = 1; // 0 listo para facturar 1 facturado
 
         $pdf = new PDF_MC_Table();
         $pdf->AddPage();
@@ -839,22 +891,43 @@ function generarPDF(
              * 
              */
             // Calcular total y calculo saldo
+            $total_comisiones = 0;
+            $saldo = 0;
 
-            if ($FichaArriendo[0]->pago_garantia_propietario == 1) {
-                if ($NumeroLiquidaciones === 0) {
-                    $total_comisiones = calcularTotales($comision_administracion, $comision_arriendo) + $iva_comision_administracion + $iva_comision_arriendo;
-                    $saldo = calcularSaldo($sumAbonos, $comision_administracion + $iva_comision_administracion, $comision_arriendo + $iva_comision_arriendo);
+
+            if ($NumeroLiquidaciones === 0) {
+
+                // calcula la comision de corretaje
+                if ($adm_comision_cobro == true) {
+                    $total_comisiones = calcularTotales($comision_administracion, 0) + $iva_comision_administracion;
+                    $saldo = calcularSaldo($sumAbonos, $comision_administracion + $iva_comision_administracion, 0);
+                    $estado_pago_liquidacion = 0;
                 } else {
-                    $total_comisiones = calcularTotales($comision_arriendo) + $iva_comision_arriendo;
-                    $saldo = calcularSaldo($sumAbonos, $comision_arriendo + $iva_comision_arriendo);
+                    $total_comisiones = $total_comisiones;
+                    $saldo = $sumAbonos;
                 }
-            } else {
-                if ($NumeroLiquidaciones === 0) {
-                    $total_comisiones = calcularTotales($comision_administracion, $comision_arriendo) + $iva_comision_administracion + $iva_comision_arriendo;
-                    $saldo = calcularSaldo($sumAbonos, $comision_administracion + $iva_comision_administracion, $comision_arriendo + $iva_comision_arriendo);
+
+                // calcula la comision de arriendo
+                if ($arriendo_comision_cobro == true) {
+                    $total_comisiones = $total_comisiones + calcularTotales(0, $comision_arriendo) + 0 + $iva_comision_arriendo;
+                    $saldo = $saldo + calcularSaldo($sumAbonos, $comision_arriendo + $iva_comision_arriendo);
+                    $estado_pago_liquidacion = 0;
                 } else {
-                    $total_comisiones = calcularTotales($comision_arriendo) + $iva_comision_arriendo;
-                    $saldo = calcularSaldo($sumAbonos, $comision_arriendo + $iva_comision_arriendo);
+                    $total_comisiones = $total_comisiones;
+                    $saldo = $sumAbonos;
+                }
+                
+            } else {
+
+        
+                // calcula la comision de arriendo
+                if ($arriendo_comision_cobro == true) {
+                    $total_comisiones = $total_comisiones + calcularTotales(0, $comision_arriendo) + 0 + $iva_comision_arriendo;
+                    $saldo = $saldo + calcularSaldo($sumAbonos, $comision_arriendo + $iva_comision_arriendo);
+                    $estado_pago_liquidacion = 0;
+                } else {
+                    $total_comisiones = $total_comisiones;
+                    $saldo = $sumAbonos;
                 }
             }
 
@@ -868,68 +941,30 @@ function generarPDF(
              * 
              */
 
+
             // Mostrar la comisión de corretaje  -- se cambio el nombre del texto ESTO ES CORRETAJE!!!
-            $totalComisionCorretaje = 0;
-            if ($comision_administracion) {
+            if ($adm_comision_cobro == true) {
 
-                if ($NumeroLiquidaciones === 0) {
+                $totalComisionCorretaje = 0;
+                if ($comision_administracion) {
 
+                    if ($NumeroLiquidaciones === 0) {
 
+                        $totalComisionCorretaje = ($comision_administracion + $iva_comision_administracion);
+                        $totalComisionNeto = ($comision_administracion - $iva_comision_administracion);
 
-                    $totalComisionCorretaje = ($comision_administracion + $iva_comision_administracion);
-                    $totalComisionNeto = ($comision_administracion - $iva_comision_administracion);
-
-                    // Si tienes el porcentaje guardado en una variable, por ejemplo $porcentaje_administracion
-                    $pdf->Cell(38, 6, date('d-m-Y'), 1, 0, 'C');
-                    // Concatenar el porcentaje o el valor en el texto
-                    $texto_comision_administracion = "COMISIÓN CORRETAJE (" . $adm_comision_monto  . "%) + IVA";
-                    // Mostrar el texto con el valor concatenado
-                    $pdf->Cell(58, 6, iconv('UTF-8', 'ISO-8859-1', $texto_comision_administracion), 1, 0, 'L');
-                    // Mostrar el valor de la comisión en formato moneda
-                    $pdf->Cell(58, 6, "$" . number_format($totalComisionCorretaje, 0, '', '.'), 1, 0, 'R');
-                    $pdf->Cell(38, 6, "", 1, 1, 'R');
-
-
-                    // guarda el calculo como ficha_arriendo_cta_cte_movimientos
-                    if ($flagCantidadRegistrosGrabados == 1) {
-                        GuardarMovimientosCtaCte(
-                            $services,
-                            $url_services,
-                            $id_ficha_arriendo,
-                            date("Y-m-d"),
-                            date("H:i:s"),
-                            32,
-                            $comision_administracion,
-                            $saldo,
-                            "COMISIÓN CORRETAJE",
-                            'false',
-                            0,
-                            $ficha_tecnica_propiedad,
-                            'false',
-                            0,
-                            0,
-                            $NumeroCierre,
-                            'false',
-                            'false',
-                            date("Y-m-d"),
-                            $ficha_tecnica_propiedad,
-                            0,
-                            1,
-                            "I",
-                        );
-                    }
+                        // Si tienes el porcentaje guardado en una variable, por ejemplo $porcentaje_administracion
+                        $pdf->Cell(38, 6, date('d-m-Y'), 1, 0, 'C');
+                        // Concatenar el porcentaje o el valor en el texto
+                        $texto_comision_administracion = "COMISIÓN CORRETAJE (" . $adm_comision_monto  . "%) + IVA";
+                        // Mostrar el texto con el valor concatenado
+                        $pdf->Cell(58, 6, iconv('UTF-8', 'ISO-8859-1', $texto_comision_administracion), 1, 0, 'L');
+                        // Mostrar el valor de la comisión en formato moneda
+                        $pdf->Cell(58, 6, "$" . number_format($totalComisionCorretaje, 0, '', '.'), 1, 0, 'R');
+                        $pdf->Cell(38, 6, "", 1, 1, 'R');
 
 
-                    // Mostrar el IVA de la comisión de administración
-                    if ($iva_comision_administracion > 0) {
-
-                        //     // Concatenar el porcentaje o el valor en el texto
-                        //     $texto_comision_administracion_iva = "IVA COMISIÓN CORRETAJE (" . $iva  . "%)";
-
-                        //     $pdf->Cell(38, 6, date('d-m-Y'), 1, 0, 'C');
-                        //     $pdf->Cell(58, 6, iconv('UTF-8', 'ISO-8859-1', $texto_comision_administracion_iva), 1, 0, 'L');
-                        //     $pdf->Cell(58, 6, "$" . number_format($iva_comision_administracion, 0, '', '.'), 1, 0, 'R');
-                        //     $pdf->Cell(38, 6, "", 1, 1, 'R');
+                        // guarda el calculo como ficha_arriendo_cta_cte_movimientos
                         if ($flagCantidadRegistrosGrabados == 1) {
                             GuardarMovimientosCtaCte(
                                 $services,
@@ -937,10 +972,10 @@ function generarPDF(
                                 $id_ficha_arriendo,
                                 date("Y-m-d"),
                                 date("H:i:s"),
-                                29,
-                                $iva_comision_administracion,
+                                32,
+                                $comision_administracion,
                                 $saldo,
-                                "IVA COMISIÓN CORRETAJE",
+                                "COMISIÓN CORRETAJE",
                                 'false',
                                 0,
                                 $ficha_tecnica_propiedad,
@@ -953,16 +988,53 @@ function generarPDF(
                                 date("Y-m-d"),
                                 $ficha_tecnica_propiedad,
                                 0,
-                                3,
+                                1,
                                 "I",
                             );
+                        }
+
+
+                        // Mostrar el IVA de la comisión de administración
+                        if ($iva_comision_administracion > 0) {
+
+                            //     // Concatenar el porcentaje o el valor en el texto
+                            //     $texto_comision_administracion_iva = "IVA COMISIÓN CORRETAJE (" . $iva  . "%)";
+
+                            //     $pdf->Cell(38, 6, date('d-m-Y'), 1, 0, 'C');
+                            //     $pdf->Cell(58, 6, iconv('UTF-8', 'ISO-8859-1', $texto_comision_administracion_iva), 1, 0, 'L');
+                            //     $pdf->Cell(58, 6, "$" . number_format($iva_comision_administracion, 0, '', '.'), 1, 0, 'R');
+                            //     $pdf->Cell(38, 6, "", 1, 1, 'R');
+                            if ($flagCantidadRegistrosGrabados == 1) {
+                                GuardarMovimientosCtaCte(
+                                    $services,
+                                    $url_services,
+                                    $id_ficha_arriendo,
+                                    date("Y-m-d"),
+                                    date("H:i:s"),
+                                    29,
+                                    $iva_comision_administracion,
+                                    $saldo,
+                                    "IVA COMISIÓN CORRETAJE",
+                                    'false',
+                                    0,
+                                    $ficha_tecnica_propiedad,
+                                    'false',
+                                    0,
+                                    0,
+                                    $NumeroCierre,
+                                    'false',
+                                    'false',
+                                    date("Y-m-d"),
+                                    $ficha_tecnica_propiedad,
+                                    0,
+                                    3,
+                                    "I",
+                                );
+                            }
                         }
                     }
                 }
             }
-
-
-
 
 
             /***
@@ -973,65 +1045,24 @@ function generarPDF(
              * 
              */
 
-            // Mostrar la comisión de arriendo
-            $TotaComsionConIva = 0;
-            //if ($comision_arriendo) {
+            if ($arriendo_comision_cobro == true) {
 
-            // guarda el calculo como ficha_arriendo_cta_cte_movimientos
-            $TotaComsionConIva = ($comision_arriendo + $iva_comision_arriendo);
-            $totalComisionNeto = ($comision_arriendo - $iva_comision_arriendo);
+                // Mostrar la comisión de arriendo
+                $TotaComsionConIva = 0;
+                //if ($comision_arriendo) {
 
-            // Concatenar el porcentaje o el valor en el texto
-            $texto_comision_arriendo_iva = "COMISIÓN ADMINISTRACIÓN (" . $arriendo_comision_monto . "%) + IVA ";
+                // guarda el calculo como ficha_arriendo_cta_cte_movimientos
+                $TotaComsionConIva = ($comision_arriendo + $iva_comision_arriendo);
+                $totalComisionNeto = ($comision_arriendo - $iva_comision_arriendo);
 
-            $pdf->Cell(38, 6, date('d-m-Y'), 1, 0, 'C');
-            $pdf->Cell(58, 6, iconv('UTF-8', 'ISO-8859-1', $texto_comision_arriendo_iva), 1, 0, 'L');
-            $pdf->Cell(58, 6, "$" . number_format($TotaComsionConIva, 0, '', '.'), 1, 0, 'R');
-            $pdf->Cell(38, 6, "", 1, 1, 'R');
+                // Concatenar el porcentaje o el valor en el texto
+                $texto_comision_arriendo_iva = "COMISIÓN ADMINISTRACIÓN (" . $arriendo_comision_monto . "%) + IVA ";
 
+                $pdf->Cell(38, 6, date('d-m-Y'), 1, 0, 'C');
+                $pdf->Cell(58, 6, iconv('UTF-8', 'ISO-8859-1', $texto_comision_arriendo_iva), 1, 0, 'L');
+                $pdf->Cell(58, 6, "$" . number_format($TotaComsionConIva, 0, '', '.'), 1, 0, 'R');
+                $pdf->Cell(38, 6, "", 1, 1, 'R');
 
-            if ($flagCantidadRegistrosGrabados == 1) {
-                GuardarMovimientosCtaCte(
-                    $services,
-                    $url_services,
-                    $id_ficha_arriendo,
-                    date("Y-m-d"),
-                    date("H:i:s"),
-                    10,
-                    $comision_arriendo,
-                    $saldo,
-                    "COMISIÓN ADMINISTRACIÓN",
-                    'false',
-                    0,
-                    $ficha_tecnica_propiedad,
-                    'false',
-                    0,
-                    0,
-                    $NumeroCierre,
-                    'false',
-                    'false',
-                    date("Y-m-d"),
-                    $ficha_tecnica_propiedad,
-                    0,
-                    3,
-                    "I",
-
-                );
-            }
-
-
-            //}
-
-            // Mostrar el IVA de la comisión de arriendo
-            if ($iva_comision_arriendo > 0) {
-
-                //     // Concatenar el porcentaje o el valor en el texto
-                //     $texto_comision_arriendo_iva = "IVA COMISIÓN ADMINISTRACIÓN (" . $iva  . "%)";
-
-                //     $pdf->Cell(38, 6, date('d-m-Y'), 1, 0, 'C');
-                //     $pdf->Cell(58, 6, iconv('UTF-8', 'ISO-8859-1',      $texto_comision_arriendo_iva), 1, 0, 'L');
-                //     $pdf->Cell(58, 6, "$" . number_format($iva_comision_arriendo, 0, '', '.'), 1, 0, 'R');
-                //     $pdf->Cell(38, 6, "", 1, 1, 'R');
 
                 if ($flagCantidadRegistrosGrabados == 1) {
                     GuardarMovimientosCtaCte(
@@ -1040,10 +1071,10 @@ function generarPDF(
                         $id_ficha_arriendo,
                         date("Y-m-d"),
                         date("H:i:s"),
-                        24,
-                        $iva_comision_arriendo,
+                        10,
+                        $comision_arriendo,
                         $saldo,
-                        "IVA COMISIÓN ADMINISTRACIÓN",
+                        "COMISIÓN ADMINISTRACIÓN",
                         'false',
                         0,
                         $ficha_tecnica_propiedad,
@@ -1058,9 +1089,54 @@ function generarPDF(
                         0,
                         3,
                         "I",
+
                     );
                 }
+
+
+                // Mostrar el IVA de la comisión de arriendo
+                if ($iva_comision_arriendo > 0) {
+
+                    //     // Concatenar el porcentaje o el valor en el texto
+                    //     $texto_comision_arriendo_iva = "IVA COMISIÓN ADMINISTRACIÓN (" . $iva  . "%)";
+
+                    //     $pdf->Cell(38, 6, date('d-m-Y'), 1, 0, 'C');
+                    //     $pdf->Cell(58, 6, iconv('UTF-8', 'ISO-8859-1',      $texto_comision_arriendo_iva), 1, 0, 'L');
+                    //     $pdf->Cell(58, 6, "$" . number_format($iva_comision_arriendo, 0, '', '.'), 1, 0, 'R');
+                    //     $pdf->Cell(38, 6, "", 1, 1, 'R');
+
+                    if ($flagCantidadRegistrosGrabados == 1) {
+                        GuardarMovimientosCtaCte(
+                            $services,
+                            $url_services,
+                            $id_ficha_arriendo,
+                            date("Y-m-d"),
+                            date("H:i:s"),
+                            24,
+                            $iva_comision_arriendo,
+                            $saldo,
+                            "IVA COMISIÓN ADMINISTRACIÓN",
+                            'false',
+                            0,
+                            $ficha_tecnica_propiedad,
+                            'false',
+                            0,
+                            0,
+                            $NumeroCierre,
+                            'false',
+                            'false',
+                            date("Y-m-d"),
+                            $ficha_tecnica_propiedad,
+                            0,
+                            3,
+                            "I",
+                        );
+                    }
+                }
             }
+
+
+            //}
 
 
 
@@ -1264,9 +1340,6 @@ function generarPDF(
             }
 
 
-
-            // Mostrar totales
-
             $totales = ($total_comisiones + $sumCargos + $TotalAnticipos + $TotalRetenciones);
 
             $pdf->Cell(38, 6, "", 1, 0, 'L');
@@ -1284,6 +1357,8 @@ function generarPDF(
             $pdf->Cell(58, 6, "SALDO:", 1, 0, 'R');
             $pdf->SetFont('Arial', '', 8);
             $pdf->Cell(96, 6, "$" . number_format($totalSaldos, 0, '', '.'), 1, 1, 'R');
+
+
 
             /***
              * 
@@ -1342,7 +1417,7 @@ function generarPDF(
                 $sumAbonos,
                 $totales,
                 $totalPagar,
-                0, // 0 no pagado 1 pagado 2 depositado
+                $estado_pago_liquidacion, // 0 no pagado 1 pagado 2 depositado
                 $NumeroCierre,
                 $participacion
             );
@@ -1552,6 +1627,16 @@ function procesarLiquidacion($ficha_tecnica_propiedad, $services, $url_services,
         }
         $idCuota = $idCuotas[0]->id;
 
+        // pregunta si cobrar o no comision arriendo
+        $PagaComisionArriendo = CobrarAdministracionArriendo($QueryBuilder, $id_ficha_arriendo);
+        $adm_comision_cobro = $PagaComisionArriendo[0]['adm_comision_cobro'];
+
+        // pregunta si cobrar o no comision corretaje
+        $PagaComisionCorretaje = CobrarAdministraCorretaje($QueryBuilder, $id_ficha_arriendo);
+        $arriendo_comision_cobro = $PagaComisionCorretaje[0]['arriendo_comision_cobro'];
+
+
+
 
         // Obtener Valores Garantia
         $MontoGarantiaCuota = ObtenerValorGarantias($QueryBuilder, $id_ficha_arriendo);
@@ -1668,7 +1753,9 @@ function procesarLiquidacion($ficha_tecnica_propiedad, $services, $url_services,
                 $flagCantidadRegistrosGrabados,
                 $NumeroCierre,
                 $flagRetencion,
-                $id_liquidacion_para_consulta
+                $id_liquidacion_para_consulta,
+                $adm_comision_cobro,
+                $arriendo_comision_cobro
             );
 
             // Generar el PDF para el propietario actual

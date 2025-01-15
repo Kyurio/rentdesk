@@ -1780,3 +1780,64 @@ if (is_array($id)) {
         $rutasPDF[] = $archivoGenerado;
     }
 }
+
+
+
+
+// respaldo
+
+
+
+if ($FichaArriendo[0]->pago_garantia_propietario == 1) {
+
+    if ($NumeroLiquidaciones === 0) {
+
+    
+        if($adm_comision_cobro == true){
+            $total_comisiones = calcularTotales($comision_administracion, $comision_arriendo) + $iva_comision_administracion + $iva_comision_arriendo;
+            $saldo = calcularSaldo($sumAbonos, $comision_administracion + $iva_comision_administracion, $comision_arriendo + $iva_comision_arriendo);    
+        }else{
+            $total_comisiones = 0;
+            $saldo = $sumAbonos;
+       
+        }
+
+        if($arriendo_comision_cobro == true){
+            $total_comisiones = calcularTotales($comision_administracion, $comision_arriendo) + $iva_comision_administracion + $iva_comision_arriendo;
+            $saldo = calcularSaldo($sumAbonos, $comision_administracion + $iva_comision_administracion, $comision_arriendo + $iva_comision_arriendo);    
+        }else{
+            $total_comisiones = $total_comisiones;
+            $saldo = $sumAbonos;
+       
+        }
+    
+    
+    
+    } else {
+
+
+        if($adm_comision_cobro == true){
+            $total_comisiones = calcularTotales($comision_administracion, $comision_arriendo) + $iva_comision_administracion + $iva_comision_arriendo;
+            $saldo = calcularSaldo($sumAbonos, $comision_administracion + $iva_comision_administracion, $comision_arriendo + $iva_comision_arriendo);    
+        }else{
+            $total_comisiones = 0;
+            $saldo = $sumAbonos;
+       
+        }
+   
+   
+    }
+} else {
+
+
+    if ($NumeroLiquidaciones === 0) {
+        $total_comisiones = calcularTotales($comision_administracion, $comision_arriendo) + $iva_comision_administracion + $iva_comision_arriendo;
+        $saldo = calcularSaldo($sumAbonos, $comision_administracion + $iva_comision_administracion, $comision_arriendo + $iva_comision_arriendo);
+    } else {
+        $total_comisiones = calcularTotales($comision_arriendo) + $iva_comision_arriendo;
+        $saldo = calcularSaldo($sumAbonos, $comision_arriendo + $iva_comision_arriendo);
+    }
+
+
+
+}
