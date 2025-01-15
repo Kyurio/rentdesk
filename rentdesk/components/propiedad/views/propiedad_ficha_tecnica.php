@@ -438,14 +438,7 @@
 						<div class="card">
 							<div class="card-body">
 								<h3>Propietarios</h3>
-								<!-- <div class="row">
-										<ul>
-											<li><span>Saldo al día: $0</span></li>
-											<li><span>Saldo histórico: $0</span></li>
-										</ul>
-
-
-									</div> -->
+						
 								<div class="row">
 									<!-- <h6 class="text-muted my-4 display-6">Movimientos</h6> -->
 
@@ -477,30 +470,7 @@
 														</thead>
 														<tbody>
 
-															<?php /* foreach ($dataTableCoPropietarios as $row) : ?>
-																<tr>
-																	<?php foreach ($row as $key => $cell) : ?>
-
-																		<td><?php echo $cell; ?></td>
-
-																	<?php endforeach; ?>
-																	<!-- <td>
-																									<a href="index.php?component=propiedad&view=propiedad_ficha_tecnica" type="button" class="btn btn-info m-0" style="padding: .5rem;" title="Ver Ficha Técnica">
-																									<i class="fa-solid fa-magnifying-glass" style="font-size: .75rem;"></i>
-																									</a>
-																									</td> -->
-																	<td>
-																		<div class="d-flex" style="gap: .5rem;">
-																			<!-- <a href="index.php?component=propiedad&view=propiedad" type="button" class="btn btn-info m-0" style="padding: .5rem;" aria-label="Editar" title="Editar">
-																				<i class="fa-regular fa-pen-to-square" style="font-size: .75rem;"></i>
-																			</a> -->
-																			<button type="button" class="btn btn-danger m-0" style="padding: .5rem;" title="Eliminar">
-																				<i class="fa-regular fa-trash-can" style="font-size: .75rem;"></i>
-																			</button>
-																		</div>
-																	</td>
-																</tr>
-															<?php endforeach;*/ ?>
+														
 														</tbody>
 														<tfoot>
 															<td></td>
@@ -530,6 +500,7 @@
 										</div>
 									</div>
 								</div>
+
 								<div class="row">
 
 									<form name="formulario-propietario" id="formulario-propietario" method="post" action="" enctype="multipart/form-data" class="my-3" style="padding-left:0px; padding-right:0px;">

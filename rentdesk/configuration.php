@@ -20,7 +20,7 @@ class Config
 	public $dir_origen = 'Av. Andres Bello 2777 Oficina 1902'; 
 	public $comuna_origen = 'Las Condes';
 	public $ciudad_origen = 'Santiago';
-	public $cdg_item_tipo = '';
+
 
 
 	
