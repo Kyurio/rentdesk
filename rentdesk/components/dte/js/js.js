@@ -64,8 +64,6 @@ function toggleGenerarDTE() {
 function toggleSelectAll() {
 
 
-    alert("_.....hola.....");
-
     // Selección de todos los checkboxes
     const checkboxes = document.querySelectorAll('.row-check');
     const button = document.getElementById('select-all');
