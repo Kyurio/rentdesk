@@ -1811,7 +1811,9 @@
 
 					<form action="POST" id="formRecordatorio">
 						<div class="row mb-3">
-							<div class="col-md-6">
+
+							<div class="row mb-3">
+
 								<label for="tipoRecordatorio" class="form-label">
 									<span class="obligatorio">*</span> Tipo Recordatorio
 								</label>
@@ -1820,33 +1822,37 @@
 									<!-- Opciones de tipo de recordatorio aquí -->
 								</select>
 							</div>
-
-							<label for="nombreEjecutivo" class="form-label">Ejecutivo</label>
-							<select class="form-control" id="nombreEjecutivo" name="nombreEjecutivo[]" multiple="multiple" required>
-								<option value="">Seleccione uno o más ejecutivos</option>
-							</select>
-
-
-
-							<div class="row mb-3">
-								<div class="col-md-6">
-									<label for="fechaNotificacion" class="form-label">
-										<span class="obligatorio">*</span> Fecha Notificación
-									</label>
-									<input type="date" class="form-control" id="fechaNotificacion" name="fechaNotificacion" required>
-								</div>
+							<div class="col-md-6"> <label for="nombreEjecutivo" class="form-label">Ejecutivo</label>
+								<select class="form-control" id="nombreEjecutivo" name="nombreEjecutivo[]" multiple="multiple" required>
+									<option value="">Seleccione uno o más ejecutivos</option>
+								</select>
 							</div>
+						</div>
 
-							<div class="row mb-3">
-								<div class="col-md-12">
-									<label for="descripcionRecordatorio" class="form-label">Descripción</label>
-									<input type="text" class="form-control" id="descripcionRecordatorio" name="descripcionRecordatorio" placeholder="Descripción" required>
-								</div>
+
+
+
+
+
+						<div class="row mb-3">
+							<div class="col-md-6">
+								<label for="fechaNotificacion" class="form-label">
+									<span class="obligatorio">*</span> Fecha Notificación
+								</label>
+								<input type="date" class="form-control" id="fechaNotificacion" name="fechaNotificacion" required>
 							</div>
+						</div>
 
-							<!-- Otros campos del formulario -->
-							<input type="hidden" id="idPropiedad" name="idPropiedad">
-							<input type="hidden" id="idEjecutivo" name="idEjecutivo">
+						<div class="row mb-3">
+							<div class="col-md-12">
+								<label for="descripcionRecordatorio" class="form-label">Descripción</label>
+								<input type="text" class="form-control" id="descripcionRecordatorio" name="descripcionRecordatorio" placeholder="Descripción" required>
+							</div>
+						</div>
+
+						<!-- Otros campos del formulario -->
+						<input type="hidden" id="idPropiedad" name="idPropiedad">
+						<input type="hidden" id="idEjecutivo" name="idEjecutivo">
 					</form>
 
 					<div class="modal-footer">
