@@ -100,9 +100,9 @@ $(document).ready(function () {
 			success: function (response) {
 				let data = response; // Ya está parseado en JSON
 
-				$('#nombreEjecutivo')
-					.empty()
-					.append('<option value="">Seleccione uno o más ejecutivos</option>');
+				// $('#nombreEjecutivo')
+				// 	.empty()
+				// 	.append('<option value="">Seleccione uno o más ejecutivos</option>');
 
 				data.forEach(function (ejecutivo) {
 					$('#nombreEjecutivo').append(
@@ -7972,7 +7972,7 @@ function ListadoNotificaciones() {
 			},
 			{ data: 'tipo_recordatorio' },
 			{ data: 'descripcion' },
-			{ data: 'id_ejecutivo' },
+			{ data: 'ejecutivo' },
 			{
 				data: null,
 				orderable: false,

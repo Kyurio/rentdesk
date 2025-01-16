@@ -1811,9 +1811,7 @@
 
 					<form action="POST" id="formRecordatorio">
 						<div class="row mb-3">
-
-							<div class="row mb-3">
-
+							<div class="col-md-6">
 								<label for="tipoRecordatorio" class="form-label">
 									<span class="obligatorio">*</span> Tipo Recordatorio
 								</label>
@@ -1822,15 +1820,13 @@
 									<!-- Opciones de tipo de recordatorio aquí -->
 								</select>
 							</div>
-							<div class="col-md-6"> <label for="nombreEjecutivo" class="form-label">Ejecutivo</label>
+
+							<div class="col-md-6"> <label for="nombreEjecutivo" class="form-label"> <span class="obligatorio">*</span> Ejecutivo</label>
 								<select class="form-control" id="nombreEjecutivo" name="nombreEjecutivo[]" multiple="multiple" required>
-									<option value="">Seleccione uno o más ejecutivos</option>
+
 								</select>
 							</div>
 						</div>
-
-
-
 
 
 
