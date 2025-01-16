@@ -256,7 +256,16 @@ try {
         }
 
         if (!$NroFolio) {
-            throw new Exception("Folios agotados o con problemas para generar la factura.");
+            //throw new Exception("");
+
+            header('Content-Type: application/json; charset=utf-8');
+            echo json_encode([
+                'status' => 'errro',
+                'message' => 'Folios agotados o con problemas para generar la factura.',
+
+            ]);
+            exit;
+            
         } else {
 
             /**
@@ -332,12 +341,12 @@ try {
                 $dir_origen = $config->dir_origen;; // Fuenzalida
                 $comuna_origen = $config->comuna_origen;
                 $ciudad_origen = $config->ciudad_origen;
-                $cdg_item_tipo = $config->cdg_item_tipo;
+                $cdg_item_tipo = '';
 
                 // Convertir comuna y ciudad a UTF-8
                 $CmnaRecep = $row['comuna'];
                 $DirRecep = $row['comuna'];
-             
+
 
                 // Datos de la factura
                 $data = [
@@ -429,11 +438,14 @@ try {
                                 // Guardar el PDF
                                 //file_put_contents("factura_$NroFolio.pdf", $pdfContent);
 
+                                // Respuesta exitosa
+                                header('Content-Type: application/json; charset=utf-8');
                                 echo json_encode([
                                     'status' => 'success',
                                     'message' => 'Factura procesada correctamente.',
 
                                 ]);
+                                exit;
                             }
                         }
                     } catch (Exception $e) {
@@ -450,7 +462,7 @@ try {
     } // end for 
 } catch (Exception $e) {
     // Manejo de errores generales
-    // header('Content-Type: application/json', true, 500);
+    header('Content-Type: application/json', true, 500);
     echo json_encode([
         'status' => 'error',
         'message' => $e->getMessage(),

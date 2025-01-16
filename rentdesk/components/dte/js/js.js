@@ -1,20 +1,28 @@
 // Cargar los datos en la tabla
 async function TablaLlenarLiquidaciones() {
     try {
+        // Verificar y destruir DataTable si ya existe
+        const tableSelector = '#liq-generacion-masiva-table';
+        if ($.fn.DataTable.isDataTable(tableSelector)) {
+            $(tableSelector).DataTable().destroy();
+        }
+
+        // Fetch para obtener los datos
         const response = await fetch('components/dte/models/GetDTE.php');
         if (!response.ok) throw new Error(`Error: ${response.status} ${response.statusText}`);
 
         const data = await response.json();
+
+        // Referencia al cuerpo de la tabla y limpieza
         const tableBody = document.getElementById("cierre-liquidaciones-tab-pane");
-        tableBody.innerHTML = ''; // Limpiar la tabla antes de llenar
+        tableBody.innerHTML = '';
 
-        // Crear fragmento para mejor rendimiento
+        // Crear filas dinámicamente
         const fragment = document.createDocumentFragment();
-
         data.forEach(item => {
             const fecha = new Date(item.fecha_liquidacion);
             const fechaFormateada = `${('0' + fecha.getDate()).slice(-2)}-${('0' + (fecha.getMonth() + 1)).slice(-2)}-${fecha.getFullYear()}`;
-            const montoFormateadoArrinedo = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(item.comision_arriendo);
+            const montoFormateadoArriendo = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(item.comision_arriendo);
             const montoFormateadoAdministracion = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(item.comision_administracion);
 
             const row = document.createElement('tr');
@@ -31,20 +39,20 @@ async function TablaLlenarLiquidaciones() {
                     <input type="hidden" value="${item.documento_arriendo}">
                 </td>
                 <td>${item.id_liquidacion}</td>
-                <td>${montoFormateadoArrinedo}</td>
+                <td>${montoFormateadoArriendo}</td>
                 <td>${montoFormateadoAdministracion}</td>
                 <td>${item.direccion}</td>
                 <td>${fechaFormateada}</td>
             `;
             fragment.appendChild(row);
         });
-
         tableBody.appendChild(fragment);
 
-        // Reinicializar DataTable
-        $('#liq-generacion-masiva-table').DataTable().destroy();
-        $('#liq-generacion-masiva-table').DataTable();
-
+        // Inicializar DataTable
+        $(tableSelector).DataTable({
+            order: [[1, 'asc']], // Ordenar por el ID de liquidación
+            pageLength: 10,      // Registros por página
+        });
     } catch (error) {
         console.error('Error al obtener los datos:', error);
     }
@@ -62,9 +70,6 @@ function toggleGenerarDTE() {
 
 // Función para seleccionar o deseleccionar todas las filas
 function toggleSelectAll() {
-
-
-    alert("_.....hola.....");
 
     // Selección de todos los checkboxes
     const checkboxes = document.querySelectorAll('.row-check');
@@ -95,10 +100,7 @@ function toggleSelectAll() {
 
 // genera el documento y envia a la url correcta segun el tipo de doc 
 async function GenerarDocumento() {
-
-    let message;
     const checkboxes = document.querySelectorAll('.row-check:checked');
-
     if (checkboxes.length === 0) {
         Swal.fire({
             icon: 'warning',
@@ -112,117 +114,105 @@ async function GenerarDocumento() {
     const selectedItems = Array.from(checkboxes).map(checkbox => {
         const row = checkbox.closest('tr');
         if (!row) return null;
-
-        const idLiquidacion = row.querySelector('input[type="hidden"]:nth-child(2)')?.value || null;
-        const documentoComision = row.querySelector('input[type="hidden"]:nth-child(3)')?.value || null;
-        const documentoArriendo = row.querySelector('input[type="hidden"]:nth-child(4)')?.value || null;
-
-        return { idLiquidacion, documentoComision, documentoArriendo };
+        return {
+            idLiquidacion: row.querySelector('input[type="hidden"]:nth-child(2)')?.value || null,
+            documentoComision: row.querySelector('input[type="hidden"]:nth-child(3)')?.value || null,
+            documentoArriendo: row.querySelector('input[type="hidden"]:nth-child(4)')?.value || null,
+        };
     }).filter(item => item !== null);
 
-    try {
-        let totalSuccess = 0;
-        let totalErrors = 0;
-        const errorMessages = [];
+    Swal.fire({
+        title: 'Generando documentos...',
+        text: 'Por favor, espera mientras se procesan los documentos.',
+        allowOutsideClick: false,
+        didOpen: () => Swal.showLoading(),
+    });
 
-        // Mostrar el preloader
-        Swal.fire({
-            title: 'Generando documentos...',
-            text: 'Por favor, espera mientras se procesan los documentos.',
-            allowOutsideClick: false,
-            didOpen: () => {
-                Swal.showLoading();
-            },
-        });
+    let totalSuccess = 0;
+    let totalErrors = 0;
+    const errorMessages = [];
 
-        for (const item of selectedItems) {
-            let action = '';
-            const type = item.documentoComision || item.documentoArriendo;
-
-            // Determinar la acción según el tipo de documento
-            switch (type) {
-                case '1':
-                    action = 'components/dte/models/GenerarXMLFactura.php';
-                    break;
-                case '3':
-                    action = 'components/dte/models/GenerarXMLBoleta.php';
-                    break;
-                case '9':
-                    action = 'components/dte/models/GenerarXMLNotaCredito.php';
-                    break;
-                default:
-                    Swal.fire({
-                        icon: 'info',
-                        title: 'Acción no determinada',
-                        text: `No se pudo determinar la acción para la liquidación ${item.idLiquidacion}.`,
-                        confirmButtonText: 'Ok',
-                    });
-                    totalErrors++;
-                    continue;
-            }
-
-            const formData = new FormData();
-            formData.append('id_liquidacion', item.idLiquidacion);
-
-            try {
-                const response = await fetch(action, {
-                    method: 'POST',
-                    body: formData,
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Error del servidor: ${response.statusText}`);
-                }
-
-                const result = await response.json();
-                message = result;
-
-
-                if (result.status) {
-                    throw new Error(result.message || 'No se generó el documento.');
-                }
-
-                if (result.status === 'success' && result.file) {
-                    totalSuccess++;
-                } else {
-                    throw new Error('No se generó un archivo válido.');
-                }
-            } catch (error) {
+    for (const item of selectedItems) {
+        const type = item.documentoComision || item.documentoArriendo;
+        let action = '';
+        switch (type) {
+            case '1':
+                action = 'components/dte/models/GenerarXMLFactura.php';
+                break;
+            case '3':
+                action = 'components/dte/models/GenerarXMLBoleta.php';
+                break;
+            case '9':
+                action = 'components/dte/models/GenerarXMLNotaCredito.php';
+                break;
+            default:
+                errorMessages.push(`Liquidación ${item.idLiquidacion}: Tipo de documento no reconocido.`);
                 totalErrors++;
-                errorMessages.push(error.message);
-                console.error(`Error procesando la liquidación ${item.idLiquidacion}:`, error);
+                continue;
+        }
+
+        const formData = new FormData();
+        formData.append('id_liquidacion', item.idLiquidacion);
+
+        try {
+            const response = await fetch(action, {
+                method: 'POST',
+                body: formData,
+            });
+
+            // Obtener la respuesta como texto para manejar múltiples JSON
+            const responseText = await response.text();
+            console.log('Respuesta completa del servidor:', responseText);
+
+            // Dividir la respuesta en múltiples objetos JSON
+            const jsonStrings = responseText.split('\n').filter(line => line.trim() !== '');
+
+            for (const jsonString of jsonStrings) {
+                try {
+                    const result = JSON.parse(jsonString);
+
+                    if (result.status === 'success') {
+                        totalSuccess++;
+                    } else {
+                        throw new Error(result.message || 'Error desconocido.');
+                    }
+                } catch (error) {
+                    totalErrors++;
+                    errorMessages.push(`Error: ${error.message}`);
+                    console.error('Error:', error);
+                }
             }
+        } catch (error) {
+            totalErrors++;
+            errorMessages.push(`Error general: ${error.message}`);
+            console.error('Error general:', error);
         }
 
-        Swal.close();
 
-        const errorSummary = errorMessages.length > 0 ? errorMessages.join('<br>') : '';
-        Swal.fire({
-            icon: totalErrors > 0 ? 'warning' : 'success',
-            title: 'Proceso terminado',
-            html: `${errorSummary}`,
-            confirmButtonText: 'Entendido',
-        });
 
-        if (totalErrors > 0) {
-            console.warn('Errores detallados:', errorMessages);
-        }
-
-        // Actualizar la tabla
-        TablaLlenarLiquidaciones();
-        $('#historial-dte-tab').click();
-
-    } catch (error) {
-        Swal.close();
-
-        Swal.fire({
-            icon: 'error',
-            title: 'Error inesperado',
-            text: `Error general: ${error.message}`,
-            confirmButtonText: 'Entendido',
-        });
-        console.error('Error general:', error);
     }
+
+    Swal.close();
+
+    Swal.fire({
+        icon: totalErrors > 0 ? 'warning' : 'success',
+        title: 'Proceso terminado',
+        html: `
+            <p><strong>Éxitos:</strong> ${totalSuccess}</p>
+            ${totalErrors > 0 ? `<p><strong>Errores:</strong> ${totalErrors}</p><p>Detalles:<br>${errorMessages.join('<br>')}</p>` : ''}
+        `,
+        confirmButtonText: 'Entendido',
+    });
+
+
+    if (totalErrors > 0) {
+        console.warn('Errores detallados:', errorMessages);
+    }
+
+    // Recarga la tabla solo aquí
+    await TablaLlenarLiquidaciones();
+
+    $('#historial-dte-tab').click();
 }
 
 // listado historial liquidacione
