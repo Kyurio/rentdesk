@@ -15,12 +15,13 @@
         <div class="tab-pane fade show active" id="genera-dte-tab-pane" role="tabpanel" aria-labelledby="genera-dte-tab" tabindex="0">
 
             <div class="card mt-5">
+                
                 <div class="card-header">
                     <!-- Botones de selección y generación de DTE -->
-                    <button id="select-all" class="btn btn-info mb-3" onclick="toggleSelectAll()">Seleccionar Todos</button>
+                    <button id="select-all" class="btn btn-info mb-3">Seleccionar Todos</button>
                     <button id="generarDTE" class="btn btn-secondary mb-3" onclick="GenerarDocumento()" disabled>Generar DTE</button>
-
                 </div>
+
 
                 <div class="card-body">
 

@@ -119,6 +119,7 @@ try {
         false          // debug para ver el SQL generado
     );
 
+
     // url del servicio
     $url = $config->url_DTE; //'https://dteqa.arpis.cl/WSFactLocal/DteLocal.asmx?WSDL';
     $fecha =  date('Y-m-d') . 'T' . date('H:i:s');
@@ -202,7 +203,7 @@ try {
         $cdgItem->appendChild($dom->createElement('VlrCodigo', $data['cdg_item_valor']));
 
         $detalle->appendChild($dom->createElement('NmbItem', $data['nombre_item']));
-        $detalle->appendChild($dom->createElement('DscItem', $data['nombre_item']));
+        $detalle->appendChild($dom->createElement('DscItem', $data['descripcion_item']));
         $detalle->appendChild($dom->createElement('QtyItem', $data['cantidad_item']));
         $detalle->appendChild($dom->createElement('UnmdItem', 'UNI'));
         $detalle->appendChild($dom->createElement('PrcItem', $data['precio_item']));
@@ -319,6 +320,8 @@ try {
                 $Contacto = isset($row['correo_electronico']) ? $row['correo_electronico'] : '';
                 $DirPostal = $row['direccion'];
 
+                $descripcion_item = $row['direccion'];
+
                 // Convertir comuna y ciudad a UTF-8
                 $CmnaPostal = mb_convert_encoding($row['comuna'], 'UTF-8', 'ISO-8859-1');
                 $CiudadRecep = mb_convert_encoding($row['comuna'], 'UTF-8', 'ISO-8859-1');
@@ -363,6 +366,7 @@ try {
                     'comuna_origen' => eliminarTildes(strtoupper($comuna_origen)),
                     'ciudad_origen' => eliminarTildes(strtoupper($ciudad_origen)),
                     'nombre_item' =>  eliminarTildes(strtoupper($descripcionCobro)),
+                    'descripcion_item' => eliminarTildes(strtoupper($descripcion_item)),
                     'cantidad_item' => $cantidadItems,
                     'precio_item' => $precio_item,
                     'mnt_bruto' => $monto_neto,

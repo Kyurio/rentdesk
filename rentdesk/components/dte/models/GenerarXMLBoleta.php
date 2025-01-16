@@ -405,6 +405,7 @@ try {
             $rut = $config->rut;
             $rut_empresa = $config->rut_empresa;
             $id_liquidacion = $row['id_liquidacion_comision'];
+            $descripcion_item = $row['direccion'];
 
             // Solicitar número de folio
             $folioResult = SolicitarFolio($url, $tipo_doc);
@@ -419,7 +420,7 @@ try {
 
                 ]);
                 exit;
-                
+
             } else {
 
                 // Convertir y concatenar el nombre completo del propietario
@@ -481,6 +482,7 @@ try {
                     'comuna_origen' =>   eliminarTildes(strtoupper($comuna_origen)),
                     'ciudad_origen' =>  eliminarTildes(strtoupper($ciudad_origen)),
                     'nombre_item' =>   substr(eliminarTildes(strtoupper($descripcionCobro)), 0, 100),
+                    'descripcion_item' =>   substr(eliminarTildes(strtoupper($descripcion_item)), 0, 100),
                     'cantidad_item' => $cantidadItems,
                     'precio_item' => $precio_item,
                     'mnt_bruto' => $monto_neto,

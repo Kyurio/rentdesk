@@ -60,30 +60,26 @@ async function TablaLlenarLiquidaciones() {
 
 // Función para habilitar/deshabilitar el botón Generar DTE
 function toggleGenerarDTE() {
-
     const checkboxes = document.querySelectorAll('.row-check');
     const generarDTEButton = document.getElementById('generarDTE');
     const anyChecked = Array.from(checkboxes).some(checkbox => checkbox.checked);
     generarDTEButton.disabled = !anyChecked;
-
 }
 
 // Función para seleccionar o deseleccionar todas las filas
 function toggleSelectAll() {
-
-    // Selección de todos los checkboxes
     const checkboxes = document.querySelectorAll('.row-check');
     const button = document.getElementById('select-all');
-
-    // Determina si todos están seleccionados
+    
+    // Determinar si todos están seleccionados
     const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
 
-    // Cambia el estado de los checkboxes
+    // Cambiar el estado de los checkboxes
     checkboxes.forEach(checkbox => {
         checkbox.checked = !allChecked;
     });
 
-    // Cambia el texto y color del botón
+    // Actualizar el texto y estilo del botón
     if (!allChecked) {
         button.innerHTML = 'Deseleccionar todos';
         button.classList.remove('btn-info');
@@ -94,7 +90,7 @@ function toggleSelectAll() {
         button.classList.add('btn-info');
     }
 
-    // Actualiza el botón Generar DTE
+    // Actualizar el estado del botón Generar DTE
     toggleGenerarDTE();
 }
 
@@ -354,6 +350,7 @@ async function obtenerDTE(tipoDocumento, folio) {
         console.error('Error al obtener el DTE:', error);
     }
 }
+
 
 // Cargar la tabla y agregar eventos a los botones al cargar el DOM
 $(document).ready(function () {
