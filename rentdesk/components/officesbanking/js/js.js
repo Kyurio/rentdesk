@@ -262,6 +262,10 @@ function descargarTxt(datos, id_officebanking, tasks) {
 		// Formatear los datos como texto de tabla
 		const texto = formatToTable(datosCombinados);
 
+		if (texto === false) {
+			return;
+		}
+
 		// Crear un Blob para el texto
 		const blob = new Blob([texto], { type: 'text/plain' });
 
@@ -343,9 +347,13 @@ function combinarDatos(datos) {
 function formatToTable(data) {
 	let output = '';
 
-	// Verificar si el array es válido y tiene datos
+	// // Verificar si el array es válido y tiene datos
+	// if (!Array.isArray(data) || data.length === 0) {
+	// 	return 'No hay datos disponibles';
+	// }
+
 	if (!Array.isArray(data) || data.length === 0) {
-		return 'No hay datos disponibles';
+		return false;
 	}
 
 	// Obtener las cabeceras de las columnas usando el primer objeto del array
