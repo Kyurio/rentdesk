@@ -916,10 +916,9 @@ function generarPDF(
                     $total_comisiones = $total_comisiones;
                     $saldo = $sumAbonos;
                 }
-                
             } else {
 
-        
+
                 // calcula la comision de arriendo
                 if ($arriendo_comision_cobro == true) {
                     $total_comisiones = $total_comisiones + calcularTotales(0, $comision_arriendo) + 0 + $iva_comision_arriendo;
@@ -1423,16 +1422,19 @@ function generarPDF(
             );
 
             // guarda el detalle de liquidacion de  comsion arriendo
+
             if ($NumeroLiquidaciones === 0) {
-                GuardarDetalleLiquidacion(
-                    $services,
-                    $url_services,
-                    $ficha_tecnica_propiedad,
-                    'COMISIÓN ARRIENDO',
-                    $comision_administracion,
-                    $iva,
-                    $id_liquidacion
-                );
+                if ($adm_comision_cobro == true) {
+                    GuardarDetalleLiquidacion(
+                        $services,
+                        $url_services,
+                        $ficha_tecnica_propiedad,
+                        'COMISIÓN CORRETAJE',
+                        $comision_administracion,
+                        $iva,
+                        $id_liquidacion
+                    );
+                }
             }
 
             // guarda el detalle de liquidacion de iva comsion corretaje
@@ -1447,15 +1449,22 @@ function generarPDF(
             // );
 
             // guarda el detalle de liquidacion de COMISIÓN ADMINISTRACIÓN
-            GuardarDetalleLiquidacion(
-                $services,
-                $url_services,
-                $ficha_tecnica_propiedad,
-                'COMISIÓN ADMINISTRACIÓN',
-                $comision_arriendo,
-                $iva,
-                $id_liquidacion
-            );
+
+
+
+
+            if ($arriendo_comision_cobro == true) {
+
+                GuardarDetalleLiquidacion(
+                    $services,
+                    $url_services,
+                    $ficha_tecnica_propiedad,
+                    'COMISIÓN ADMINISTRACIÓN',
+                    $comision_arriendo,
+                    $iva,
+                    $id_liquidacion
+                );
+            }
 
             // guarda el detalle de liquidacion IVA COMISIÓN ADMINISTRACIÓN
             // GuardarDetalleLiquidacion(
@@ -1500,6 +1509,8 @@ function generarPDF(
                 $iva,
                 $id_liquidacion
             );
+
+
 
 
 
