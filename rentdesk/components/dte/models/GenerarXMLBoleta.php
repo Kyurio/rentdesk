@@ -454,7 +454,6 @@ try {
                 $dir_origen = $config->dir_origen;; // Fuenzalida
                 $comuna_origen = $config->comuna_origen;
                 $ciudad_origen = $config->ciudad_origen;
-                $cdg_item_tipo = $config->cdg_item_tipo;
              
 
                 // Preparar datos para el XML
