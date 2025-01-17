@@ -120,7 +120,7 @@ try {
     );
 
     // url del servicio
-    $url = $config->url_DTE;//'https://dteqa.arpis.cl/WSFactLocal/DteLocal.asmx?WSDL';
+    $url = $config->url_DTE; //'https://dteqa.arpis.cl/WSFactLocal/DteLocal.asmx?WSDL';
     $fecha =  date('Y-m-d') . 'T' . date('H:i:s');
     $pdfFiles = []; // Almacenar rutas de los PDFs generados
 
@@ -239,6 +239,12 @@ try {
         $rut = $config->rut;
         $rut_empresa = $config->rut_empresa;
 
+        $url_DTE =  $config->url_DTE;
+        $rut_certificado =  $config->rut_certificado;
+        $rut_receptor =  $config->rut_receptor;
+        $rut_sii =  $config->rut_sii;
+
+
         // Extrae el número de folio
         try {
             $Folio = new SoapClient(trim($url));
@@ -308,21 +314,36 @@ try {
                 $CmnaPostal = mb_convert_encoding($row['comuna'], 'UTF-8', 'ISO-8859-1');
                 $CiudadRecep = mb_convert_encoding($row['comuna'], 'UTF-8', 'ISO-8859-1');
 
+
+                $tipo_doc = 33; // 39: boletas, 33: factura, 61: nota crédito
+                $rut = $config->rut;
+                $rut_empresa = $config->rut_empresa;
+                $url_DTE =  $config->url_DTE;
+                $rut_certificado =  $config->rut_certificado;
+                $rut_receptor =  $config->rut_receptor;
+                $rut_sii =  $config->rut_sii;
+                $razon_social_emisor = $config->razon_social_emisor;
+                $giro_emisor = $config->giro_emisor;
+
+
                 // Datos adicionales
+                $razon_social_emisor = $config->razon_social_emisor;
+                $giro_emisor = $config->giro_emisor; // Fuenzalida
+                $dir_origen = $config->dir_origen;; // Fuenzalida
+                $comuna_origen = $config->comuna_origen;
+                $ciudad_origen = $config->ciudad_origen;
+                $cdg_item_tipo = $config->cdg_item_tipo;
+
+                // Convertir comuna y ciudad a UTF-8
                 $CmnaRecep = $row['comuna'];
-                $DirRecep = $row['direccion'];
-                $razon_social_emisor = '';
-                $giro_emisor = '';
-                $dir_origen = '';
-                $comuna_origen = '';
-                $ciudad_origen = '';
-                $cdg_item_tipo = $row['ficha_propiedad'];
+                $DirRecep = $row['comuna'];
+             
 
                 // Datos de la factura
                 $data = [
                     'rut_emisor' => $rut,
-                    'rut_envia' => '6285461-8',
-                    'rut_receptor' => '60803000-K',
+                    'rut_envia' => $rut_certificado,
+                    'rut_receptor' => $rut_receptor,
                     'fch_resol' => '2014-08-22',
                     'nro_resol' => '80',
                     'folio' => $NroFolio,
@@ -341,7 +362,7 @@ try {
                     'razon_social_receptor' => eliminarTildes(strtoupper($NombrePropietario)),
                     'fechahora' => $fecha,
                     'rutrecep' => $rutPropietario,
-                    'CdgIntRecep' => $CdgIntRecep,
+                    'CdgIntRecep' => eliminarTildes(strtoupper($CdgIntRecep)),
                     'Contacto' => '',
                     'DirPostal' => eliminarTildes(strtoupper($DirPostal)),
                     'CmnaPostal' => eliminarTildes(strtoupper($CmnaPostal)),
@@ -353,6 +374,7 @@ try {
                     'cdg_item_valor' => $cdg_item_tipo,
 
                 ];
+
 
                 // Generar el XML
                 $xml = generarXMLFactura($data);
@@ -410,7 +432,7 @@ try {
                                 echo json_encode([
                                     'status' => 'success',
                                     'message' => 'Factura procesada correctamente.',
-                                    
+
                                 ]);
                             }
                         }
@@ -423,12 +445,9 @@ try {
                 } catch (\Throwable $th) {
                     echo $th->getMessage();
                 }
-
             }
         }
     } // end for 
-
-    echo json_encode($response);
 } catch (Exception $e) {
     // Manejo de errores generales
     // header('Content-Type: application/json', true, 500);

@@ -114,13 +114,13 @@ $(document).ready(function () {
 						const thomsonData = await $.ajax({
 							url: 'components/officesbanking/models/GenerarThompson.php',
 							method: 'GET',
-							data: { id_liquidacion: id_liquidacion },
+							data: { cierre: cierre },
 							dataType: 'json',
 						});
 						const thomsonDoc = await $.ajax({
 							url: 'components/officesbanking/models/GenerarDocumentosThomson.php',
 							method: 'GET',
-							data: { id_liquidacion: id_liquidacion },
+							data: { cierre: cierre },
 							dataType: 'json',
 						});
 						thomson.push(thomsonDoc);
@@ -275,7 +275,7 @@ function descargarTxt(datos, id_officebanking, tasks) {
 		const segundo = String(fecha.getSeconds()).padStart(2, '0');
 		const milisegundos = String(fecha.getMilliseconds()).padStart(3, '0');
 
-		const nombreArchivo = `manager-${anio}${mes}${dia}${hora}${minuto}${segundo}${milisegundos}-0300.txt`;
+		const nombreArchivo = `ERP-${anio}${mes}${dia}${hora}${minuto}${segundo}${milisegundos}-0300.txt`;
 
 		// Descargar el archivo en el navegador
 		const url = URL.createObjectURL(blob);
@@ -550,7 +550,6 @@ function CargarDetalleLiquidaciones(cierre) {
 			tableBody.empty(); // Limpiar el contenido anterior
 
 			$.each(data, function (index, item) {
-
 				// Agregar una fila a la tabla
 				tableBody.append(
 					`<tr>

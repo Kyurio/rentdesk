@@ -56,7 +56,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_FILES['file'])) {
                 $response["message"] = $e->getMessage();
                 echo json_encode($response);
                 exit;
-            }
+            }    
+
         }
         fclose($handle);
         $response["success"] = true;
