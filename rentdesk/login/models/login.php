@@ -127,11 +127,13 @@ if ($accion == "login") { //ingresar
 		
 		$query = "select cs.principal as \"subsidiariaPrincipal\" ,cs.token as \"subsidiariaToken\" ,cs2.casa_matriz as \"sucursalCasaMatriz\" ,
 				cs2.habilitada  as \"sucursalHabilitada\" , cs2.nombre as \"sucursalNombre\" , cs2.token  as \"sucursalToken\"
+                , cs2.id
 				from propiedades.cuenta_subsidiaria cs,
 				propiedades.cuenta_sucursal cs2  , propiedades.cuenta_usuario_sucursales cus 
 				where cs.token = '$current_subsidiaria->token' and cs2.id_subsidiaria = cs.id 
 				and cus.id_usuario  = $objUsuario->id and cus.id_sucursal  = cs2.id 
-				and cs2.habilitada = true and cs2.activo = true ";
+				and cs2.habilitada = true and cs2.activo = true 
+                order by cs2.id asc";
 		$cant_rows = $num_reg;
 		$num_pagina = round($inicio / $cant_rows) + 1;
 		$data = array("consulta" => $query, "cantRegistros" => $cant_rows, "numPagina" => $num_pagina);

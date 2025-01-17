@@ -100,9 +100,9 @@ $(document).ready(function () {
 			success: function (response) {
 				let data = response; // Ya está parseado en JSON
 
-				$('#nombreEjecutivo')
-					.empty()
-					.append('<option value="">Seleccione uno o más ejecutivos</option>');
+				// $('#nombreEjecutivo')
+				// 	.empty()
+				// 	.append('<option value="">Seleccione uno o más ejecutivos</option>');
 
 				data.forEach(function (ejecutivo) {
 					$('#nombreEjecutivo').append(
@@ -7946,7 +7946,7 @@ function ListadoNotificaciones() {
 			},
 			{ data: 'tipo_recordatorio' },
 			{ data: 'descripcion' },
-			{ data: 'id_ejecutivo' },
+			{ data: 'ejecutivo' },
 			{
 				data: null,
 				orderable: false,
@@ -8351,6 +8351,7 @@ document.addEventListener('DOMContentLoaded', function () {
 		} else if (tipoRetencion.value === '3') {
 			fechasContainer.style.display = 'flex';
 			razonContainer.style.display = 'flex';
+			montoInput.value = '0'; // Asignar automáticamente el valor 0
 		} else {
 			montoContainer.style.display = 'flex';
 		}
@@ -8361,36 +8362,44 @@ document.addEventListener('DOMContentLoaded', function () {
 		.addEventListener('submit', function (e) {
 			e.preventDefault();
 
-			const id_arriendo = localStorage.getItem('id_arriendo');
-			const id_propiedad = localStorage.getItem('id_propiedad');
 			const tipo_retencion = document.getElementById('tipo_retencion').value;
 			let monto_retencion = document.getElementById('monto_total').value;
-			const razon_retencion = document.getElementById('razonRetencion').value;
+			const razon_retencion = document
+				.getElementById('razonRetencion')
+				.value.trim(); // Eliminar espacios
 
-			// Limpiar el monto y convertirlo a numérico
-			monto_retencion = parseFloat(
-				monto_retencion.replace(/\./g, '').replace(/\$/g, '')
-			);
+			// Procesar y validar el monto
+			if (tipo_retencion !== '3') {
+				// Solo procesar el monto si no es retención tipo 3
+				if (typeof monto_retencion === 'string') {
+					monto_retencion =
+						parseFloat(monto_retencion.replace(/\./g, '').replace(/\$/g, '')) ||
+						0;
+				}
+				if (isNaN(monto_retencion) || monto_retencion <= 0) {
+					Swal.fire({
+						icon: 'info',
+						title: 'Monto no válido',
+						text: 'Por favor, ingrese un monto válido mayor que cero.',
+					});
+					return;
+				}
+			} else {
+				// Para tipo_retencion === '3', el monto siempre será 0
+				monto_retencion = 0;
 
-			// Validaciones
-			if (!tipo_retencion) {
-				Swal.fire({
-					icon: 'info',
-					title: 'Tipo de Retención no válido',
-					text: 'Por favor, seleccione un tipo de retención.',
-				});
-				return;
+				// Validar que la razón no esté vacía
+				if (!razon_retencion) {
+					Swal.fire({
+						icon: 'info',
+						title: 'Razón requerida',
+						text: 'Por favor, ingrese una razón para la retención.',
+					});
+					return;
+				}
 			}
 
-			if (isNaN(monto_retencion) || monto_retencion <= 0) {
-				Swal.fire({
-					icon: 'info',
-					title: 'Monto no válido',
-					text: 'Por favor, ingrese un monto válido mayor que cero.',
-				});
-				return;
-			}
-
+			// Validar fechas
 			const fechaActual = new Date().toISOString().split('T')[0];
 			const fecha_desde =
 				document.getElementById('fecha_desde').value || fechaActual;
@@ -8406,7 +8415,11 @@ document.addEventListener('DOMContentLoaded', function () {
 				return;
 			}
 
-			if (tipo_retencion === '2' && fecha_desde && fecha_hasta) {
+			if (
+				(tipo_retencion === '2' || tipo_retencion === '3') &&
+				fecha_desde &&
+				fecha_hasta
+			) {
 				const fechaDesdeObj = new Date(fecha_desde);
 				const fechaHastaObj = new Date(fecha_hasta);
 				if (
@@ -8422,17 +8435,26 @@ document.addEventListener('DOMContentLoaded', function () {
 				}
 			}
 
+			// Preparar datos para el envío
+			const id_arriendo = localStorage.getItem('id_arriendo');
+			const id_propiedad = localStorage.getItem('id_propiedad');
 			const data = {
 				id_arriendo,
 				id_propiedad,
 				tipo_retencion,
 				monto_retencion,
-				fecha_desde: tipo_retencion === '2' ? fecha_desde : fechaActual,
-				fecha_hasta: tipo_retencion === '2' ? fecha_hasta : fechaActual,
+				fecha_desde:
+					tipo_retencion === '2' || tipo_retencion === '3'
+						? fecha_desde
+						: fechaActual,
+				fecha_hasta:
+					tipo_retencion === '2' || tipo_retencion === '3'
+						? fecha_hasta
+						: fechaActual,
 				razon_retencion,
 			};
 
-			// Llamada a fetch para insertar los datos de retención
+			// Enviar los datos usando fetch
 			fetch('components/propiedad/models/insert_retenciones.php', {
 				method: 'POST',
 				headers: {
@@ -8443,53 +8465,14 @@ document.addEventListener('DOMContentLoaded', function () {
 				.then((response) => response.json())
 				.then((result) => {
 					if (result.status === 'success') {
-						const retencionStatus = result.data[0].fn_genera_retencion;
-
-						if (retencionStatus === '-1') {
-							Swal.fire({
-								icon: 'warning',
-								title: 'Retención ya existente',
-								text: 'Ya se encuentran retenciones en la tabla.',
-							});
-						} else if (retencionStatus === '-2') {
-							Swal.fire({
-								icon: 'warning',
-								title: 'Monto de Retención Excesivo',
-								text: 'El monto de retención es mayor al valor del arriendo.',
-							});
-						} else {
-							$('#agregarRetencionModal').modal('hide'); // Cerrar el modal
-
-							setTimeout(() => {
-								Swal.fire({
-									position: 'center',
-									icon: 'success',
-									title: 'La retención ha sido agregada exitosamente.',
-									showConfirmButton: false,
-									timer: 1500,
-								});
-							}, 500);
-							limpiarCampos(); // Limpiar campos después de agregar la retención
-							cargarRetencionesList(); // Recargar la lista de retenciones
-
-							// Registrar en historial
-							const jsonInformacionNueva = JSON.stringify({
-								tipo_retencion,
-								monto_retencion,
-								fecha_desde,
-								fecha_hasta,
-							});
-
-							// Aquí usamos id_arriendo en vez de id_retencion
-							registroHistorial(
-								'Crear', // Acción
-								'', // Información anterior
-								jsonInformacionNueva, // Información nueva
-								'Retención', // Tipo de entidad
-								id_propiedad, // id_propiedad
-								id_arriendo // id_arriendo como id_comentario
-							);
-						}
+						Swal.fire({
+							icon: 'success',
+							title: 'La retención ha sido agregada exitosamente.',
+							showConfirmButton: false,
+							timer: 1500,
+						});
+						limpiarCampos();
+						cargarRetencionesList(); // Recargar la lista de retenciones
 					} else {
 						Swal.fire({
 							icon: 'error',

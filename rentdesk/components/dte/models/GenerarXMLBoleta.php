@@ -465,7 +465,6 @@ try {
                 $ciudad_origen = $config->ciudad_origen;
                 $cdg_item_tipo = '';
 
-
                 // Preparar datos para el XML
                 $data = [
 
