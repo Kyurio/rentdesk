@@ -729,7 +729,7 @@
 									</div>
 
 
-									<div id="razonContainer" class="row mb-2" style="display: none;">
+									<div id="razonContainer" class="row mb-2">
 										<div class="col">
 											<label for="razonRetencion" class="form-label">Razón Retencion</label>
 											<input type="text" class="form-control" id="razonRetencion" />

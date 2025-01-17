@@ -86,6 +86,7 @@ var_dump("QUERY INSERT BENEFICIARIO (TABLA BASE): ", $queryInsertBeneficiario);
 // (id_propiedad, id_propietario, nombre, rut,correo, telefono_fijo, telefono_movil, cta_nombre_titular, cta_rut, cta_correo, cta_id_banco, id_tipo_cuenta, numero_cuenta)
 // VALUES ($objIdPropiedad->id,$Beneficiario_id_propietario, '$Beneficiario_nombreBeneficiario', '$Beneficiario_rutBeneficiario', '$Beneficiario_correoElectronicoBeneficiario','$Beneficiario_beneficiarioTelefonoFijo', '$Beneficiario_beneficiarioTelefonoMovil', '$Beneficiario_nombreTitular', '$Beneficiario_rutTitular', '$Beneficiario_emailTitular', $Beneficiario_banco, $Beneficiario_cuentaBanco, $Beneficiario_numCuenta)";
 
+
 $dataCab = array("consulta" => $queryInsertBeneficiario);
 $resultadoCab = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);
 
