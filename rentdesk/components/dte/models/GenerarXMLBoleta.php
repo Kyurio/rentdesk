@@ -405,13 +405,22 @@ try {
             $rut = $config->rut;
             $rut_empresa = $config->rut_empresa;
             $id_liquidacion = $row['id_liquidacion_comision'];
+            $descripcion_item = $row['direccion'];
 
             // Solicitar número de folio
             $folioResult = SolicitarFolio($url, $tipo_doc);
             $NroFolio = $folioResult->Folio;
 
             if (!$NroFolio) {
-                throw new Exception("No se pudo obtener un folio válido.");
+
+                header('Content-Type: application/json; charset=utf-8');
+                echo json_encode([
+                    'status' => 'errro',
+                    'message' => 'Folios agotados o con problemas para generar la factura.',
+
+                ]);
+                exit;
+
             } else {
 
                 // Convertir y concatenar el nombre completo del propietario
@@ -426,11 +435,11 @@ try {
                  * calculos
                  * 
                  */
-                 $porcentaje_participacion = $row['porcentaje_participacion'];
-                 $mnt_porcentaje = $row['monto'] * ($porcentaje_participacion / 100);
-                 $mnt_bruto = $mnt_porcentaje; // monto bruto
-                 $monto_neto =  round($mnt_bruto / (1  + ($porcentaje_iva / 100)));
-                 $monto_iva = ($mnt_bruto - $monto_neto);
+                $porcentaje_participacion = $row['porcentaje_participacion'];
+                $mnt_porcentaje = $row['monto'] * ($porcentaje_participacion / 100);
+                $mnt_bruto = $mnt_porcentaje; // monto bruto
+                $monto_neto =  round($mnt_bruto / (1  + ($porcentaje_iva / 100)));
+                $monto_iva = ($mnt_bruto - $monto_neto);
 
                 /**
                  *  
@@ -447,14 +456,14 @@ try {
                 $CmnaPostal = $row['comuna'];
                 $CiudadRecep = $row['comuna'];
 
-       
+
                 // datos adicionales
                 $razon_social_emisor = $config->razon_social_emisor;
                 $giro_emisor = $config->giro_emisor; // Fuenzalida
                 $dir_origen = $config->dir_origen;; // Fuenzalida
                 $comuna_origen = $config->comuna_origen;
                 $ciudad_origen = $config->ciudad_origen;
-             
+                $cdg_item_tipo = '';
 
                 // Preparar datos para el XML
                 $data = [
@@ -472,8 +481,9 @@ try {
                     'comuna_origen' =>   eliminarTildes(strtoupper($comuna_origen)),
                     'ciudad_origen' =>  eliminarTildes(strtoupper($ciudad_origen)),
                     'nombre_item' =>   substr(eliminarTildes(strtoupper($descripcionCobro)), 0, 100),
+                    'descripcion_item' =>   substr(eliminarTildes(strtoupper($descripcion_item)), 0, 100),
                     'cantidad_item' => $cantidadItems,
-                    'precio_item' =>$precio_item,
+                    'precio_item' => $precio_item,
                     'mnt_bruto' => $monto_neto,
                     'iva' => $monto_iva,
                     'mnt_total' => $mnt_bruto,
@@ -508,25 +518,25 @@ try {
                 } else {
 
                     // Guardar PDF generado
-                    $pdfFileName = GuardarPDF($index, $resultDTE->Carga_TXTBoletaResult->PDF);
+                    //$pdfFileName = GuardarPDF($index, $resultDTE->Carga_TXTBoletaResult->PDF);
 
                     // Actualizar la base de datos
                     ActualizarLiquidacionFolio($QueryBuilder, $idLiquidacion, $tipo_doc, $NroFolio);
                     ActualizarLiquidacionEstado($QueryBuilder, $idLiquidacion);
 
                     // Respuesta exitosa
+                    header('Content-Type: application/json; charset=utf-8');
                     echo json_encode([
                         'status' => 'success',
-                        'message' => 'Documento procesado correctamente.',
-                        'file' => $pdfFileName,
+                        'message' => 'Boleta procesada correctamente.',
+
                     ]);
+                    exit;
                 }
-
             }
-
         } catch (Exception $e) {
             // Manejo de errores
-            error_log("Error procesando liquidación {$idLiquidacion }: " . $e->getMessage());
+            error_log("Error procesando liquidación {$idLiquidacion}: " . $e->getMessage());
             echo json_encode([
                 'status' => 'error',
                 'message' => $e->getMessage(),
@@ -535,7 +545,7 @@ try {
     }
 } catch (Exception $e) {
     // Manejo de errores generales
-    // header('Content-Type: application/json', true, 500);
+    header('Content-Type: application/json', true, 500);
     echo json_encode([
         'status' => 'error',
         'message' => $e->getMessage(),
