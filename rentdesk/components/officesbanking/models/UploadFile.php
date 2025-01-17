@@ -1,7 +1,12 @@
 <?php
+include("../../../configuration.php");
 // Configuración de la carpeta de destino
+
+$config = new Config;
+$url_web = $config->url_web;
 $uploadDir = __DIR__ . '/../../../upload/officebanking'; // Ruta en el sistema de archivos
-$publicBaseUrl = 'rentdesk/upload/officebanking/'; // Ruta pública para el navegador
+$publicBaseUrl = $url_web . '/upload/officebanking/'; // Ruta pública para el navegador
+
 
 // Crear la carpeta si no existe
 if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true)) {
