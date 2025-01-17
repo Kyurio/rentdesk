@@ -25,6 +25,9 @@ $razon_retencion = $data['razon_retencion'] ?? null;
 // Establecer la fecha actual
 $fecha_actual = date('Y-m-d');
 
+// var_dump($data, $id_arriendo, $id_propiedad, $tipo_retencion, $monto_retencion, $fecha_desde, $fecha_hasta, $razon_retencion, $fecha_actual);
+// die();
+
 // Validar datos recibidos
 if (!isset($id_arriendo, $id_propiedad, $tipo_retencion, $monto_retencion)) {
     echo json_encode([
