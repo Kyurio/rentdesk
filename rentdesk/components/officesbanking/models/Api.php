@@ -916,10 +916,9 @@ function generarPDF(
                     $total_comisiones = $total_comisiones;
                     $saldo = $sumAbonos;
                 }
-                
             } else {
 
-        
+
                 // calcula la comision de arriendo
                 if ($arriendo_comision_cobro == true) {
                     $total_comisiones = $total_comisiones + calcularTotales(0, $comision_arriendo) + 0 + $iva_comision_arriendo;
@@ -1424,83 +1423,59 @@ function generarPDF(
 
             // guarda el detalle de liquidacion de  comsion arriendo
             if ($NumeroLiquidaciones === 0) {
+                if ($comision_administracion > 0) {
+                    GuardarDetalleLiquidacion(
+                        $services,
+                        $url_services,
+                        $ficha_tecnica_propiedad,
+                        'COMISIÓN ARRIENDO',
+                        $comision_administracion,
+                        $iva,
+                        $id_liquidacion
+                    );
+                }
+            }
+
+
+            // guarda el detalle de liquidacion de COMISIÓN ADMINISTRACIÓN
+            if ($comision_arriendo > 0) {
                 GuardarDetalleLiquidacion(
                     $services,
                     $url_services,
                     $ficha_tecnica_propiedad,
-                    'COMISIÓN ARRIENDO',
-                    $comision_administracion,
+                    'COMISIÓN ADMINISTRACIÓN',
+                    $comision_arriendo,
                     $iva,
                     $id_liquidacion
                 );
             }
 
-            // guarda el detalle de liquidacion de iva comsion corretaje
-            // GuardarDetalleLiquidacion(
-            //     $services,
-            //     $url_services,
-            //     $ficha_tecnica_propiedad,
-            //     'IVA COMISIÓN CORRETAJE',
-            //     $iva_comision_administracion,
-            //     $iva,
-            //     $id_liquidacion
-            // );
-
-            // guarda el detalle de liquidacion de COMISIÓN ADMINISTRACIÓN
-            GuardarDetalleLiquidacion(
-                $services,
-                $url_services,
-                $ficha_tecnica_propiedad,
-                'COMISIÓN ADMINISTRACIÓN',
-                $comision_arriendo,
-                $iva,
-                $id_liquidacion
-            );
-
-            // guarda el detalle de liquidacion IVA COMISIÓN ADMINISTRACIÓN
-            // GuardarDetalleLiquidacion(
-            //     $services,
-            //     $url_services,
-            //     $ficha_tecnica_propiedad,
-            //     'IVA COMISIÓN ADMINISTRACIÓN',
-            //     $iva_comision_arriendo,
-            //     $iva,
-            //     $id_liquidacion
-            // );
-
-            // guarda el detalle de liquidacion COBRO GARANTIA
-            // GuardarDetalleLiquidacion(
-            //     $services,
-            //     $url_services,
-            //     $ficha_tecnica_propiedad,
-            //     'COBRO GARANTIA',
-            //     $comision_arriendo,
-            //     $iva,
-            //     $id_liquidacion
-            // );
-
             // guarda el detalle de liquidacion COBRO ANTICIPOS
-            GuardarDetalleLiquidacion(
-                $services,
-                $url_services,
-                $ficha_tecnica_propiedad,
-                'COBRO ANTICIPOS',
-                $TotalAnticipos,
-                $iva,
-                $id_liquidacion
-            );
+            if ($TotalAnticipos > 0) {
 
+                GuardarDetalleLiquidacion(
+                    $services,
+                    $url_services,
+                    $ficha_tecnica_propiedad,
+                    'COBRO ANTICIPOS',
+                    $TotalAnticipos,
+                    $iva,
+                    $id_liquidacion
+                );
+            }
             // guarda el detalle de liquidacion COBRO RETENCIONES
-            GuardarDetalleLiquidacion(
-                $services,
-                $url_services,
-                $ficha_tecnica_propiedad,
-                'COBRO RETENCIONES',
-                $TotalRetenciones,
-                $iva,
-                $id_liquidacion
-            );
+            if ($TotalRetenciones > 0) {
 
+                GuardarDetalleLiquidacion(
+                    $services,
+                    $url_services,
+                    $ficha_tecnica_propiedad,
+                    'COBRO RETENCIONES',
+                    $TotalRetenciones,
+                    $iva,
+                    $id_liquidacion
+                );
+            }
 
 
             /**
