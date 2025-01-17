@@ -735,7 +735,7 @@
 									<div id="montoContainer" class="row mb-2" style="display: flex;">
 										<div class="mb-2">
 											<label for="monto_total" class="form-label">Monto</label>
-											<input type="text" class="form-control" id="monto_total" required />
+											<input type="text" class="form-control" id="monto_total" />
 										</div>
 									</div>
 
