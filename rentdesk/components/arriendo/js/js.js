@@ -1,4 +1,6 @@
 $(document).ready(function () {
+
+	SeleccionacobrarComisionAdministracion();
 	//BRUNO TORRES
 	$('#descargarExcelArriendo').on('click', function (e) {
 		e.preventDefault();
@@ -181,7 +183,7 @@ $(document).ready(function () {
 
 	try {
 		document.getElementById('botonEliminaSeccion').style.display = 'none';
-	} catch (error) {}
+	} catch (error) { }
 	//botonEliminar.style.display = 'none';
 	onChangePersona();
 });
@@ -1906,26 +1908,22 @@ function cargarCheques() {
 					newRow.append(
 						`<td><div class="d-flex">
                       <label class="switch">
-                        <input name="desposito" class="form-check-input switchCheques" type="checkbox" role="switch" ${desposito} data-token="${
-							item.token
+                        <input name="desposito" class="form-check-input switchCheques" type="checkbox" role="switch" ${desposito} data-token="${item.token
 						}">
                         <span class="slider round"></span>
-                        <span class="switchText">${
-													item.desposito ? 'Si' : 'No'
-												}</span>
+                        <span class="switchText">${item.desposito ? 'Si' : 'No'
+						}</span>
                       </label>
                   </div></td>`
 					);
 					newRow.append(
 						`<td><div class="d-flex">
                       <label class="switch">
-                        <input name="cobrar" class="form-check-input switchCheques" type="checkbox" role="switch" ${cobrar} data-token="${
-							item.token
+                        <input name="cobrar" class="form-check-input switchCheques" type="checkbox" role="switch" ${cobrar} data-token="${item.token
 						}">
                         <span class="slider round"></span>
-                        <span class="switchText">${
-													item.cobrar ? 'Si' : 'No'
-												}</span>
+                        <span class="switchText">${item.cobrar ? 'Si' : 'No'
+						}</span>
                       </label>
                   </div></td>`
 					);
@@ -1933,32 +1931,23 @@ function cargarCheques() {
 					newRow.append(
 						`<td>
                       <div class='d-flex align-items-center' style='gap: .5rem;'>
-                        <a href="#" type="button" class="btn btn-secondary m-0" style="padding: .5rem;${
-													item.comentario === '' ? 'visibility: hidden;' : ''
-												}"  aria-label="Info" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${
-							item.comentario
+                        <a href="#" type="button" class="btn btn-secondary m-0" style="padding: .5rem;${item.comentario === '' ? 'visibility: hidden;' : ''
+						}"  aria-label="Info" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${item.comentario
 						}">
                           <i class="fa-solid fa-circle-info" style="font-size: .75rem;"></i>
                         </a>
-                        <a data-bs-toggle='modal' onclick='cargarChequesEditar(${
-													item.id
-												}, ${item.monto}, "${item.razon}", ${
-							item.banco
-						}, "${moment(item.fecha_cobro).format('YYYY-MM-DD')}", "${
-							item.girador
-						}", ${item.numero_documento}, ${item.cantidad}, "${
-							item.comentario
+                        <a data-bs-toggle='modal' onclick='cargarChequesEditar(${item.id
+						}, ${item.monto}, "${item.razon}", ${item.banco
+						}, "${moment(item.fecha_cobro).format('YYYY-MM-DD')}", "${item.girador
+						}", ${item.numero_documento}, ${item.cantidad}, "${item.comentario
 						}")' data-bs-target='#modalChequesEditar' type='button' class='btn btn-info m-0 d-flex align-items-center' style='padding: .5rem;' aria-label='Editar' title='Editar'>
                           <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i>
                         </a>
-                        <button onclick='eliminarCheques(${item.id}, ${
-							item.monto
+                        <button onclick='eliminarCheques(${item.id}, ${item.monto
 						}, "${item.razon}", ${item.banco}, "${moment(
 							item.fecha_cobro
-						).format('YYYY-MM-DD')}", "${item.girador}", ${
-							item.numero_documento
-						}, ${
-							item.cantidad
+						).format('YYYY-MM-DD')}", "${item.girador}", ${item.numero_documento
+						}, ${item.cantidad
 						})' type='button' class='btn btn-danger m-0 d-flex align-items-center' style='padding: .5rem;' title='Eliminar'>
                           <i class='fa-regular fa-trash-can' style='font-size: .75rem;'></i>
                         </button>
@@ -2179,12 +2168,12 @@ function cargarDocumentos() {
 					if (item.token_agrupador != previousId) {
 						newRow.append(
 							"<td><div class='d-flex align-items-center' style='gap: .5rem;'> <a data-bs-toggle='modal' data-bs-target='#modalTituloEditar' type='button' onclick='cargarTituloDocumentosEditar(\"" +
-								item.titulo +
-								'","' +
-								item.token_agrupador +
-								"\")' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='Editar' title='Editar'> <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i></a><label style='font-size: 1em; text-align: center; color: black;'>" +
-								item.titulo +
-								'</label></div></td>'
+							item.titulo +
+							'","' +
+							item.token_agrupador +
+							"\")' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='Editar' title='Editar'> <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i></a><label style='font-size: 1em; text-align: center; color: black;'>" +
+							item.titulo +
+							'</label></div></td>'
 						);
 						previousId = item.token_agrupador;
 					} else {
@@ -2193,8 +2182,8 @@ function cargarDocumentos() {
 					if (item.nombre_archivo != null && item.nombre_archivo != '') {
 						newRow.append(
 							"<td><i class='fa-solid fa-chevron-right'></i> " +
-								item.nombre_archivo +
-								'</td>'
+							item.nombre_archivo +
+							'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -2208,8 +2197,8 @@ function cargarDocumentos() {
 					) {
 						newRow.append(
 							'<td>' +
-								moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
-								'</td>'
+							moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
+							'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -2218,8 +2207,8 @@ function cargarDocumentos() {
 					//console.log(item.link);
 					newRow.append(
 						"<td><div class='d-flex' style='gap: .5rem;'><a href='" +
-							item.link +
-							"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
+						item.link +
+						"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
 					);
 					if (
 						item.fecha_ultima_actualizacion != null &&
@@ -2227,12 +2216,12 @@ function cargarDocumentos() {
 					) {
 						newRow.append(
 							'<td>' +
-								(item.fecha_ultima_actualizacion
-									? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
-									: '-') +
-								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-								item.nombre_usuario +
-								"'></i></td>"
+							(item.fecha_ultima_actualizacion
+								? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
+								: '-') +
+							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+							item.nombre_usuario +
+							"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -2944,8 +2933,8 @@ function cargarServicios() {
 					if (item.tipo_moneda == 'UF') {
 						newRow.append(
 							"<td style='text-align: right; max-width:120px; width:120px;'>" +
-								item.monto +
-								'</td>'
+							item.monto +
+							'</td>'
 						);
 					} else {
 						var montoFormateado = item.monto.toLocaleString('es-CL', {
@@ -2954,8 +2943,8 @@ function cargarServicios() {
 						});
 						newRow.append(
 							"<td style='text-align: right; max-width:120px; width:120px;'>" +
-								montoFormateado +
-								'</td>'
+							montoFormateado +
+							'</td>'
 						);
 					}
 
@@ -2966,8 +2955,8 @@ function cargarServicios() {
 					);
 					newRow.append(
 						'<td>' +
-							moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
-							'</td>'
+						moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
+						'</td>'
 					);
 					if (
 						item.fecha_modificacion != null &&
@@ -2975,12 +2964,12 @@ function cargarServicios() {
 					) {
 						newRow.append(
 							'<td>' +
-								(item.fecha_modificacion
-									? moment(item.fecha_modificacion).format('DD-MM-YYYY')
-									: '-') +
-								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' data-bs-title='Modificado por : " +
-								item.nombre_usuario +
-								"'></i></td>"
+							(item.fecha_modificacion
+								? moment(item.fecha_modificacion).format('DD-MM-YYYY')
+								: '-') +
+							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' data-bs-title='Modificado por : " +
+							item.nombre_usuario +
+							"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3052,8 +3041,8 @@ function cargarSeguros() {
 					if (item.tipo_moneda == 'UF') {
 						newRow.append(
 							"<td style='text-align: right; max-width:120px; width:120px;'>" +
-								item.monto +
-								'</td>'
+							item.monto +
+							'</td>'
 						);
 					} else {
 						var montoFormateado = item.monto.toLocaleString('es-CL', {
@@ -3062,8 +3051,8 @@ function cargarSeguros() {
 						});
 						newRow.append(
 							"<td style='text-align: right; max-width:120px; width:120px;'>" +
-								montoFormateado +
-								'</td>'
+							montoFormateado +
+							'</td>'
 						);
 					}
 
@@ -3074,8 +3063,8 @@ function cargarSeguros() {
 					);
 					newRow.append(
 						'<td>' +
-							moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
-							'</td>'
+						moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
+						'</td>'
 					);
 					if (
 						item.fecha_modificacion != null &&
@@ -3083,12 +3072,12 @@ function cargarSeguros() {
 					) {
 						newRow.append(
 							'<td>' +
-								(item.fecha_modificacion
-									? moment(item.fecha_modificacion).format('DD-MM-YYYY')
-									: '-') +
-								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-								item.nombre_usuario +
-								"'></i></td>"
+							(item.fecha_modificacion
+								? moment(item.fecha_modificacion).format('DD-MM-YYYY')
+								: '-') +
+							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+							item.nombre_usuario +
+							"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3658,10 +3647,10 @@ function cargarInfoComentario() {
 					) {
 						newRow.append(
 							'<td>' +
-								formateoNulos(item.fecha_comentario) +
-								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-								item.nombre_usuario +
-								"'></i></td>"
+							formateoNulos(item.fecha_comentario) +
+							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+							item.nombre_usuario +
+							"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3840,10 +3829,10 @@ function cargarInfoArrendatario() {
 					// Agregar celdas a la fila con los datos
 					newRow.append(
 						'<td><a href="index.php?component=persona&view=persona&token=' +
-							item.token_persona +
-							'" target="_blank">' +
-							formateoNulos(item.dni) +
-							'</a></td>'
+						item.token_persona +
+						'" target="_blank">' +
+						formateoNulos(item.dni) +
+						'</a></td>'
 					);
 
 					newRow.append(
@@ -3912,7 +3901,7 @@ function cargarCCMovimientos() {
 		ccMovimientosTable.ajax
 			.url(
 				'components/arriendo/models/listado_cc_movimientos.php?idFicha=' +
-					idFicha
+				idFicha
 			)
 			.load();
 		return;
@@ -5328,7 +5317,7 @@ function guardarGarantia(token, tipo) {
 	if (mensaje) {
 		$('.error-descuento-garantia').html(
 			"<strong><span style='color:#313131;'>Atención: </span></strong>" +
-				mensaje
+			mensaje
 		);
 		return; // Salir de la función si hay errores
 	}
@@ -5867,30 +5856,26 @@ function cargarCheques() {
 					newRow.append(`
 						<td>
 							<div class='d-flex align-items-center' style='gap: .5rem;'>
-								<a href="#" type="button" class="btn btn-secondary m-0" style="padding: .5rem; ${
-									item.comentario === '' ? 'visibility: hidden;' : ''
-								}" 
-									aria-label="Info" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${
-										item.comentario
-									}">
+								<a href="#" type="button" class="btn btn-secondary m-0" style="padding: .5rem; ${item.comentario === '' ? 'visibility: hidden;' : ''
+						}" 
+									aria-label="Info" data-bs-toggle="tooltip" data-bs-placement="bottom" data-bs-title="${item.comentario
+						}">
 									<i class="fa-solid fa-circle-info" style="font-size: .75rem;"></i>
 								</a>
-								<a data-bs-toggle='modal' onclick='cargarChequesEditar(${
-									item.id
-								}, ${item.monto}, "${item.razon}", ${item.banco}, 
+								<a data-bs-toggle='modal' onclick='cargarChequesEditar(${item.id
+						}, ${item.monto}, "${item.razon}", ${item.banco}, 
 									"${moment(item.fecha_cobro).format(
-										'YYYY-MM-DD'
-									)}", "${item.girador}", ${item.numero_documento}, ${item.cantidad}, 
+							'YYYY-MM-DD'
+						)}", "${item.girador}", ${item.numero_documento}, ${item.cantidad}, 
 									"${item.comentario}")' data-bs-target='#modalChequesEditar' type='button' 
 									class='btn btn-info m-0 d-flex align-items-center' style='padding: .5rem;' aria-label='Editar' title='Editar' ${disabled}>
 									<i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i>
 								</a>
-								<button onclick='eliminarCheques(${
-									item.id
-								}, ${item.monto}, "${item.razon}", ${item.banco}, 
+								<button onclick='eliminarCheques(${item.id
+						}, ${item.monto}, "${item.razon}", ${item.banco}, 
 									"${moment(item.fecha_cobro).format(
-										'YYYY-MM-DD'
-									)}", "${item.girador}", ${item.numero_documento}, ${item.cantidad})' 
+							'YYYY-MM-DD'
+						)}", "${item.girador}", ${item.numero_documento}, ${item.cantidad})' 
 									type='button' class='btn btn-danger m-0 d-flex align-items-center' style='padding: .5rem;' title='Eliminar' ${disabled}>
 									<i class='fa-regular fa-trash-can' style='font-size: .75rem;'></i>
 								</button>
@@ -6321,4 +6306,42 @@ function LimpiarValorTipoMoneda() {
 	// limpia el campo precio al cambiar el tipo de moneda
 
 	$('#precioContrato').val('');
+}
+
+
+
+// llena los select al editar los campos 
+
+function SeleccionacobrarComisionAdministracion() {
+ 
+    // Obtener la URL actual
+    const url = new URL(window.location.href);
+    const token = url.searchParams.get('token');
+
+    $.ajax({
+        url: 'components/arriendo/models/SelectcobrarComisionAdministracion.php', // URL del archivo PHP
+        method: 'POST', // Método POST
+        dataType: 'json', // El servidor devolverá un JSON
+        data: { // Parámetros que se envían al PHP
+            token: token
+        },
+        success: function (data) {
+        
+            if (data && data[0]) {
+                const $selectAdmin = $('#cobrarComisionAdministracion');
+                const $selectArriendo = $('#cobrarComisionArriendo');
+
+                // Seleccionar el valor correspondiente para cobrarComisionAdministracion
+                $selectAdmin.val(data[0].adm_comision_cobro.toString());
+
+                // Seleccionar el valor correspondiente para cobrarComisionArriendo
+                $selectArriendo.val(data[0].arriendo_comision_cobro.toString());
+            } else {
+                console.error('Respuesta inesperada o sin datos.');
+            }
+        },
+        error: function (xhr, status, error) {
+            console.error('Error al cargar los datos:', error);
+        }
+    });
 }
