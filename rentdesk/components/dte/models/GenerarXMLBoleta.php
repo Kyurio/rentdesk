@@ -1,9 +1,10 @@
 
 <?php
-
+date_default_timezone_set('America/Santiago');
 
 include("../../../app/model/QuerysBuilder.php");
 include("../../../configuration.php");
+
 
 use app\database\QueryBuilder;
 use LDAP\Result;
@@ -52,7 +53,8 @@ try {
         pcl.monto AS monto,
         pcl.id_liquidacion,
         pl.porcentaje_participacion,
-	    pcl.id AS id_liquidacion_comision
+	    pcl.id AS id_liquidacion_comision,
+        per_dir.direccion AS direccion_persona
 
     ";
 
@@ -72,6 +74,11 @@ try {
             'type' => 'INNER',
             'table' => 'propiedades.persona per',
             'on' => 'per.id = pl.id_propietario'
+        ],
+        [
+            'type' => 'INNER',
+            'table' => 'propiedades.persona_direcciones per_dir',
+            'on' => 'per.id = per_dir.id_persona'
         ],
         [
             'type' => 'LEFT',
@@ -98,7 +105,7 @@ try {
     // Condiciones WHERE
     $conditions = [
         'id_liquidacion' => $idLiquidacion,
-        'tipo_comision' => ['IN', ['COMISIÓN ARRIENDO', 'COMISIÓN ADMINISTRACIÓN']]
+        'tipo_comision' => ['IN', ['COMISIÓN CORRETAJE', 'COMISIÓN ARRIENDO', 'COMISIÓN ADMINISTRACIÓN']]
     ];
 
 
@@ -116,9 +123,7 @@ try {
     );
 
 
-
     // url del servicio
-    $url = 'https://dteqa.arpis.cl/WSFactLocal/DteLocal.asmx?WSDL';
     $fecha =  date('Y-m-d') . 'T' . date('H:i:s');
 
 
@@ -246,10 +251,11 @@ try {
         // CdgItem
         if (!empty($data['cdg_item_tipo']) && !empty($data['cdg_item_valor'])) {
             $cdgItem = $dom->createElement('CdgItem');
-            $cdgItem->appendChild($dom->createElement('TpoCodigo', $data['cdg_item_tipo']));
-            $cdgItem->appendChild($dom->createElement('VlrCodigo', $data['cdg_item_valor']));
+            $cdgItem->appendChild($dom->createElement('TpoCodigo', 'ALU'));
+            $cdgItem->appendChild($dom->createElement('VlrCodigo', 'S103012-5L-21'));
             $detalle->appendChild($cdgItem);
         }
+
 
         $detalle->appendChild($dom->createElement('NmbItem', $data['nombre_item']));
 
@@ -319,9 +325,8 @@ try {
         return $dom->saveXML();
     }
 
-    function ActualizarLiquidacionFolio($QueryBuilder, $id_liquidacion, $tipo_doc, $NroFolio)
+    function ActualizarLiquidacionFolio($QueryBuilder, $id_liquidacion_comision, $tipo_doc, $NroFolio)
     {
-
 
         $table = "propiedades.propiedad_comision_liquidacion";
         $data = [
@@ -329,7 +334,7 @@ try {
             "tipo_documento" => $tipo_doc,
         ];
         $conditions = [
-            "id_liquidacion" => $id_liquidacion,
+            "id" => $id_liquidacion_comision,
         ];
 
         $ResultadoUpdate = $QueryBuilder->update($table, $data, $conditions);
@@ -399,12 +404,16 @@ try {
 
     foreach ($resultadoQuery as $index => $row) {
         try {
+
+
+        
+
             // Datos generales
             $tipo_doc = 39; // 39: boletas, 33: factura, 61: nota crédito
             $url = $config->url_DTE; // URL del servicio SOAP
             $rut = $config->rut;
             $rut_empresa = $config->rut_empresa;
-            $id_liquidacion = $row['id_liquidacion_comision'];
+            $id_liquidacion_comision = $row['id_liquidacion_comision'];
             $descripcion_item = $row['direccion'];
 
             // Solicitar número de folio
@@ -420,7 +429,6 @@ try {
 
                 ]);
                 exit;
-
             } else {
 
                 // Convertir y concatenar el nombre completo del propietario
@@ -455,7 +463,8 @@ try {
                 // Convertir comuna y ciudad a UTF-8
                 $CmnaPostal = $row['comuna'];
                 $CiudadRecep = $row['comuna'];
-
+                $CmnaRecep = $row['comuna'];
+                $DirRecep = $row['direccion_persona'];
 
                 // datos adicionales
                 $razon_social_emisor = $config->razon_social_emisor;
@@ -465,13 +474,18 @@ try {
                 $ciudad_origen = $config->ciudad_origen;
                 $cdg_item_tipo = '';
 
+
+                $rut = $config->rut;
+                $rut_certificado = $config->rut_certificado;
+                $rut_sii = $config->rut_sii;
+
                 // Preparar datos para el XML
                 $data = [
 
                     'rut_emisor' => $rut, // rut fuenzalida
                     'rut_envia' => $rut_certificado, // rut certificado
                     'rut_receptor' => $rut_sii, // rut sii
-                    'fch_resol' => '2014-08-22',
+                    'fch_resol' => '2021-06-25',
                     'nro_resol' => '80',
                     'folio' =>  $NroFolio,
                     'fch_emis' => date('Y-m-d'),
@@ -503,6 +517,10 @@ try {
 
                 ];
 
+
+             
+
+
                 // Generar el XML
                 $xml = generarXMLBoleta($data);
 
@@ -511,17 +529,15 @@ try {
                 $soapData = ['ArchivoTXT' => $xml, 'TipoArchivo' => 'XML'];
                 $resultDTE = $boletaClient->Carga_TXTBoleta($soapData);
 
+
                 // resultados de la peticion
                 $resultDTEMsg = $result->MsgEstatus;
                 if (!$resultDTE || !isset($resultDTE->Carga_TXTBoletaResult->PDF)) {
                     throw new Exception("Error al generar el PDF en el servicio DTE.");
                 } else {
 
-                    // Guardar PDF generado
-                    //$pdfFileName = GuardarPDF($index, $resultDTE->Carga_TXTBoletaResult->PDF);
-
                     // Actualizar la base de datos
-                    ActualizarLiquidacionFolio($QueryBuilder, $idLiquidacion, $tipo_doc, $NroFolio);
+                    ActualizarLiquidacionFolio($QueryBuilder,  $id_liquidacion_comision, $tipo_doc, $NroFolio);
                     ActualizarLiquidacionEstado($QueryBuilder, $idLiquidacion);
 
                     // Respuesta exitosa
@@ -531,7 +547,6 @@ try {
                         'message' => 'Boleta procesada correctamente.',
 
                     ]);
-                    exit;
                 }
             }
         } catch (Exception $e) {
@@ -552,3 +567,4 @@ try {
         'error' => $e->getMessage(),
     ]);
 }
+

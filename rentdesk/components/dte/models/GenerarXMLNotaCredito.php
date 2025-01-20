@@ -85,7 +85,7 @@ try {
     // Condiciones WHERE
     $conditions = [
         'id_liquidacion' => $idLiquidacion,
-        'tipo_comision' => ['IN', ['COMISIÓN ARRIENDO', 'COMISIÓN ADMINISTRACIÓN']]
+        'tipo_comision' => ['IN', ['COMISIÓN CORRETAJE', 'COMISIÓN ADMINISTRACIÓN']]
     ];
 
     // Llamada a `selectAdvanced`

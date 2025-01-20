@@ -54,9 +54,11 @@ try {
         pcl.monto AS monto,
         pcl.id_liquidacion,
         pl.porcentaje_participacion,
-	    pcl.id AS id_liquidacion_comision
+	    pcl.id AS id_liquidacion_comision,
+        per_dir.direccion AS direccion_persona
 
     ";
+
 
     // Definir los JOINs
     $joins = [
@@ -74,6 +76,11 @@ try {
             'type' => 'INNER',
             'table' => 'propiedades.persona per',
             'on' => 'per.id = pl.id_propietario'
+        ],
+        [
+            'type' => 'INNER',
+            'table' => 'propiedades.persona_direcciones per_dir',
+            'on' => 'per.id = per_dir.id_persona'
         ],
         [
             'type' => 'LEFT',
@@ -97,12 +104,10 @@ try {
         ]
     ];
 
-
-
     // Condiciones WHERE
     $conditions = [
         'id_liquidacion' => $idLiquidacion,
-        'tipo_comision' => ['IN', ['COMISIÓN ARRIENDO', 'COMISIÓN ADMINISTRACIÓN']]
+        'tipo_comision' => ['IN', ['COMISIÓN CORRETAJE', 'COMISIÓN ARRIENDO', 'COMISIÓN ADMINISTRACIÓN']]
     ];
 
 
@@ -244,7 +249,7 @@ try {
         $rut_certificado =  $config->rut_certificado;
         $rut_receptor =  $config->rut_receptor;
         $rut_sii =  $config->rut_sii;
-
+        
 
         // Extrae el número de folio
         try {
@@ -252,6 +257,7 @@ try {
             $resultdte = $Folio->Solicitar_Folio(['RutEmpresa' => '77367969K', 'TipoDocto' => $tipo_doc]);
             $status_dte = $resultdte->Solicitar_FolioResult->Estatus;
             $NroFolio = $resultdte->Solicitar_FolioResult->Folio;
+            
         } catch (\Throwable $th) {
             echo $th->getMessage();
         }
@@ -266,7 +272,6 @@ try {
 
             ]);
             exit;
-            
         } else {
 
             /**
@@ -283,6 +288,7 @@ try {
             $conditions = [
                 "id" => $row['id_liquidacion_comision'], // Condición de ejemplo
             ];
+  
 
             $ResultadoUpdate = $QueryBuilder->update($table, $data, $conditions);
 
@@ -449,7 +455,6 @@ try {
                                     'message' => 'Factura procesada correctamente.',
 
                                 ]);
-                                exit;
                             }
                         }
                     } catch (Exception $e) {

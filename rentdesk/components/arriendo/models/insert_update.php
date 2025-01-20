@@ -1,10 +1,9 @@
 <?php
 
 ini_set('display_errors', 1);
-
 ini_set('display_startup_errors', 1);
-
 error_reporting(E_ALL);
+
 
 session_start();
 include("../../../includes/sql_inyection.php");
@@ -565,7 +564,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				$facturarComisionAdministracion = false;
 			}
 
-
 			$queryUpdateRegistroJ = "UPDATE propiedades.ficha_arriendo fa 
 			SET id_estado_contrato = 1 , 
 			meses_garantia = $mesesGarantia,
@@ -577,7 +575,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			arriendo_comision_id_moneda = $monedaComisionArriendo,
 			arriendo_comision_monto = $comisionArriendo,
 			adm_comision_monto = $comisionAdministracion,
-			arriendo_comision_id_tipo_documento = $tipoFacturaComisionAdministracion,
+			arriendo_comision_id_tipo_documento = $tipoFacturaComisionArriendo,
 			adm_comision_id_tipo_documento = $tipoFacturaComisionArriendo,
 			adm_comision_cobro = $cobrarComisionAdministracion,
 			arriendo_comision_cobro = $cobrarComisionArriendo,
@@ -594,9 +592,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$data = array("consulta" => $queryUpdateRegistroJ);
 			$resultado  = $services->sendPostDirecto($url_services . '/util/dml', $data);
 
-
-
-
 			/**************    Envio de datos adicionales    ******************/
 			// $queryCabecera = " UPDATE propiedades.ficha_arriendo fa 
 			// 				SET id_estado_contrato = $estadoContrato , meses_garantia = $mesesGarantia, monto_garantia = $montoGarantia , 
@@ -605,18 +600,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			// 				adm_comision_monto = $comisionAdministracion,arriendo_comision_id_tipo_documento = $tipoFacturaComisionArriendo, adm_comision_id_tipo_documento = $tipoFacturaComisionAdministracion , adm_comision_cobro = '$cobrarComisionAdministracion',
 			// 				arriendo_comision_cobro = '$cobrarComisionArriendo' , adm_comision_primer_liquidacion = '$facturarComisionAdministracion' , num_cuotas_garantia = $num_cuotas_garantia
 			// 				WHERE TOKEN = '$token_arriendo' ";
-
-			$queryCabecera = " UPDATE propiedades.ficha_arriendo fa 
-							SET id_estado_contrato = $estadoContrato , meses_garantia = $mesesGarantia, monto_garantia = $montoGarantia , 
-							monto_multa_atraso = $montoMultaAtraso , id_tipo_multa = $tipoMulta , id_moneda_multa = $monedaMulta,
-							adm_comision_id_moneda = $monedaComisionAdministracion , arriendo_comision_id_moneda =  $monedaComisionArriendo , arriendo_comision_monto = $comisionArriendo,
-							adm_comision_monto = $comisionAdministracion,arriendo_comision_id_tipo_documento = $tipoFacturaComisionArriendo, adm_comision_id_tipo_documento = $tipoFacturaComisionAdministracion , adm_comision_cobro = '$cobrarComisionAdministracion',
-							arriendo_comision_cobro = '$cobrarComisionArriendo' , adm_comision_primer_liquidacion = '$facturarComisionAdministracion' , num_cuotas_garantia = $num_cuotas_garantia
-							WHERE TOKEN = '$token_arriendo' ";
-
+			$queryCabecera = "
+			UPDATE propiedades.ficha_arriendo fa
+			SET 
+				id_estado_contrato = $estadoContrato,
+				meses_garantia = $mesesGarantia,
+				monto_garantia = $montoGarantia,
+				monto_multa_atraso = $montoMultaAtraso,
+				id_tipo_multa = $tipoMulta,
+				id_moneda_multa = $monedaMulta,
+				adm_comision_id_moneda = $monedaComisionAdministracion,
+				arriendo_comision_id_moneda = $monedaComisionArriendo,
+				arriendo_comision_monto = $comisionArriendo,
+				adm_comision_monto = $comisionAdministracion,
+				arriendo_comision_id_tipo_documento = $tipoFacturaComisionArriendo,
+				adm_comision_id_tipo_documento = $tipoFacturaComisionArriendo,
+				adm_comision_cobro = '$cobrarComisionAdministracion',
+				arriendo_comision_cobro = '$cobrarComisionArriendo',
+				adm_comision_primer_liquidacion = '$facturarComisionAdministracion',
+				num_cuotas_garantia = $num_cuotas_garantia
+			WHERE 
+				TOKEN = '$token_arriendo'
+		";
+		
 			$dataCab = array("consulta" => $queryCabecera);
 			$resultadoCab2 = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);
 
+	
 
 			if ($resultadoCab2 != "OK") {
 				echo ",xxx,ERROR,xxx,No se logro insertar datos de arriendo 2 ,xxx,-,xxx,";
@@ -923,22 +933,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$data = array("consulta" => $query);
 					$resultado = json_decode($services->sendPostNoToken($url_services . '/util/objeto', $data));
 
-
-					echo "entra a la fecha prox vcto";
-
 					// guarda la garantia una unica vez
 					if ($estadoContrato == 1) {
-						echo "estado contrato 1";
 
 
 						if ($pagoGarantiaProp == 'SI') {
 
-							echo "pago garantia si ";
-
 
 							if ($num_cuotas_garantia == 1) {
-
-								echo "nuro cuotas mayor 1 ";
 
 
 								$resultadoTest = GuardarMovimientosCtaCte(
@@ -1518,7 +1520,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			arriendo_comision_id_moneda = $monedaComisionArriendo,
 			arriendo_comision_monto = $comisionArriendo,
 			adm_comision_monto = $comisionAdministracion,
-			arriendo_comision_id_tipo_documento = $tipoFacturaComisionAdministracion,
+			arriendo_comision_id_tipo_documento = $tipoFacturaComisionArriendo,
 			adm_comision_id_tipo_documento = $tipoFacturaComisionArriendo,
 			adm_comision_cobro = $cobrarComisionAdministracion,
 			arriendo_comision_cobro = $cobrarComisionArriendo,
@@ -1536,19 +1538,36 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$resultado  = $services->sendPostDirecto($url_services . '/util/dml', $data);
 
 
-
+		echo "entro aquil...";
 
 		/**************    Envio de datos adicionales    ******************/
-		$queryCabecera = " UPDATE propiedades.ficha_arriendo fa 
-							SET id_estado_contrato = $estadoContrato , meses_garantia = $mesesGarantia, monto_garantia = $montoGarantia , 
-							monto_multa_atraso = $montoMultaAtraso , id_tipo_multa = $tipoMulta , id_moneda_multa = $monedaMulta,
-							adm_comision_id_moneda = $monedaComisionAdministracion , arriendo_comision_id_moneda =  $monedaComisionArriendo , arriendo_comision_monto = $comisionArriendo,
-							adm_comision_monto = $comisionAdministracion,arriendo_comision_id_tipo_documento = $tipoFacturaComisionArriendo, adm_comision_id_tipo_documento = $tipoFacturaComisionAdministracion , adm_comision_cobro = '$cobrarComisionAdministracion',
-							arriendo_comision_cobro = '$cobrarComisionArriendo' , adm_comision_primer_liquidacion = '$facturarComisionAdministracion' , num_cuotas_garantia = $num_cuotas_garantia
-							WHERE TOKEN = '$token_arriendo' ";
+		$queryCabecera = "
+		UPDATE propiedades.ficha_arriendo fa
+		SET 
+			id_estado_contrato = $estadoContrato,
+			meses_garantia = $mesesGarantia,
+			monto_garantia = $montoGarantia,
+			monto_multa_atraso = $montoMultaAtraso,
+			id_tipo_multa = $tipoMulta,
+			id_moneda_multa = $monedaMulta,
+			adm_comision_id_moneda = $monedaComisionAdministracion,
+			arriendo_comision_id_moneda = $monedaComisionArriendo,
+			arriendo_comision_monto = $comisionArriendo,
+			adm_comision_monto = $comisionAdministracion,
+			arriendo_comision_id_tipo_documento = $tipoFacturaComisionArriendo,
+			adm_comision_id_tipo_documento = $tipoFacturaComisionArriendo,
+			adm_comision_cobro = '$cobrarComisionAdministracion',
+			arriendo_comision_cobro = '$cobrarComisionArriendo',
+			adm_comision_primer_liquidacion = '$facturarComisionAdministracion',
+			num_cuotas_garantia = $num_cuotas_garantia
+		WHERE 
+			TOKEN = '$token_arriendo'
+	";
+
 		$dataCab = array("consulta" => $queryCabecera);
 		$resultadoCab2 = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);
 
+		var_dump($resultadoCab2);
 
 		if ($resultadoCab2 != "OK") {
 			echo ",xxx,ERROR,xxx,No se logro insertar datos de arriendo 2 ,xxx,-,xxx,";

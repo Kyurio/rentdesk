@@ -613,6 +613,7 @@ $peso_archivo = $config->maxSizeMB;
 						<div class="row">
 							<div class="col-lg-4">
 								<div class="form-group">
+								
 									<!-- <label for="tipoFacturaComisionAdministracion"><span class="obligatorio">*</span>tipo de documento</label> -->
 									<?php echo $opcion_documento_adm; ?>
 

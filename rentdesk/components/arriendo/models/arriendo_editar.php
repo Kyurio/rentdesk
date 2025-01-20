@@ -670,86 +670,68 @@ $estado_contrato
 $num_reg = 10;
 $inicio = 0;
 
-// cuando el tipo de persona es natural las ordena por nombre para que la boleta salga primero $tipo_persona =1 ==
-
-$query = " SELECT nombre,id FROM propiedades.tp_tipo_documento  where habilitado = true  AND id in (1,3)";
+/// Consulta optimizada: Ordenar por nombre para que la Boleta (tipo 3) salga primero si es persona natural
+$query = "SELECT nombre, id FROM propiedades.tp_tipo_documento 
+WHERE habilitado = true AND id IN (1, 3) 
+ORDER BY CASE WHEN $tipo_persona = 1 AND id = 3 THEN 0 ELSE 1 END, nombre";
 
 $cant_rows = $num_reg;
 $num_pagina = round($inicio / $cant_rows) + 1;
-$data = array("consulta" => $query, "cantRegistros" => $cant_rows, "numPagina" => $num_pagina);
+$data = array(
+"consulta" => $query,
+"cantRegistros" => $cant_rows,
+"numPagina" => $num_pagina
+);
 $resultado = $services->sendPostNoToken($url_services . '/util/paginacion', $data, []);
-$json_documento_adm = json_decode($resultado);
-$json_documento_arriendo = json_decode($resultado);
-//var_dump("Arrendatario", $resultado);
+$json_documentos = json_decode($resultado);
 
-$opcion_documento_adm = "";
-$opcion_documento_arriendo = "";
+// Inicializar opciones de los selects
+$opcion_documento_adm = generarOpcionesSelect($json_documentos, $adm_comision_id_tipo_documento, $tipo_persona);
+$opcion_documento_arriendo = generarOpcionesSelect($json_documentos, $arriendo_comision_id_tipo_documento, $tipo_persona);
 
+// Renderizar los selects
+$opcion_documento_adm = "
+<select id='tipoFacturaComisionAdministracion' 
+name='tipoFacturaComisionAdministracion' 
+class='form-control' 
+data-select2-id='tipoFacturaComisionAdministracion' 
+style='display: none' 
+required>
+$opcion_documento_adm
+</select>";
 
-// tipo persona 1 es natural 2 es juridico jhernandez
-foreach ($json_documento_adm as $item) {
-	$select_contrato = "";
+$opcion_documento_arriendo = "
+<select id='tipoFacturaComisionArriendo' 
+name='tipoFacturaComisionArriendo' 
+class='form-control' 
+data-select2-id='tipoFacturaComisionArriendo' 
+required>
+$opcion_documento_arriendo
+</select>";
 
-	// var_dump("BANCO JSON: ", @$item->id == @$result->propietario->cuentasBancarias[0]->banco->id);
+// Función para generar opciones del select
+function generarOpcionesSelect($documentos, $id_tipo_seleccionado, $tipo_persona) {
+$opciones = "";
 
-	if ($item->id == $adm_comision_id_tipo_documento) {
-
-		$opcion_documento_adm = $opcion_documento_adm . "<option  value='$item->id' selected >$item->nombre</option>";
-	} else {
-
-		//$opcion_documento_adm = $opcion_documento_adm . "<option  value='$item->id'  >$item->nombre</option>";
-		if ($tipo_persona == 1) {
-			if ($item->id == 3) {
-				$opcion_documento_adm = $opcion_documento_adm . "<option  value='$item->id' selected >$item->nombre</option>";
-			} else {
-				$opcion_documento_adm = $opcion_documento_adm . "<option  value='$item->id' >$item->nombre</option>";
-			}
-		} else if ($tipo_persona == 2) {
-			if ($item->id == 1) {
-				$opcion_documento_adm = $opcion_documento_adm . "<option  value='$item->id' selected >$item->nombre</option>";
-			} else {
-				$opcion_documento_adm = $opcion_documento_adm . "<option  value='$item->id' >$item->nombre</option>";
-			}
-		}
-	}
+foreach ($documentos as $doc) {
+// Determinar si el documento debe estar seleccionado
+$selected = "";
+if ($doc->id == $id_tipo_seleccionado) {
+  $selected = "selected";
+} elseif ($tipo_persona == 1 && $doc->id == 3) {
+  // Persona natural: Seleccionar Boleta (id = 3)
+  $selected = "selected";
+} elseif ($tipo_persona == 2 && $doc->id == 1) {
+  // Persona jurídica: Seleccionar Factura (id = 1)
+  $selected = "selected";
 }
 
-
-
-
-// tipo persona 1 es natural 2 es juridico jhernandez
-foreach ($json_documento_arriendo as $item) {
-	$select_contrato = "";
-	if ($item->id == $arriendo_comision_id_tipo_documento) {
-
-		$opcion_documento_arriendo = $opcion_documento_arriendo . "<option value='$item->id' selected>$item->nombre</option>";
-	} else {
-
-
-		if ($tipo_persona == 1) {
-			if ($item->id == 3) {
-				$opcion_documento_arriendo = $opcion_documento_arriendo . "<option  value='$item->id' selected>$item->nombre</option>";
-			} else {
-				$opcion_documento_arriendo = $opcion_documento_arriendo . "<option  value='$item->id'>$item->nombre</option>";
-			}
-		} else if ($tipo_persona == 2) {
-			if ($item->id == 1) {
-				$opcion_documento_arriendo = $opcion_documento_arriendo . "<option  value='$item->id' selected>$item->nombre</option>";
-			} else {
-				$opcion_documento_arriendo = $opcion_documento_arriendo . "<option  value='$item->id'>$item->nombre</option>";
-			}
-		}
-	}
+// Generar opción
+$opciones .= "<option value='$doc->id' $selected>$doc->nombre</option>";
 }
 
-
-$opcion_documento_arriendo = "<select id='tipoFacturaComisionArriendo' name='tipoFacturaComisionArriendo' class='form-control' data-select2-id='tipoFacturaComisionArriendo' required>
-	$opcion_documento_arriendo
-	</select>";
-
-$opcion_documento_adm = "<select id='tipoFacturaComisionAdministracion' name='tipoFacturaComisionAdministracion' class='form-control' data-select2-id='tipoFacturaComisionAdministracion' style='display: none' required>
-	$opcion_documento_adm
-	</select>";
+return $opciones;
+}
 
 
 

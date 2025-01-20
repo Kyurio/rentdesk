@@ -117,6 +117,8 @@ async function GenerarDocumento() {
         };
     }).filter(item => item !== null);
 
+    console.log("Items seleccionados:", selectedItems); // Verifica qué se seleccionó.
+
     Swal.fire({
         title: 'Generando documentos...',
         text: 'Por favor, espera mientras se procesan los documentos.',
@@ -130,20 +132,27 @@ async function GenerarDocumento() {
 
     for (const item of selectedItems) {
         const type = item.documentoComision || item.documentoArriendo;
+        console.log(`Procesando liquidación: ${item.idLiquidacion}, Tipo de documento: ${type}`); // Depuración del tipo.
+
         let action = '';
+
         switch (type) {
             case '1':
                 action = 'components/dte/models/GenerarXMLFactura.php';
+                console.log(`Ejecutando acción para Factura: ${action}`); // Acción seleccionada.
                 break;
             case '3':
                 action = 'components/dte/models/GenerarXMLBoleta.php';
+                console.log(`Ejecutando acción para Boleta: ${action}`); // Acción seleccionada.
                 break;
             case '9':
                 action = 'components/dte/models/GenerarXMLNotaCredito.php';
+                console.log(`Ejecutando acción para Nota de Crédito: ${action}`); // Acción seleccionada.
                 break;
             default:
                 errorMessages.push(`Liquidación ${item.idLiquidacion}: Tipo de documento no reconocido.`);
                 totalErrors++;
+                console.error(`Tipo de documento no reconocido: ${type}`); // Error del tipo.
                 continue;
         }
 
@@ -156,16 +165,15 @@ async function GenerarDocumento() {
                 body: formData,
             });
 
-            // Obtener la respuesta como texto para manejar múltiples JSON
             const responseText = await response.text();
-            console.log('Respuesta completa del servidor:', responseText);
+            console.log('Respuesta completa del servidor:', responseText); // Respuesta del servidor.
 
-            // Dividir la respuesta en múltiples objetos JSON
             const jsonStrings = responseText.split('\n').filter(line => line.trim() !== '');
 
             for (const jsonString of jsonStrings) {
                 try {
                     const result = JSON.parse(jsonString);
+                    console.log('Resultado del procesamiento:', result); // JSON procesado.
 
                     if (result.status === 'success') {
                         totalSuccess++;
@@ -174,18 +182,15 @@ async function GenerarDocumento() {
                     }
                 } catch (error) {
                     totalErrors++;
-                    errorMessages.push(`Error: ${error.message}`);
-                    console.error('Error:', error);
+                    errorMessages.push(`Error procesando JSON: ${error.message}`);
+                    console.error('Error procesando JSON:', error); // Error JSON.
                 }
             }
         } catch (error) {
             totalErrors++;
             errorMessages.push(`Error general: ${error.message}`);
-            console.error('Error general:', error);
+            console.error('Error general:', error); // Error general.
         }
-
-
-
     }
 
     Swal.close();
@@ -200,20 +205,17 @@ async function GenerarDocumento() {
         confirmButtonText: 'Entendido',
     });
 
-
     if (totalErrors > 0) {
-        console.warn('Errores detallados:', errorMessages);
+        console.warn('Errores detallados:', errorMessages); // Errores completos.
     }
 
-    // Recarga la tabla solo aquí
     await TablaLlenarLiquidaciones();
-
     $('#historial-dte-tab').click();
 }
 
+
 // listado historial liquidacione
 async function HistorialLiquidaciones() {
-
     try {
         // Llamada AJAX para obtener los datos
         const response = await $.ajax({
@@ -231,13 +233,17 @@ async function HistorialLiquidaciones() {
             // Ajustar ruta del PDF
             let pdfUrl = `/components/dte/models/boletas/${item.folio}.pdf`;
 
-            const fecha = new Date(); // Usar fecha actual, ya que no está en los datos
+            // Convertir la fecha al formato dd-mm-yyyy
+            const fecha = new Date(item.fecha_liquidacion); 
             const fechaFormateada = `${('0' + fecha.getDate()).slice(-2)}-${('0' + (fecha.getMonth() + 1)).slice(-2)}-${fecha.getFullYear()}`;
+            
+            // Formatear monto como CLP
             const monto = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(item.monto);
 
             // Crear fila
             return `
                 <tr>
+                    <td>${fechaFormateada}</td>
                     <td>${item.id_ficha_arriendo}</td>
                     <td>${item.id_ficha_propiedad}</td>
                     <td>${item.direccion}</td>      
@@ -270,19 +276,18 @@ async function HistorialLiquidaciones() {
             obtenerDTE(tipoDocumento, folio); // Llamar a la función obtenerDTE
         });
 
-        // Inicializar DataTable si no está ya inicializada
-        if (!$.fn.DataTable.isDataTable('#tablaHistorial')) {
-            $('#tablaHistorial').DataTable({
-                responsive: true,
-                pageLength: 10, // Número de registros por página
-                searching: true, // Habilitar el buscador
-                paging: true, // Habilitar paginación
-                ordering: true, // Habilitar ordenamiento de columnas
-                language: {
-                    url: "//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json" // Traducción al español
-                }
-            });
+        // Destruir DataTable existente antes de reinicializar (evita errores)
+        if ($.fn.DataTable.isDataTable('#tablaHistorial')) {
+            $('#tablaHistorial').DataTable().destroy();
         }
+
+        // Inicializar DataTables con opciones
+        $('#tablaHistorial').DataTable({
+            responsive: true, // Habilitar diseño responsive
+            paging: true, // Activar paginación
+            searching: true, // Activar búsqueda
+            ordering: false, // Permitir ordenar columnas
+        });
 
     } catch (err) {
         console.error("Error cargando datos: ", err);

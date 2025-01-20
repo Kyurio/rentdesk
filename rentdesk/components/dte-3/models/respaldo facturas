@@ -1,0 +1,236 @@
+<?php
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
+include("../../../app/model/QuerysBuilder.php");
+
+use app\database\QueryBuilder;
+
+$QueryBuilder = new QueryBuilder();
+$idLiquidacion = $_POST['id_liquidacion'] ?? null;
+
+if (!$idLiquidacion) {
+    die("ID de liquidación no proporcionado.");
+}
+
+// URL del servicio SOAP
+$url = 'https://dteqa.arpis.cl/WSFactLocal/DteLocal.asmx?WSDL';
+
+// Función para generar XML dinámico
+function generarXML($tipoDoc, $data, $NroFolio)
+{
+    $dom = new DOMDocument('1.0', 'ISO-8859-1');
+    $dom->formatOutput = true;
+
+    $dte = $dom->createElement('DTE');
+    $dte->setAttribute('version', '1.0');
+    $dte->setAttribute('xmlns:xsi', 'http://www.w3.org/2001/XMLSchema-instance');
+    $dte->setAttribute('xmlns:xsd', 'http://www.w3.org/2001/XMLSchema');
+    $dte->setAttribute('xmlns', 'http://www.sii.cl/SiiDte');
+    $dom->appendChild($dte);
+
+    // Crear el Documento
+    $documento = $dom->createElement('Documento');
+    $documento->setAttribute('ID', 'R' . $data['rut_emisor'] . "T{$tipoDoc}F" . $NroFolio);
+    $dte->appendChild($documento);
+
+    // Encabezado
+    $encabezado = $dom->createElement('Encabezado');
+    $documento->appendChild($encabezado);
+
+    // IdDoc
+    $idDoc = $dom->createElement('IdDoc');
+    $idDoc->appendChild($dom->createElement('TipoDTE', $tipoDoc));
+    $idDoc->appendChild($dom->createElement('Folio', $NroFolio));
+    $idDoc->appendChild($dom->createElement('FchEmis', date('Y-m-d')));
+    $idDoc->appendChild($dom->createElement('FchVenc', date('Y-m-d')));
+    $encabezado->appendChild($idDoc);
+
+    // Emisor
+    $emisor = $dom->createElement('Emisor');
+    $emisor->appendChild($dom->createElement('RUTEmisor', $data['rut_emisor']));
+    $emisor->appendChild($dom->createElement('RznSoc', $data['razon_social_emisor']));
+    $emisor->appendChild($dom->createElement('GiroEmis', $data['giro_emisor']));
+    $emisor->appendChild($dom->createElement('DirOrigen', $data['dir_origen']));
+    $emisor->appendChild($dom->createElement('CmnaOrigen', $data['comuna_origen']));
+    $emisor->appendChild($dom->createElement('CiudadOrigen', $data['ciudad_origen']));
+    $encabezado->appendChild($emisor);
+
+    // Receptor
+    $receptor = $dom->createElement('Receptor');
+    $receptor->appendChild($dom->createElement('RUTRecep', $data['rut_receptor']));
+    $receptor->appendChild($dom->createElement('RznSocRecep', $data['razon_social_receptor']));
+    $receptor->appendChild($dom->createElement('DirRecep', $data['dir_receptor']));
+    $receptor->appendChild($dom->createElement('CmnaRecep', $data['comuna_receptor']));
+    $receptor->appendChild($dom->createElement('CiudadRecep', $data['ciudad_receptor']));
+    $encabezado->appendChild($receptor);
+
+    // Totales
+    $totales = $dom->createElement('Totales');
+    $totales->appendChild($dom->createElement('MntNeto', $data['monto_neto']));
+    $totales->appendChild($dom->createElement('TasaIVA', $data['iva']));
+    $totales->appendChild($dom->createElement('MntTotal', $data['monto_total']));
+    $encabezado->appendChild($totales);
+
+    // Detalle
+    $detalle = $dom->createElement('Detalle');
+    $detalle->appendChild($dom->createElement('NroLinDet', '1'));
+    $detalle->appendChild($dom->createElement('NmbItem', $data['descripcion_item']));
+    $detalle->appendChild($dom->createElement('QtyItem', '1'));
+    $detalle->appendChild($dom->createElement('PrcItem', $data['precio_item']));
+    $detalle->appendChild($dom->createElement('MontoItem', $data['monto_total']));
+    $documento->appendChild($detalle);
+
+    return $dom->saveXML();
+}
+
+// Función para procesar documentos
+function procesarDocumento($tipoDoc, $resultado, $url)
+{
+    global $QueryBuilder;
+
+    $pdfFiles = [];
+    foreach ($resultado as $fila) {
+        $folio = obtenerFolio($tipoDoc, $url);
+        $xml = generarXML($tipoDoc, $fila, $folio);
+
+        // Enviar al servicio
+        try {
+            $soapClient = new SoapClient(trim($url));
+            $soapData = ['ArchivoTXT' => $xml, 'TipoArchivo' => 'XML'];
+            $response = $soapClient->Carga_TXTDTE($soapData);
+
+            if (!empty($response->Carga_TXTDTEResult->PDF)) {
+                $pdfFileName = "boletas/documento_{$fila['id']}.pdf";
+                file_put_contents($pdfFileName, $response->Carga_TXTDTEResult->PDF);
+                $pdfFiles[] = $pdfFileName;
+
+                // Actualizar estado de la liquidación
+                $QueryBuilder->update('propiedades.propiedad_liquidaciones', ['estado' => 1], ['id' => $fila['id']]);
+            } else {
+                throw new Exception("Error generando PDF para documento {$fila['id']}.");
+            }
+        } catch (Exception $e) {
+            error_log("Error SOAP: " . $e->getMessage());
+        }
+    }
+    return $pdfFiles;
+}
+
+// Función para obtener folio
+function obtenerFolio($tipoDoc, $url)
+{
+    try {
+        $soapClient = new SoapClient(trim($url));
+        $response = $soapClient->Solicitar_Folio(['RutEmpresa' => '77367969K', 'TipoDocto' => $tipoDoc]);
+        return $response->Solicitar_FolioResult->Folio;
+    } catch (Exception $e) {
+        throw new Exception("Error obteniendo folio: " . $e->getMessage());
+    }
+}
+
+// Obtener datos de la base
+// Definir la tabla y las condiciones
+// Tabla base y columnas especificadas
+$table = 'propiedades.propiedad_liquidaciones pl';
+$columns = "
+    pl.id AS liquidacion,
+    pl.id_ficha_propiedad AS ficha_propiedad,
+    pl.id_propietario,
+    per.dni AS dni,
+    tre.nombre AS region,
+    tco.nombre AS comuna,
+    CASE WHEN per.id_tipo_persona = 1 THEN TRIM(pn.nombres) ELSE NULL END AS nombre,
+    CASE WHEN per.id_tipo_persona = 1 THEN TRIM(pn.apellido_paterno) ELSE NULL END AS apellido_paterno,
+    CASE WHEN per.id_tipo_persona = 1 THEN TRIM(pn.apellido_materno) ELSE NULL END AS apellido_materno,
+    CASE WHEN per.id_tipo_persona <> 1 THEN TRIM(pj.razon_social) ELSE NULL END AS razon_social,
+    UPPER(
+        COALESCE(p.direccion, '') || ' ' || 
+        COALESCE(p.numero, '') || 
+        CASE 
+            WHEN p.numero_depto IS NOT NULL AND p.numero_depto <> '' THEN ' Dpto ' || p.numero_depto 
+            ELSE '' 
+        END || 
+        CASE 
+            WHEN p.piso IS NOT NULL AND p.piso <> 0 THEN ' Piso ' || p.piso 
+            ELSE '' 
+        END
+    ) AS direccion,
+    p.numero AS numero,
+    CASE WHEN p.numero_depto IS NOT NULL AND p.numero_depto <> '' THEN 'Dpto ' || p.numero_depto ELSE NULL END AS depto,
+    CASE WHEN p.piso IS NOT NULL AND p.piso <> 0 THEN 'Piso ' || p.piso ELSE NULL END AS piso,
+    TO_CHAR(pl.fecha_liquidacion::DATE, 'DD/MM/YYYY') AS fecha_liquidacion,
+    pl.id_ficha_arriendo AS ficha_arriendo,
+    pl.cierre AS cierre,
+    pcl.iva AS iva,
+    pcl.tipo_comision AS razon,
+    pcl.monto AS monto,
+    pcl.id_liquidacion
+";
+
+// Definir los JOINs
+$joins = [
+    [
+        'type' => 'INNER',
+        'table' => 'propiedades.propiedad_comision_liquidacion pcl',
+        'on' => 'pcl.id_liquidacion = pl.id'
+    ],
+    [
+        'type' => 'INNER',
+        'table' => 'propiedades.propiedad p',
+        'on' => 'p.id = pl.id_ficha_propiedad'
+    ],
+    [
+        'type' => 'INNER',
+        'table' => 'propiedades.persona per',
+        'on' => 'per.id = pl.id_propietario'
+    ],
+    [
+        'type' => 'LEFT',
+        'table' => 'propiedades.persona_natural pn',
+        'on' => 'pn.id_persona = pl.id_propietario'
+    ],
+    [
+        'type' => 'LEFT',
+        'table' => 'propiedades.persona_juridica pj',
+        'on' => 'pj.id_persona = pl.id_propietario'
+    ],
+    [
+        'type' => 'INNER',
+        'table' => 'propiedades.tp_comuna tco',
+        'on' => 'tco.id = p.id_comuna'
+    ],
+    [
+        'type' => 'INNER',
+        'table' => 'propiedades.tp_region tre',
+        'on' => 'tre.id = tco.id_region'
+    ]
+];
+
+// Condiciones WHERE
+$conditions = [
+    'id_liquidacion' => 1309,
+    'tipo_comision' => ['IN', ['COMISIÓN ARRIENDO', 'COMISIÓN ADMINISTRACIÓN']]
+];
+
+// Llamada a `selectAdvanced`
+$resultado = $QueryBuilder->selectAdvanced(
+    $table,
+    $columns,
+    $joins,
+    $conditions,
+    '',           // groupBy
+    '',           // orderBy
+    null,         // limit
+    false,        // isCount
+    false          // debug para ver el SQL generado
+);
+
+$pdfFiles = procesarDocumento(33, $resultado, $url);
+
+// Mostrar resultados
+foreach ($pdfFiles as $file) {
+    echo "<a href='{$file}' download>{$file}</a><br>";
+}

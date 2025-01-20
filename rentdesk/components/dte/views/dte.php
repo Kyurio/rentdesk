@@ -31,7 +31,7 @@
                             <tr>
                                 <th>Seleccionar</th>
                                 <th>ID de Liquidación</th>
-                                <th>Comisión de Arriendo</th>
+                                <th>Comisión de Corretaje</th>
                                 <th>Comisión de Administración</th>
                                 <th>Dirección</th>
                                 <th>Fecha de Liquidación</th>
@@ -41,6 +41,7 @@
                             <!-- Los datos se cargarán aquí con JavaScript -->
                         </tbody>
                     </table>
+                    
                 </div>
             </div>
 
@@ -59,6 +60,7 @@
                     <table id="tablaHistorial" class="table table-striped table-bordered">
                         <thead>
                             <tr>
+                                <td>Fecha</td>
                                 <th>Arriendo</th>
                                 <th>Propiedad</th>
                                 <th>Dirección</th>

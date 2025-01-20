@@ -24,19 +24,24 @@ var_dump("idPropiedad: ", $idPropiedad);
 var_dump("idPropietario: ", $idPropietario);
 var_dump("tokenBeneficiario: ", $tokenBeneficiario);
 
+die();
+
 if ($tokenBeneficiario) {
+
+    echo "entro al if";
+
     $queryUpdateInfoCoPropietario = "UPDATE propiedades.propiedad_copropietarios
         SET habilitado = false 
         where token ='$tokenBeneficiario'";
 } else {
+
+
+    echo "entro al else";
+
     $queryUpdateInfoCoPropietario = "SELECT propiedades.update_habilitado_propietario_beneficiario($idRegistro, $idPropiedad, $idPropietario)";
 }
 
-// var_dump($queryUpdateInfoCoPropietario);
-// return;
-// $queryUpdateInfoCoPropietario = "DELETE FROM propiedades.propiedad_copropietarios
-// WHERE token ='$tokenInfoCoPropietario'";
-// var_dump("QUERY UPDATE: ",$queryUpdateInfoCoPropietario );
+
 $dataCab = array("consulta" => $queryUpdateInfoCoPropietario);
 $resultadoCab = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);
 

@@ -1428,7 +1428,7 @@ function generarPDF(
                         $services,
                         $url_services,
                         $ficha_tecnica_propiedad,
-                        'COMISIÓN ARRIENDO',
+                        'COMISIÓN CORRETAJE',
                         $comision_administracion,
                         $iva,
                         $id_liquidacion

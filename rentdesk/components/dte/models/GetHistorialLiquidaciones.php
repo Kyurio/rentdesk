@@ -1,5 +1,10 @@
 <?php
 
+ini_set('display_errors', 1);
+
+ini_set('display_startup_errors', 1);
+
+error_reporting(E_ALL);
 
 
 require "../../../app/model/QuerysBuilder.php";
@@ -12,7 +17,6 @@ $QueryBuilder = new QueryBuilder();
 try {
 
     $table = "propiedades.propiedad_comision_liquidacion pc";
-
     $columns = "
         UPPER(CONCAT(
             COALESCE(CONCAT(p.direccion, ' ', p.numero), ''),
@@ -38,8 +42,10 @@ try {
             WHEN pc.tipo_documento = 33 THEN 'Factura'
             WHEN pc.tipo_documento = 34 THEN 'Nota de Crédito'
             ELSE 'Otro'
-        END AS tipo_documento_texto";
-    
+        END AS tipo_documento_texto,
+        pl.fecha_liquidacion
+    ";
+
     $joins = [
         [
             'type' => 'INNER',
@@ -52,36 +58,28 @@ try {
             'on' => 'pl.id_ficha_propiedad = p.id'
         ]
     ];
-    
+
     $conditions = [
-        'pc.folio' => ['IS NOT NULL']
+        'pc.folio' => ['IS NOT NULL', null]
     ];
     
-    $orderBy = 'pc.id_liquidacion DESC';
-    $groupBy = ''; // No hay agrupación
-    $limit = null; // Sin límite
-    $isCount = false; // No se busca contar resultados
-    $debug = false; // Cambiar a true para depuración
-    
-    
+
+    $orderBy = "pc.id DESC";
 
     $result = $QueryBuilder->selectAdvanced(
         $table,
         $columns,
         $joins,
         $conditions,
-        $groupBy,
+        '',
         $orderBy,
-        $limit,
-        $isCount,
-        $debug
+        null,
+        false,
+        false
     );
-    
-    
+
 
     echo json_encode($result);
-
-    
 } catch (Exception $e) {
     // Enviar el mensaje de error en formato JSON
     echo json_encode(['error' => $e->getMessage()]);

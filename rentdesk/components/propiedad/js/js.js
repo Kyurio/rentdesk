@@ -3943,10 +3943,6 @@ function eliminarInfoCoPropietario({
 	idPropietario,
 	tokenBeneficiario = null,
 }) {
-	console.log('idRegistro: ', idRegistro);
-	console.log('idPropiedad: ', idPropiedad);
-	console.log('idPropietario: ', idPropietario);
-	console.log('tokenBeneficiario: ', tokenBeneficiario);
 
 	Swal.fire({
 		title: '¿Estás seguro?',

@@ -25,7 +25,7 @@ try {
             (
                 SELECT COALESCE(monto, 0) 
                 FROM propiedades.propiedad_comision_liquidacion 
-                WHERE tipo_comision IN ('COMISIÓN ARRIENDO') AND
+                WHERE tipo_comision IN ('COMISIÓN CORRETAJE') AND
                 propiedades.propiedad_comision_liquidacion.id_liquidacion = pl.id
                 ORDER BY id DESC 
                 LIMIT 1
