@@ -18,7 +18,8 @@ $(document).ready(function () {
 		placeholder: 'Seleccione uno o más ejecutivos', // Placeholder
 		allowClear: true, // Botón para limpiar selección
 		tags: true, // Permitir agregar valores no listados
-		tokenSeparators: [','], // Separar por coma
+		tokenSeparators: [','], // Separar por coma,
+		width: '100%', // Asegura que se ajuste al ancho del contenedor
 	});
 
 	// Guardar nuevo recordatorio
@@ -63,6 +64,8 @@ $(document).ready(function () {
 							if (result.isConfirmed) {
 								$('#modalRecordatoriosNuevo').modal('hide');
 								$('#formRecordatorio')[0].reset();
+								// Limpiar el campo de ejecutivos
+								$('#nombreEjecutivo').val(null).trigger('change');
 								$('#ListadoRecordatiorios')
 									.DataTable()
 									.ajax.reload(null, false);
@@ -773,8 +776,8 @@ function cargarDocumentosSoloLectura() {
 					if (item.token_agrupador != previousId) {
 						newRow.append(
 							"<td><div class='d-flex align-items-center' style='gap: .5rem;'><label style='font-size: 1em; text-align: center; color: black;'>" +
-							item.titulo +
-							'</label></div></td>'
+								item.titulo +
+								'</label></div></td>'
 						);
 						previousId = item.token_agrupador;
 					} else {
@@ -783,8 +786,8 @@ function cargarDocumentosSoloLectura() {
 					if (item.nombre_archivo != null && item.nombre_archivo != '') {
 						newRow.append(
 							"<td><i class='fa-solid fa-chevron-right'></i> " +
-							item.nombre_archivo +
-							'</td>'
+								item.nombre_archivo +
+								'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -798,8 +801,8 @@ function cargarDocumentosSoloLectura() {
 					) {
 						newRow.append(
 							'<td>' +
-							moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
-							'</td>'
+								moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
+								'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -808,8 +811,8 @@ function cargarDocumentosSoloLectura() {
 					//console.log(item.link);
 					newRow.append(
 						"<td><div class='d-flex' style='gap: .5rem;'><a href='" +
-						item.link +
-						"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
+							item.link +
+							"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
 					);
 					if (
 						item.fecha_ultima_actualizacion != null &&
@@ -817,12 +820,12 @@ function cargarDocumentosSoloLectura() {
 					) {
 						newRow.append(
 							'<td>' +
-							(item.fecha_ultima_actualizacion
-								? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
-								: '-') +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								(item.fecha_ultima_actualizacion
+									? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
+									: '-') +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -959,10 +962,10 @@ function cargarInfoComentario() {
 					) {
 						newRow.append(
 							'<td>' +
-							formateoNulos(item.fecha_comentario) +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								formateoNulos(item.fecha_comentario) +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -1852,10 +1855,10 @@ function cargarInfoComentario() {
 					) {
 						newRow.append(
 							'<td>' +
-							formateoNulos(item.fecha_comentario) +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								formateoNulos(item.fecha_comentario) +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3072,10 +3075,10 @@ function cargarInfoPersonal(infoJSON) {
 	if (infoJSON[0].tipo_persona === 'NATURAL') {
 		$('#nombrePersona').text(
 			infoJSON[0].nombres +
-			' ' +
-			infoJSON[0].apellido_paterno +
-			' ' +
-			infoJSON[0].apellido_materno
+				' ' +
+				infoJSON[0].apellido_paterno +
+				' ' +
+				infoJSON[0].apellido_materno
 		);
 
 		$('#telefonoMovilPersona').text(
@@ -3085,14 +3088,14 @@ function cargarInfoPersonal(infoJSON) {
 		$('#tipoPersona').text(infoJSON[0].tipo_persona);
 		$('#direccionPersona').text(
 			infoJSON[0].direccion +
-			' #' +
-			infoJSON[0].numero +
-			', ' +
-			infoJSON[0].comuna +
-			', ' +
-			infoJSON[0].region +
-			', ' +
-			infoJSON[0].pais
+				' #' +
+				infoJSON[0].numero +
+				', ' +
+				infoJSON[0].comuna +
+				', ' +
+				infoJSON[0].region +
+				', ' +
+				infoJSON[0].pais
 		);
 		var urlMaps =
 			'https://www.google.com/maps/place/' +
@@ -3117,14 +3120,14 @@ function cargarInfoPersonal(infoJSON) {
 		$('#tipoPersonaJuridica').text(infoJSON[0].tipo_persona);
 		$('#direccionPersonaJuridica').text(
 			infoJSON[0].direccion +
-			' #' +
-			infoJSON[0].numero +
-			', ' +
-			infoJSON[0].comuna +
-			', ' +
-			infoJSON[0].region +
-			', ' +
-			infoJSON[0].pais
+				' #' +
+				infoJSON[0].numero +
+				', ' +
+				infoJSON[0].comuna +
+				', ' +
+				infoJSON[0].region +
+				', ' +
+				infoJSON[0].pais
 		);
 		var urlMaps =
 			'https://www.google.com/maps/place/' +
@@ -3389,12 +3392,12 @@ function cargarDocumentos() {
 					if (item.token_agrupador != previousId) {
 						newRow.append(
 							"<td><div class='d-flex align-items-center' style='gap: .5rem;'> <a data-bs-toggle='modal' data-bs-target='#modalTituloEditar' type='button' onclick='cargarTituloDocumentosEditar(\"" +
-							item.titulo +
-							'","' +
-							item.token_agrupador +
-							"\")' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='Editar' title='Editar'> <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i></a><label style='font-size: 1em; text-align: center; color: black;'>" +
-							item.titulo +
-							'</label></div></td>'
+								item.titulo +
+								'","' +
+								item.token_agrupador +
+								"\")' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='Editar' title='Editar'> <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i></a><label style='font-size: 1em; text-align: center; color: black;'>" +
+								item.titulo +
+								'</label></div></td>'
 						);
 						previousId = item.token_agrupador;
 					} else {
@@ -3403,8 +3406,8 @@ function cargarDocumentos() {
 					if (item.nombre_archivo != null && item.nombre_archivo != '') {
 						newRow.append(
 							"<td><i class='fa-solid fa-chevron-right'></i> " +
-							item.nombre_archivo +
-							'</td>'
+								item.nombre_archivo +
+								'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3418,8 +3421,8 @@ function cargarDocumentos() {
 					) {
 						newRow.append(
 							'<td>' +
-							moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
-							'</td>'
+								moment(item.fecha_vencimiento).format('DD-MM-YYYY') +
+								'</td>'
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3428,8 +3431,8 @@ function cargarDocumentos() {
 					//console.log(item.link);
 					newRow.append(
 						"<td><div class='d-flex' style='gap: .5rem;'><a href='" +
-						item.link +
-						"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
+							item.link +
+							"' download  type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' aria-label='documento' title='documento'><i class='fa-solid fa-file' style='font-size: .75rem;'></i></div></td>"
 					);
 					if (
 						item.fecha_ultima_actualizacion != null &&
@@ -3437,12 +3440,12 @@ function cargarDocumentos() {
 					) {
 						newRow.append(
 							'<td>' +
-							(item.fecha_ultima_actualizacion
-								? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
-								: '-') +
-							"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
-							item.nombre_usuario +
-							"'></i></td>"
+								(item.fecha_ultima_actualizacion
+									? moment(item.fecha_ultima_actualizacion).format('DD-MM-YYYY')
+									: '-') +
+								"  <i class='fa-solid fa-circle-info' data-bs-toggle='tooltip' data-bs-placement='top' title='Modificado por : " +
+								item.nombre_usuario +
+								"'></i></td>"
 						);
 					} else {
 						newRow.append('<td>-</td>');
@@ -3815,8 +3818,9 @@ function cargarInfoCoPropietarios() {
               <tr class="parent-row">
                   <td>
                       <div class='d-flex' style='gap: .5rem;'>
-                          <button type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' title='Ingreso Beneficiario' data-bs-toggle="modal" data-bs-target="#modalBeneficiarioIngreso" onclick="llenarIdPropietarioSeleccionado(${parentRow.id_propietario
-							}, ${parentRow.id})">
+                          <button type='button' class='btn btn-info m-0 d-flex' style='padding: .5rem;' title='Ingreso Beneficiario' data-bs-toggle="modal" data-bs-target="#modalBeneficiarioIngreso" onclick="llenarIdPropietarioSeleccionado(${
+														parentRow.id_propietario
+													}, ${parentRow.id})">
                               <i class='fa-regular fa-plus' style='font-size: .75rem;'></i>
                           </button>
                       </div>
@@ -3825,18 +3829,24 @@ function cargarInfoCoPropietarios() {
                   <td>${formateoNulos(formatRutChile(parentRow.dni))}</td>
                   <td>${formateoNulos(parentRow.nombre_titular)}</td>
                   <td>${formateoNulos(
-								formatRutChile(parentRow.rut_titular)
-							)}</td>
+										formatRutChile(parentRow.rut_titular)
+									)}</td>
                   <td>${formateoNulos(parentRow.cuenta_banco)}</td>
              
-                  <td><input type="number" class="porcentaje_participacion_base parent-input numeric-vacio" id="porcentaje_participacion_base_${id_propietario}" name="${parentRow.id_propietario
-							}|${parentRow.id_cta_banc}|porc_part_base||${parentRow?.id
-							}" min="0" max="100" step="0.01" value="${parentRow.porcentaje_participacion_base
-							}"></td>
-            <td><input disabled type="number" class="porcentaje_participacion numeric-vacio" id="porcentaje_participacion_${id_propietario}" name="${parentRow.id_propietario
-							}|${parentRow.id_cta_banc}|porc_part||${parentRow?.id
-							}" min="0" max="100" step="0.01" value="${parentRow.porcentaje_participacion
-							}"></td>
+                  <td><input type="number" class="porcentaje_participacion_base parent-input numeric-vacio" id="porcentaje_participacion_base_${id_propietario}" name="${
+							parentRow.id_propietario
+						}|${parentRow.id_cta_banc}|porc_part_base||${
+							parentRow?.id
+						}" min="0" max="100" step="0.01" value="${
+							parentRow.porcentaje_participacion_base
+						}"></td>
+            <td><input disabled type="number" class="porcentaje_participacion numeric-vacio" id="porcentaje_participacion_${id_propietario}" name="${
+							parentRow.id_propietario
+						}|${parentRow.id_cta_banc}|porc_part||${
+							parentRow?.id
+						}" min="0" max="100" step="0.01" value="${
+							parentRow.porcentaje_participacion
+						}"></td>
             <td>
             <div id="eliminarParent">
             <div class='d-flex' style='gap: .5rem;' >
@@ -3867,17 +3877,23 @@ function cargarInfoCoPropietarios() {
                   <td>${formateoNulos(formatRutChile(child.rut_titular))}</td>
                   <td>${formateoNulos(child.cuenta_banco)}</td>
              
-                <!--  <td><input type="number" class="porcentaje_participacion_base numeric-vacio" id="porcentaje_participacion_base_${id_propietario}_${index}" name="${child.id_propietario
-							}||porc_part_base|${child.id_beneficiario}|${child?.id_relacion
-							}" min="0" max="100" step="0.01" value="${child.porcentaje_participacion_base
-							}"></td>
+                <!--  <td><input type="number" class="porcentaje_participacion_base numeric-vacio" id="porcentaje_participacion_base_${id_propietario}_${index}" name="${
+							child.id_propietario
+						}||porc_part_base|${child.id_beneficiario}|${
+							child?.id_relacion
+						}" min="0" max="100" step="0.01" value="${
+							child.porcentaje_participacion_base
+						}"></td>
 
             -->
             <td>-</td>
-            <td><input type="number" class="porcentaje_participacion child-input numeric-vacio" id="porcentaje_participacion_${id_propietario}_${index}" name="${child.id_propietario
-							}||porc_part|${child.id_beneficiario}|${child?.id_relacion
-							}" min="0" max="100" step="0.01" value="${child.porcentaje_participacion
-							}"></td>
+            <td><input type="number" class="porcentaje_participacion child-input numeric-vacio" id="porcentaje_participacion_${id_propietario}_${index}" name="${
+							child.id_propietario
+						}||porc_part|${child.id_beneficiario}|${
+							child?.id_relacion
+						}" min="0" max="100" step="0.01" value="${
+							child.porcentaje_participacion
+						}"></td>
                   <td>
                       <div class='d-flex' style='gap: .5rem;'>
                           <button onclick='eliminarInfoCoPropietario({
@@ -4416,24 +4432,24 @@ function cargarInfoPersonalProp(infoJSON) {
 	if (infoJSON[0].tipo_persona === 'NATURAL') {
 		$('#nombrePersona').text(
 			infoJSON[0].nombres +
-			' ' +
-			infoJSON[0].apellido_paterno +
-			' ' +
-			infoJSON[0].apellido_materno
+				' ' +
+				infoJSON[0].apellido_paterno +
+				' ' +
+				infoJSON[0].apellido_materno
 		);
 		$('#telefonoMovilPersona').text(infoJSON[0].telefono_fijo);
 		$('#emailPersona').text(infoJSON[0].correo_electronico);
 		$('#tipoPersona').text(infoJSON[0].tipo_persona);
 		$('#direccionPersona').text(
 			infoJSON[0].direccion +
-			' #' +
-			infoJSON[0].numero +
-			', ' +
-			infoJSON[0].comuna +
-			', ' +
-			infoJSON[0].region +
-			', ' +
-			infoJSON[0].pais
+				' #' +
+				infoJSON[0].numero +
+				', ' +
+				infoJSON[0].comuna +
+				', ' +
+				infoJSON[0].region +
+				', ' +
+				infoJSON[0].pais
 		);
 		var urlMaps =
 			'https://www.google.com/maps/place/' +
@@ -4458,14 +4474,14 @@ function cargarInfoPersonalProp(infoJSON) {
 		$('#tipoPersonaJuridica').text(infoJSON[0].tipo_persona);
 		$('#direccionPersonaJuridica').text(
 			infoJSON[0].direccion +
-			' #' +
-			infoJSON[0].numero +
-			', ' +
-			infoJSON[0].comuna +
-			', ' +
-			infoJSON[0].region +
-			', ' +
-			infoJSON[0].pais
+				' #' +
+				infoJSON[0].numero +
+				', ' +
+				infoJSON[0].comuna +
+				', ' +
+				infoJSON[0].region +
+				', ' +
+				infoJSON[0].pais
 		);
 		var urlMaps =
 			'https://www.google.com/maps/place/' +
@@ -4486,10 +4502,10 @@ function cargarInfoPersonalProp(infoJSON) {
 
 	$('#ctaBancNombreTitularDeCuenta').text(
 		infoJSON[0].nombre_titular +
-		' ' +
-		infoJSON[0].apellido_paterno +
-		' ' +
-		infoJSON[0].apellido_materno
+			' ' +
+			infoJSON[0].apellido_paterno +
+			' ' +
+			infoJSON[0].apellido_materno
 	);
 	$('#ctaBancRutTitular').text(infoJSON[0].rut_titular);
 	$('#ctaBancNumero').text(infoJSON[0].numero_cta_banc);
@@ -5085,8 +5101,8 @@ function cargarInfoCtaServicios() {
 					newRow.append('<td>' + formateoNulos(item.nombre_servicio) + '</td>');
 					newRow.append(
 						'<td>' +
-						formateoNulos(formateoDivisa(item.monto_adeudado)) +
-						'</td>'
+							formateoNulos(formateoDivisa(item.monto_adeudado)) +
+							'</td>'
 					);
 					newRow.append(
 						`<td>
@@ -5458,8 +5474,8 @@ function cargarInfoCoPropietariosPropiedad() {
 						newRow.append('<td>' + formateoNulos(item.cuenta_banco) + '</td>');
 						newRow.append(
 							'<td>' +
-							formateoNulos(item.porcentaje_participacion_base) +
-							'</td>'
+								formateoNulos(item.porcentaje_participacion_base) +
+								'</td>'
 						);
 						newRow.append(
 							'<td>' + formateoNulos(item.porcentaje_participacion) + '</td>'
@@ -5482,8 +5498,8 @@ function cargarInfoCoPropietariosPropiedad() {
 						newRow.append('<td>' + formateoNulos(item.cuenta_banco) + '</td>');
 						newRow.append(
 							'<td>' +
-							formateoNulos(item.porcentaje_participacion_base) +
-							'</td>'
+								formateoNulos(item.porcentaje_participacion_base) +
+								'</td>'
 						);
 						newRow.append(
 							'<td>' + formateoNulos(item.porcentaje_participacion) + '</td>'
@@ -5545,8 +5561,8 @@ function cargarLiquidaciones() {
 					newRow.append('<td>' + replaceNull(item.id_ficha_arriendo) + '</td>');
 					newRow.append(
 						'<td>$' +
-						replaceNull(item.comision).toLocaleString('es-ES') +
-						'</td>'
+							replaceNull(item.comision).toLocaleString('es-ES') +
+							'</td>'
 					);
 					newRow.append(
 						'<td>$' + replaceNull(item.iva).toLocaleString('es-ES') + '</td>'
@@ -5556,8 +5572,8 @@ function cargarLiquidaciones() {
 					);
 					newRow.append(
 						'<td>$' +
-						replaceNull(item.descuentos).toLocaleString('es-ES') +
-						'</td>'
+							replaceNull(item.descuentos).toLocaleString('es-ES') +
+							'</td>'
 					);
 					newRow.append(
 						'<td>$' + replaceNull(item.total).toLocaleString('es-ES') + '</td>'
@@ -6201,9 +6217,9 @@ function cargarLiquidacionesGenMasivaList() {
 				var montoFormateado = isNaN(precioNumerico)
 					? 'No definido'
 					: new Intl.NumberFormat('es-CL', {
-						style: 'currency',
-						currency: 'CLP',
-					}).format(precioNumerico);
+							style: 'currency',
+							currency: 'CLP',
+					  }).format(precioNumerico);
 
 				// Generar fila solo si las propiedades principales son válidas
 				if (idPropiedad !== 'Sin dato' && idContrato !== 'Sin dato') {
@@ -6394,7 +6410,7 @@ function cargarLiquidacionesPagoPropietariosList() {
 		},
 	});
 
-	$('#prop-liq-pago-propietarios-table').on('init.dt', function () { });
+	$('#prop-liq-pago-propietarios-table').on('init.dt', function () {});
 }
 
 function deselectAll() {
@@ -6534,7 +6550,7 @@ function cargarLiquidacionesHistorico() {
 			},
 		},
 	});
-	$('#liq-generacion-masiva-table').on('init.dt', function () { });
+	$('#liq-generacion-masiva-table').on('init.dt', function () {});
 	$('[data-toggle="tooltip"]').tooltip();
 }
 
@@ -6639,10 +6655,13 @@ $(document).ready(function () {
 				  <td>
 					<div class="d-flex">
 					  <label class="switch"> 
-						<input value="1" type="checkbox" id="rolActivoCobrado_${item.id
-						}" name="cobrado_${item.id}" ${item.cobrado ? 'checked' : ''
-						} onclick="confirmarCambioEstado(${item.id
-						}, 'cobrado', this.checked)">
+						<input value="1" type="checkbox" id="rolActivoCobrado_${
+							item.id
+						}" name="cobrado_${item.id}" ${
+						item.cobrado ? 'checked' : ''
+					} onclick="confirmarCambioEstado(${
+						item.id
+					}, 'cobrado', this.checked)">
 						<span class="slider round"></span>
 					  </label>
 					</div> 
@@ -6650,17 +6669,21 @@ $(document).ready(function () {
 				  <td>
 					<div class="d-flex">
 					  <label class="switch">
-						<input value="1" type="checkbox" id="rolActivoPagado_${item.id}" name="pagado_${item.id
-						}" ${item.pagado ? 'checked' : ''} onclick="confirmarCambioEstado(${item.id
-						}, 'pagado', this.checked)">
+						<input value="1" type="checkbox" id="rolActivoPagado_${item.id}" name="pagado_${
+						item.id
+					}" ${item.pagado ? 'checked' : ''} onclick="confirmarCambioEstado(${
+						item.id
+					}, 'pagado', this.checked)">
 						<span class="slider round"></span>
 					  </label>
 					</div>
 				  </td>
 				  <td>
-					<button class="btn btn-info editar-btn me-2" data-bs-toggle="modal" data-bs-target="#ModalEditarValor" data-id="${item.id
-						}" data-año="${item.año}" data-valor="${item.valor}" data-cuota="${item.cuota
-						}" data-mes="${item.mes}">
+					<button class="btn btn-info editar-btn me-2" data-bs-toggle="modal" data-bs-target="#ModalEditarValor" data-id="${
+						item.id
+					}" data-año="${item.año}" data-valor="${item.valor}" data-cuota="${
+						item.cuota
+					}" data-mes="${item.mes}">
 					  <i class="fa-solid fa-pen-to-square"></i>
 					</button>
 					<button class="btn btn-danger eliminar-btn-valores me-2" data-id="${item.id}">
@@ -6838,17 +6861,23 @@ $(document).ready(function () {
                 <tr>
                   <td>${item.numero}</td>
                   <td>${item.principal}</td>
-                  <td>${item.descripcion
-						}</td> <!-- Nueva celda para la descripción -->
+                  <td>${
+										item.descripcion
+									}</td> <!-- Nueva celda para la descripción -->
                   <td>
                     <div class="d-flex gap-2">
-                      <button class="btn btn-success pasar-id-btn" data-token="${item.token_rol
-						}" data-id-rol="${item.id_propiedades_roles
-						}" data-bs-toggle="modal" data-bs-target="#ModalDetalle"><i class="fa-regular fa-eye"></i></button>
-                      <button class="btn btn-info editar-btn" data-bs-toggle="modal" data-bs-target="#modalRolEditar" data-propiedad="${item.id_propiedad
-						}" data-id="${item.id}" data-numero="${item.numero
-						}" data-principal="${item.principal}" data-token-rol="${item.token_rol
-						}"> <i class="fa-solid fa-pen-to-square"></i></button>
+                      <button class="btn btn-success pasar-id-btn" data-token="${
+												item.token_rol
+											}" data-id-rol="${
+						item.id_propiedades_roles
+					}" data-bs-toggle="modal" data-bs-target="#ModalDetalle"><i class="fa-regular fa-eye"></i></button>
+                      <button class="btn btn-info editar-btn" data-bs-toggle="modal" data-bs-target="#modalRolEditar" data-propiedad="${
+												item.id_propiedad
+											}" data-id="${item.id}" data-numero="${
+						item.numero
+					}" data-principal="${item.principal}" data-token-rol="${
+						item.token_rol
+					}"> <i class="fa-solid fa-pen-to-square"></i></button>
                       ${item.principal === 'No' ? botonBorrar : ''}
                     </div>
                   </td>
@@ -8078,6 +8107,12 @@ function cargarRetencionesList() {
 				$('#retenciones').DataTable().clear().destroy();
 			}
 
+			// Validar la respuesta y manejar datos vacíos
+			const data =
+				response && Array.isArray(response) && response.length > 0
+					? response
+					: [];
+
 			// Configuración de columnas
 			const columns = [
 				{
@@ -8115,37 +8150,29 @@ function cargarRetencionesList() {
 				{
 					data: null,
 					render: function (data, type, row) {
-						// Verificar si el estado_retencion es 'false', 'POR RETENER' o 'RETENIDO' para permitir la eliminación
 						if (
 							row.estado_retencion === false ||
 							row.estado_retencion === 'POR RETENER' ||
 							row.estado_retencion === 'RETENIDO'
 						) {
-							// Mostrar el estado_retencion y el botón de eliminación
 							return `
-								
-								<button class="btn btn-danger eliminar-retencion-btn" data-retencion="${row.id_retencion},${row.estado_retencion}">
-									<i class="fa-solid fa-trash"></i>
-								</button>
-							`;
-						} else if (row.estado_retencion === true) {
-							// Si el estado_retencion es 'true', no mostrar nada (ni estado ni botón)
-							return '';
+                                <button class="btn btn-danger eliminar-retencion-btn" data-retencion="${row.id_retencion},${row.estado_retencion}">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            `;
 						}
-						// Mostrar solo el estado_retencion si no se puede eliminar
-						return `<span>${row.estado_retencion}</span>`;
+						return row.estado_retencion
+							? ''
+							: `<span>${row.estado_retencion}</span>`;
 					},
 					orderable: false,
 					searchable: false,
 				},
 			];
 
-			// Inicializar DataTable con datos o mensaje de vacío
+			// Inicializar DataTable
 			$('#retenciones').DataTable({
-				data:
-					response && Array.isArray(response) && response.length > 0
-						? response
-						: [],
+				data: data,
 				columns: columns,
 				ordering: false,
 				language: {
@@ -8162,17 +8189,15 @@ function cargarRetencionesList() {
 						previous: 'Anterior',
 					},
 				},
-				createdRow: function (row, data, dataIndex) {
-					if (!response || !response.length) {
-						$(row).html(
-							'<td colspan="7" style="text-align: center;">No hay resultados disponibles</td>'
-						);
-					}
-				},
 			});
 		},
 		error: function (jqXHR, textStatus, errorThrown) {
 			console.error('Error en la llamada AJAX:', textStatus, errorThrown);
+			Swal.fire({
+				title: 'Error',
+				text: 'Hubo un problema al cargar los datos. Por favor, inténtelo de nuevo más tarde.',
+				icon: 'error',
+			});
 		},
 	});
 }
@@ -8263,7 +8288,11 @@ $(document).on('click', '.eliminar-retencion-btn', function () {
 								id_retencion // ID del comentario relacionado (id_retencion)
 							);
 
-							cargarRetencionesList(); // Recargar la lista después de eliminar
+							// Cerrar el modal
+							$('#agregarRetencionModal').modal('hide');
+
+							// Recargar la lista de retenciones
+							cargarRetencionesList();
 						} else {
 							Swal.fire({
 								title: 'Error',
@@ -8468,6 +8497,7 @@ document.addEventListener('DOMContentLoaded', function () {
 							timer: 1500,
 						});
 						limpiarCampos();
+						$('#agregarRetencionModal').modal('hide');
 						cargarRetencionesList(); // Recargar la lista de retenciones
 					} else {
 						Swal.fire({
