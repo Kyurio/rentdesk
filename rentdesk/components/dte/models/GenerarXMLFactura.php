@@ -1,21 +1,23 @@
 <?php
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+date_default_timezone_set('America/Santiago');
+
+
+// Desactiva errores visibles en la salida JSON
+ini_set('display_errors', 0);
+error_reporting(0);
 
 include("../../../app/model/QuerysBuilder.php");
 include("../../../configuration.php");
 
 use app\database\QueryBuilder;
-use LDAP\Result;
+
 
 $QueryBuilder = new QueryBuilder();
 $config = new Config();
 
-$idLiquidacion = $_POST['id_liquidacion'];
-
-
 try {
+
+    $idLiquidacion = $_POST['id_liquidacion'];
 
     // Definir la tabla y las condiciones
     // Tabla base y columnas especificadas
@@ -55,10 +57,10 @@ try {
         pcl.id_liquidacion,
         pl.porcentaje_participacion,
 	    pcl.id AS id_liquidacion_comision,
-        per_dir.direccion AS direccion_persona
+        per_dir.direccion AS direccion_persona,
+        tco_per.nombre AS comuna_persona
 
     ";
-
 
     // Definir los JOINs
     $joins = [
@@ -99,6 +101,11 @@ try {
         ],
         [
             'type' => 'INNER',
+            'table' => 'propiedades.tp_comuna tco_per',
+            'on' => 'tco_per.id = per_dir.id_comuna'
+        ],
+        [
+            'type' => 'INNER',
             'table' => 'propiedades.tp_region tre',
             'on' => 'tre.id = tco.id_region'
         ]
@@ -126,9 +133,10 @@ try {
 
 
     // url del servicio
-    $url = $config->url_DTE; //'https://dteqa.arpis.cl/WSFactLocal/DteLocal.asmx?WSDL';
+    $url = $config->url_DTE;
     $fecha =  date('Y-m-d') . 'T' . date('H:i:s');
     $pdfFiles = []; // Almacenar rutas de los PDFs generados
+    $responses = [];
 
     // Crear carpeta para guardar PDFs si no existe
     if (!file_exists('boletas')) {
@@ -249,7 +257,7 @@ try {
         $rut_certificado =  $config->rut_certificado;
         $rut_receptor =  $config->rut_receptor;
         $rut_sii =  $config->rut_sii;
-        
+
 
         // Extrae el número de folio
         try {
@@ -257,7 +265,6 @@ try {
             $resultdte = $Folio->Solicitar_Folio(['RutEmpresa' => '77367969K', 'TipoDocto' => $tipo_doc]);
             $status_dte = $resultdte->Solicitar_FolioResult->Estatus;
             $NroFolio = $resultdte->Solicitar_FolioResult->Folio;
-            
         } catch (\Throwable $th) {
             echo $th->getMessage();
         }
@@ -288,7 +295,7 @@ try {
             $conditions = [
                 "id" => $row['id_liquidacion_comision'], // Condición de ejemplo
             ];
-  
+
 
             $ResultadoUpdate = $QueryBuilder->update($table, $data, $conditions);
 
@@ -331,7 +338,7 @@ try {
                 // Convertir comuna y ciudad a UTF-8
                 $CmnaPostal = mb_convert_encoding($row['comuna'], 'UTF-8', 'ISO-8859-1');
                 $CiudadRecep = mb_convert_encoding($row['comuna'], 'UTF-8', 'ISO-8859-1');
-
+                $comuna_persona = mb_convert_encoding($row['comuna_persona'], 'UTF-8', 'ISO-8859-1');
 
                 $tipo_doc = 33; // 39: boletas, 33: factura, 61: nota crédito
                 $rut = $config->rut;
@@ -355,6 +362,7 @@ try {
                 // Convertir comuna y ciudad a UTF-8
                 $CmnaRecep = $row['comuna'];
                 $DirRecep = $row['comuna'];
+                $direccion_persona = $row['direccion_persona'];
 
 
                 // Datos de la factura
@@ -386,9 +394,9 @@ try {
                     'DirPostal' => eliminarTildes(strtoupper($DirPostal)),
                     'CmnaPostal' => eliminarTildes(strtoupper($CmnaPostal)),
                     'fecha_vencmimeinto' => date('Y-m-d'),
-                    'CiudadRecep' => eliminarTildes(strtoupper($CiudadRecep)),
-                    'CmnaRecep' => eliminarTildes(strtoupper($CmnaRecep)),
-                    'DirRecep' => eliminarTildes(strtoupper($DirRecep)),
+                    'CiudadRecep' => eliminarTildes(strtoupper($comuna_persona)),
+                    'CmnaRecep' => eliminarTildes(strtoupper($comuna_persona)),
+                    'DirRecep' => eliminarTildes(strtoupper($direccion_persona)),
                     'cdg_item_tipo' => $cdg_item_tipo,
                     'cdg_item_valor' => $cdg_item_tipo,
 
@@ -445,23 +453,23 @@ try {
                                 $errorMsg = $resultdte2->Carga_TXTDTEResult->MsgEstatus ?? "Error desconocido en el servicio.";
                                 throw new Exception("Error en el servicio: $errorMsg");
                             } else {
-                                // Guardar el PDF
-                                //file_put_contents("factura_$NroFolio.pdf", $pdfContent);
 
                                 // Respuesta exitosa
-                                header('Content-Type: application/json; charset=utf-8');
-                                echo json_encode([
+                                $responses[] = [
                                     'status' => 'success',
-                                    'message' => 'Factura procesada correctamente.',
+                                    'message' => 'Factura procesada correctamente para el folio: ' . $NroFolio,
+                                ];
 
-                                ]);
                             }
                         }
                     } catch (Exception $e) {
-                        echo json_encode([
+
+                        $errorMsg = $resultdte2->Carga_TXTDTEResult->MsgEstatus ?? "Error desconocido en el servicio.";
+                        $responses[] = [
                             'status' => 'error',
-                            'message' => $e->getMessage(),
-                        ]);
+                            'message' => "Error en el servicio: $errorMsg",
+                        ];
+
                     }
                 } catch (\Throwable $th) {
                     echo $th->getMessage();
@@ -469,6 +477,10 @@ try {
             }
         }
     } // end for 
+
+    // imprime el resultado
+    echo json_encode($responses); 
+
 } catch (Exception $e) {
     // Manejo de errores generales
     header('Content-Type: application/json', true, 500);

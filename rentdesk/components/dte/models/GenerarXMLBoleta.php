@@ -5,16 +5,16 @@ date_default_timezone_set('America/Santiago');
 include("../../../app/model/QuerysBuilder.php");
 include("../../../configuration.php");
 
-
 use app\database\QueryBuilder;
-use LDAP\Result;
 
 $QueryBuilder = new QueryBuilder();
 $config = new Config();
 
-$idLiquidacion = $_POST['id_liquidacion'];
 
 try {
+
+
+    $idLiquidacion = $_POST['id_liquidacion'];
 
     // Definir la tabla y las condiciones
     // Tabla base y columnas especificadas
@@ -54,7 +54,8 @@ try {
         pcl.id_liquidacion,
         pl.porcentaje_participacion,
 	    pcl.id AS id_liquidacion_comision,
-        per_dir.direccion AS direccion_persona
+        per_dir.direccion AS direccion_persona,
+        tco_per.nombre AS comuna_persona
 
     ";
 
@@ -97,6 +98,11 @@ try {
         ],
         [
             'type' => 'INNER',
+            'table' => 'propiedades.tp_comuna tco_per',
+            'on' => 'tco_per.id = per_dir.id_comuna'
+        ],
+        [
+            'type' => 'INNER',
             'table' => 'propiedades.tp_region tre',
             'on' => 'tre.id = tco.id_region'
         ]
@@ -115,16 +121,15 @@ try {
         $columns,
         $joins,
         $conditions,
-        '',           // groupBy
-        '',           // orderBy
-        null,         // limit
-        false,        // isCount
-        false          // debug para ver el SQL generado
     );
 
 
+
+    //header('Content-Type: application/json; charset=utf-8');
     // url del servicio
     $fecha =  date('Y-m-d') . 'T' . date('H:i:s');
+    $responses = [];
+
 
 
     // Crear carpeta para guardar PDFs si no existe
@@ -405,9 +410,6 @@ try {
     foreach ($resultadoQuery as $index => $row) {
         try {
 
-
-        
-
             // Datos generales
             $tipo_doc = 39; // 39: boletas, 33: factura, 61: nota crédito
             $url = $config->url_DTE; // URL del servicio SOAP
@@ -422,7 +424,6 @@ try {
 
             if (!$NroFolio) {
 
-                header('Content-Type: application/json; charset=utf-8');
                 echo json_encode([
                     'status' => 'errro',
                     'message' => 'Folios agotados o con problemas para generar la factura.',
@@ -438,6 +439,7 @@ try {
                 $descripcionCobro = $row['razon'];
                 $porcentaje_iva = $row['iva'];
 
+
                 /**
                  *  
                  * calculos
@@ -446,8 +448,10 @@ try {
                 $porcentaje_participacion = $row['porcentaje_participacion'];
                 $mnt_porcentaje = $row['monto'] * ($porcentaje_participacion / 100);
                 $mnt_bruto = $mnt_porcentaje; // monto bruto
-                $monto_neto =  round($mnt_bruto / (1  + ($porcentaje_iva / 100)));
-                $monto_iva = ($mnt_bruto - $monto_neto);
+                //$monto_neto =  round($mnt_bruto / (1  + ($porcentaje_iva / 100)));
+                $monto_neto =  round($mnt_bruto * (1  + ($porcentaje_iva / 100)));
+                $monto_iva = ($monto_neto - $mnt_bruto);
+
 
                 /**
                  *  
@@ -455,7 +459,7 @@ try {
                  * 
                  */
 
-                $precio_item = $mnt_porcentaje;
+                $precio_item = $monto_neto; //$mnt_porcentaje;
                 $CdgIntRecep = 1;
                 $Contacto = isset($row['correo_electronico']) ? $row['correo_electronico'] : '';
                 $DirPostal = $row['direccion'];
@@ -464,9 +468,10 @@ try {
                 $CmnaPostal = $row['comuna'];
                 $CiudadRecep = $row['comuna'];
                 $CmnaRecep = $row['comuna'];
+                $comuna_persona = $row['comuna_persona'];
                 $DirRecep = $row['direccion_persona'];
 
-                // datos adicionales
+                // datos adicionales -- configuration.php
                 $razon_social_emisor = $config->razon_social_emisor;
                 $giro_emisor = $config->giro_emisor; // Fuenzalida
                 $dir_origen = $config->dir_origen;; // Fuenzalida
@@ -495,12 +500,12 @@ try {
                     'comuna_origen' =>   eliminarTildes(strtoupper($comuna_origen)),
                     'ciudad_origen' =>  eliminarTildes(strtoupper($ciudad_origen)),
                     'nombre_item' =>   substr(eliminarTildes(strtoupper($descripcionCobro)), 0, 100),
-                    'descripcion_item' =>   substr(eliminarTildes(strtoupper($descripcion_item)), 0, 100),
+                    'descripcion_item' =>   substr(eliminarTildes(strtoupper($descripcion_item)), 0, 50),
                     'cantidad_item' => $cantidadItems,
                     'precio_item' => $precio_item,
-                    'mnt_bruto' => $monto_neto,
+                    'mnt_bruto' => $mnt_bruto,
                     'iva' => $monto_iva,
-                    'mnt_total' => $mnt_bruto,
+                    'mnt_total' => $monto_neto,
                     'razon_social_receptor' => substr(eliminarTildes(strtoupper($NombrePropietario)), 0, 100),
                     'fechahora' => $fecha,
                     'rutrecep' => $rutPropietario, // rut del pripietario  
@@ -509,17 +514,13 @@ try {
                     'DirPostal' => eliminarTildes(strtoupper($DirPostal)),
                     'CmnaPostal' =>  eliminarTildes(strtoupper($CmnaPostal)),
                     'fecha_vencmimeinto'  => date('Y-m-d'),
-                    'CiudadRecep' => eliminarTildes(strtoupper($CiudadRecep)),
-                    'CmnaRecep' => eliminarTildes(strtoupper($CmnaRecep)),
+                    'CiudadRecep' => eliminarTildes(strtoupper($comuna_persona)),
+                    'CmnaRecep' => eliminarTildes(strtoupper($comuna_persona)),
                     'DirRecep' => substr(eliminarTildes(strtoupper($DirRecep)), 0, 20),
                     'cdg_item_tipo' => $cdg_item_tipo,
                     'cdg_item_valor' => $cdg_item_tipo,
 
                 ];
-
-
-             
-
 
                 // Generar el XML
                 $xml = generarXMLBoleta($data);
@@ -528,7 +529,6 @@ try {
                 $boletaClient = new SoapClient(trim($url));
                 $soapData = ['ArchivoTXT' => $xml, 'TipoArchivo' => 'XML'];
                 $resultDTE = $boletaClient->Carga_TXTBoleta($soapData);
-
 
                 // resultados de la peticion
                 $resultDTEMsg = $result->MsgEstatus;
@@ -541,30 +541,32 @@ try {
                     ActualizarLiquidacionEstado($QueryBuilder, $idLiquidacion);
 
                     // Respuesta exitosa
-                    header('Content-Type: application/json; charset=utf-8');
-                    echo json_encode([
+                    $responses[] = [
                         'status' => 'success',
-                        'message' => 'Boleta procesada correctamente.',
-
-                    ]);
+                        'message' => 'Boleta procesada correctamente para el folio: ' . $NroFolio,
+                    ];
                 }
             }
         } catch (Exception $e) {
             // Manejo de errores
             error_log("Error procesando liquidación {$idLiquidacion}: " . $e->getMessage());
-            echo json_encode([
+            $responses[] = [
                 'status' => 'error',
-                'message' => $e->getMessage(),
-            ]);
+                'message' => "Error en el servicio: " . $e->getMessage(),
+            ];
         }
     }
+
+
+    // imprime el resultado
+    echo json_encode($responses);
+
+
 } catch (Exception $e) {
     // Manejo de errores generales
-    header('Content-Type: application/json', true, 500);
     echo json_encode([
         'status' => 'error',
         'message' => $e->getMessage(),
         'error' => $e->getMessage(),
     ]);
 }
-

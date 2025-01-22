@@ -70,7 +70,7 @@ function toggleGenerarDTE() {
 function toggleSelectAll() {
     const checkboxes = document.querySelectorAll('.row-check');
     const button = document.getElementById('select-all');
-    
+
     // Determinar si todos están seleccionados
     const allChecked = Array.from(checkboxes).every(checkbox => checkbox.checked);
 
@@ -117,8 +117,6 @@ async function GenerarDocumento() {
         };
     }).filter(item => item !== null);
 
-    console.log("Items seleccionados:", selectedItems); // Verifica qué se seleccionó.
-
     Swal.fire({
         title: 'Generando documentos...',
         text: 'Por favor, espera mientras se procesan los documentos.',
@@ -132,27 +130,21 @@ async function GenerarDocumento() {
 
     for (const item of selectedItems) {
         const type = item.documentoComision || item.documentoArriendo;
-        console.log(`Procesando liquidación: ${item.idLiquidacion}, Tipo de documento: ${type}`); // Depuración del tipo.
-
         let action = '';
 
         switch (type) {
             case '1':
                 action = 'components/dte/models/GenerarXMLFactura.php';
-                console.log(`Ejecutando acción para Factura: ${action}`); // Acción seleccionada.
                 break;
             case '3':
                 action = 'components/dte/models/GenerarXMLBoleta.php';
-                console.log(`Ejecutando acción para Boleta: ${action}`); // Acción seleccionada.
                 break;
             case '9':
                 action = 'components/dte/models/GenerarXMLNotaCredito.php';
-                console.log(`Ejecutando acción para Nota de Crédito: ${action}`); // Acción seleccionada.
                 break;
             default:
                 errorMessages.push(`Liquidación ${item.idLiquidacion}: Tipo de documento no reconocido.`);
                 totalErrors++;
-                console.error(`Tipo de documento no reconocido: ${type}`); // Error del tipo.
                 continue;
         }
 
@@ -165,36 +157,24 @@ async function GenerarDocumento() {
                 body: formData,
             });
 
-            const responseText = await response.text();
-            console.log('Respuesta completa del servidor:', responseText); // Respuesta del servidor.
-
-            const jsonStrings = responseText.split('\n').filter(line => line.trim() !== '');
-
-            for (const jsonString of jsonStrings) {
-                try {
-                    const result = JSON.parse(jsonString);
-                    console.log('Resultado del procesamiento:', result); // JSON procesado.
-
-                    if (result.status === 'success') {
-                        totalSuccess++;
-                    } else {
-                        throw new Error(result.message || 'Error desconocido.');
-                    }
-                } catch (error) {
+            const jsonResponse = await response.json();
+            for (const result of jsonResponse) {
+                if (result.status === 'success') {
+                    totalSuccess++;
+                } else {
                     totalErrors++;
-                    errorMessages.push(`Error procesando JSON: ${error.message}`);
-                    console.error('Error procesando JSON:', error); // Error JSON.
+                    errorMessages.push(result.message || 'Error desconocido.');
                 }
             }
         } catch (error) {
             totalErrors++;
-            errorMessages.push(`Error general: ${error.message}`);
-            console.error('Error general:', error); // Error general.
+            errorMessages.push(`Liquidación ${item.idLiquidacion}: Error al procesar (${error.message}).`);
         }
     }
 
     Swal.close();
 
+    // Mostrar resultados finales con SweetAlert
     Swal.fire({
         icon: totalErrors > 0 ? 'warning' : 'success',
         title: 'Proceso terminado',
@@ -206,7 +186,7 @@ async function GenerarDocumento() {
     });
 
     if (totalErrors > 0) {
-        console.warn('Errores detallados:', errorMessages); // Errores completos.
+        console.warn('Errores detallados:', errorMessages);
     }
 
     await TablaLlenarLiquidaciones();
@@ -234,9 +214,9 @@ async function HistorialLiquidaciones() {
             let pdfUrl = `/components/dte/models/boletas/${item.folio}.pdf`;
 
             // Convertir la fecha al formato dd-mm-yyyy
-            const fecha = new Date(item.fecha_liquidacion); 
+            const fecha = new Date(item.fecha_liquidacion);
             const fechaFormateada = `${('0' + fecha.getDate()).slice(-2)}-${('0' + (fecha.getMonth() + 1)).slice(-2)}-${fecha.getFullYear()}`;
-            
+
             // Formatear monto como CLP
             const monto = new Intl.NumberFormat('es-CL', { style: 'currency', currency: 'CLP' }).format(item.monto);
 
@@ -255,9 +235,7 @@ async function HistorialLiquidaciones() {
                         <button 
                             title='Descargar PDF'
                             class="btn btn-success btn-sm descargar-pdf" 
-                            data-tipo-documento="${item.tipo_documento}" 
-                            data-folio="${item.folio}" 
-                            data-url="${pdfUrl}">
+                            onclick="obtenerDTE('${item.tipo_documento}', '${item.folio}')">
                             <i class='fa-regular fa-file-pdf'></i>
                         </button>
                     </td>
@@ -267,14 +245,6 @@ async function HistorialLiquidaciones() {
 
         // Insertar filas en la tabla
         tableBody.append(tableRows);
-
-        // Agregar manejador de eventos a los botones dinámicos
-        $(".descargar-pdf").off("click").on("click", function () {
-            const tipoDocumento = $(this).data("tipo-documento");
-            const folio = $(this).data("folio");
-
-            obtenerDTE(tipoDocumento, folio); // Llamar a la función obtenerDTE
-        });
 
         // Destruir DataTable existente antes de reinicializar (evita errores)
         if ($.fn.DataTable.isDataTable('#tablaHistorial')) {

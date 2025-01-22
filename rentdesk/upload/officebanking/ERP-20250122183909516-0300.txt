@@ -1,0 +1,5 @@
+tipo_comprobante	fecha_ingreso	total_comprobante	estado_comprobante	glosa_comprobante	codigo_cuenta	debe	haber	descripcion_movimiento	codigo_area_negocio	codigo_centro_gestion	tipo_de_libro	tipo_de_documento	dte	numero_documento	rut	nombre
+Traspaso	2025-01-22	370000	Aprobado	Saldo anterior	1010201	370000	0	PAGO ARRIENDO 032025		1		ANT		3087	500757-7	ANDRES BELLO 2777 1903
+Traspaso	2025-01-22	370000	Aprobado	Saldo anterior	3010103	0	22200	COMISIÓN ADMINISTRACIÓN		1		ANT		3087	500757-7	ANDRES BELLO 2777 1903
+Traspaso	2025-01-22	370000	Aprobado	Saldo anterior	2040101	0	4218	IVA COMISIÓN ADMINISTRACIÓN		1		ANT		3087	500757-7	ANDRES BELLO 2777 1903
+Traspaso	2025-01-22	370000	Aprobado	Saldo anterior	2010303	0	343582	PAGO DE LIQUIDACION A PROPIETARIO		1		ANT		3087	500757-7	ANDRES BELLO 2777 1903
