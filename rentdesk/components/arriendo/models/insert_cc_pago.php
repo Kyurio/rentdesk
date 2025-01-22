@@ -14,7 +14,8 @@ $id_usuario = $_SESSION["rd_usuario_id"];
 // $current_usuario = unserialize($_SESSION["sesion_rd_usuario"]);
 // $current_subsidiaria = unserialize($_SESSION['rd_current_subsidiaria']);
 
-$ccIdFicha = @$_POST["id_ficha"];
+//$ccIdPropiedad = @$_PÖST[""];
+$ccIdFichaArriendo = @$_POST["id_ficha"];
 $ccRazon = @$_POST["ccIngresoPagoRazon"];
 $ccMonto = @$_POST["ccIngresoPagoMonto"];
 $ccMoneda = @$_POST["ccIngresoPagoMoneda"];
@@ -61,6 +62,7 @@ $data = array("consulta" => $query, "cantRegistros" => $cant_rows, "numPagina" =
 $resultado = $services->sendPostNoToken($url_services . '/util/paginacion', $data, []);
 $objUsuarioId = json_decode($resultado)[0];
 
+
 if (isset($_POST["token"])) {
     $token = $_POST["token"];
 
@@ -83,6 +85,19 @@ if ($ccTipoMovimientoCargo == 4) {
     $dataCab = array("consulta" => $queryInsertCcPago);
     $resultadoCab = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);
 
+
+
+
+} else if ($ccTipoMovimientoCargo == 47) {
+
+
+
+    $queryInsertCcPago = "SELECT propiedades.fn_genera_cargo_arriendo_proporcional_manual($objIdArriendo->id_propiedad, $ccIdFichaArriendo, '$ccRazon', $ccMonto, '$ccFecha', 1)";
+    $dataCab = array("consulta" => $queryInsertCcPago);
+    $resultadoCab = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);
+
+    var_dump($resultadoCab);
+
 } else {
 
     $queryInsertCcPago = "INSERT INTO propiedades.ficha_arriendo_cta_cte_movimientos
@@ -91,8 +106,6 @@ if ($ccTipoMovimientoCargo == 4) {
     $dataCab = array("consulta" => $queryInsertCcPago);
     $resultadoCab = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);
 }
-
-
 
 
 echo  "Cargo Guardado";

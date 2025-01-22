@@ -1,8 +1,7 @@
 <?php
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+include("../../../configuration.php");
+$config = new Config();
 
 // Configuración de parámetros del servicio
 $rutEmpresa = "77367969K";
@@ -12,7 +11,7 @@ $usuario = "RENTA";
 $password = "RENTA";
 
 // URL del servicio SOAP
-$wsdl = "https://dteqa.arpis.cl/wsconsulta/avanzado.asmx?WSDL";
+$wsdl = $config->wsdl;
 
 try {
     // Inicializar el cliente SOAP

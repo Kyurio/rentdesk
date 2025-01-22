@@ -169,14 +169,18 @@ $peso_archivo = $config->maxSizeMB;
 
 
 					<script>
+
+			
 						$("#precioContrato").keyup(function(event) {
 							if (event.which >= 37 && event.which <= 40) {
 								event.preventDefault();
 							}
 
 							var moneda = $('#monedaContrato').val();
-
-							if (moneda == 2) {
+							console.log(moneda);
+					
+							// obtiene el value del tipo de moneda 
+							if (moneda == 'Pesos') {
 								$(this).val(function(index, value) {
 									return value.replace(/\D/g, "").replace(/\B(?=(\d{3})+(?!\d)\.?)/g, ".");
 								});

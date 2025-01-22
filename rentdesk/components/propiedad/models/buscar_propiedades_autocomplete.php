@@ -42,7 +42,7 @@ $queryProp = " SELECT distinct CONCAT(id, ' / ', codigo_propiedad, ' / ', COALES
 						  or CAST(codigo_propiedad AS VARCHAR) like '%$codigo%'
 						  or CAST(id AS VARCHAR) like '%$codigo%'
 						  or CAST(direccion AS VARCHAR) like '%$codigo%'
-						  ) 
+						  )
 				   ORDER BY codigo_propiedad ASC, direccion ASC
 				   LIMIT 20
 				   ";

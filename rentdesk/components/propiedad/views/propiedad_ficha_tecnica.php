@@ -846,8 +846,8 @@
 									<button type="button" class="btn btn-info m-0" style="padding: .5rem;white-space: nowrap;" title="Fijar Estado" data-bs-toggle="modal" data-bs-target="#modalCuentaServiciosFijarEstado">
 										<span>Fijar Estado</span>
 									</button>
-
 								</div>
+								
 								<div class="row">
 									<!-- <h4>Movimientos</h4> -->
 
@@ -888,10 +888,19 @@
 													</tbody>
 
 												</table>
+
 											</div>
 										</div>
 									</div>
+
+
+
+
 								</div>
+
+
+
+
 							</div>
 						</div>
 					</div>

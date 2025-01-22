@@ -121,6 +121,7 @@ $filtro_region = @$_GET["region"] ?? null;
 $filtro_comuna = @$_GET["comuna"] ?? null;
 $filtro_propietario = @$_GET["propietario"] ?? null;
 
+
 if ($filtro_region != "") {
 	$queryRegion = " select * from propiedades.tp_region where token = '$filtro_region' ";
 	$cant_rows = $num_reg;
@@ -222,7 +223,7 @@ if (isset($filtro_tipo_propiedad) && $filtro_tipo_propiedad !== "") {
 }
 
 if (isset($filtro_tipo_ejecutivo) && $filtro_tipo_ejecutivo !== "") {
-	$whereConditions[] = "upper(correo) like UPPER('%$filtro_tipo_ejecutivo%') ";
+	$whereConditions[] = "upper(ejecutivo_encargado) like UPPER('%$filtro_tipo_ejecutivo%') ";
 }
 
 if (isset($filtro_estado_ejecutivo) && $filtro_estado_ejecutivo !== "") {
@@ -272,6 +273,8 @@ $data = array("consulta" => $query, "cantRegistros" => $num_reg_principal, "numP
 $resultado = $services->sendPostNoToken($url_services . '/util/paginacion', $data, []);
 $json = json_decode($resultado);
 
+
+
 if ($json) {
 	$contador_registros = count($json);
 }
@@ -290,6 +293,7 @@ if ($json !== null) {
 
 			//extrae el precio de la pripiedad 
 			$queryPrecioPropiedad = "SELECT id_moneda_precio, COALESCE(MAX(precio), 0) AS precio FROM propiedades.ficha_arriendo WHERE id_estado_contrato = 1 and id_propiedad = '$id' and id_estado_contrato =1 GROUP BY id_moneda_precio";
+		
 			$data = array("consulta" => $queryPrecioPropiedad);
 			$resultado = $services->sendPostDirecto($url_services . '/util/objeto', $data);
 			$precio = json_decode($resultado, true); // Cambia aquí a true
@@ -340,7 +344,10 @@ if ($json !== null) {
 			$num_pagina = round($inicio / $cant_rows) + 1;
 			$data = array("consulta" => $query, "cantRegistros" => $cant_rows, "numPagina" => $num_pagina);
 			$resultado = $services->sendPostNoToken($url_services . '/util/paginacion', $data, []);
-			//var_dump($query);
+			
+
+			
+			
 			@$json_propietarios = json_decode($resultado);
 			//var_dump($json_propietarios);
 			foreach ($json_propietarios as $obj_propietarios) {
@@ -351,8 +358,7 @@ if ($json !== null) {
 				}
 			}
 
-			$query2 = "SELECT 'SI' as existe FROM propiedades.ficha_arriendo a where a.id_propiedad = $obj->id_propiedad 
-				 ";
+			$query2 = "SELECT 'SI' as existe FROM propiedades.ficha_arriendo a where a.id_propiedad = $obj->id_propiedad ";
 			$cant_rows = $num_reg;
 			//var_dump($query);
 			$num_pagina = round($inicio / $cant_rows) + 1;

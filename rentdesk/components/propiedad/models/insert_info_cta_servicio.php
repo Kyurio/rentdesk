@@ -62,8 +62,6 @@ if(isset($_POST["token"])) {
 
 } 
 
-
-var_dump("current_usuario",$current_usuario );
 $queryInsertCtaServicio = "INSERT INTO propiedades.propiedad_cta_servicios
 (id_ficha_propiedad, id_tipo_servicio, monto_adeudado, fecha)
 VALUES ($objIdPropiedad->id,$ctaServicioCuenta, $ctaServicioMontoAdeudado, '$ctaServicioFecha')";

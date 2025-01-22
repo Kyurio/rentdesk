@@ -82,7 +82,7 @@
                                             <div class="form-group">
                                                 <label>Ejecutivo</label>
                                                 <!--   <input type="text" class="form-control" id="filtro_codigo_propiedad" name="filtro_codigo_propiedad" value="" placeholder="Ingrese Código">  -->
-                                                <input type="text" id="ejecutivo" value="" name="ejecutivo" class="form-control" placeholder="Correo Ejecutivo" onblur="ocultarAutocomplete('codigo_propiedad');" autocomplete='off' onkeyup='buscarPropiedadAutocomplete(this.value,"codigo_propiedad");'>
+                                                <input type="text" id="ejecutivo" value="" name="ejecutivo" class="form-control" placeholder="Nombre Ejecutivo" onblur="ocultarAutocomplete('codigo_propiedad');" autocomplete='off' onkeyup='buscarPropiedadAutocomplete(this.value,"codigo_propiedad");'>
                                                 <div id='suggestions_codigo_propiedad'></div>
                                             </div>
                                         </div>

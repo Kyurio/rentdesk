@@ -1,5 +1,6 @@
 $(document).ready(function () {
 
+
 	SeleccionacobrarComisionAdministracion();
 	//BRUNO TORRES
 	$('#descargarExcelArriendo').on('click', function (e) {
@@ -4055,7 +4056,9 @@ function cargarCCMovimientoSaldoActual() {
 function guardarCcCargo() {
 	var formData = new FormData(document.getElementById('cc_cargo'));
 	var jsonInformacionNueva = obtenerValoresFormulario('cc_cargo');
+	var id_ficha = $('#id_ficha').val();
 
+	
 	const ccTipoMovimientoCargo = document.getElementById(
 		'ccTipoMovimientoCargo'
 	);
@@ -4117,9 +4120,9 @@ function guardarCcCargo() {
 		formData.append('ccIngresoPagoMonto', ccIngresoPagoMonto);
 		formData.append('ccIngresoPagoMoneda', ccIngresoPagoMoneda);
 		formData.append('ccIngresoPagoFecha', ccIngresoPagoFecha);
+		formData.append('id_ficha', id_ficha);
 	}
 
-	var id_ficha = $('#id_ficha').val();
 	var url = window.location.href;
 	var parametros = new URL(url).searchParams;
 	formData.append('token', parametros.get('token'));

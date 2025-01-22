@@ -2080,6 +2080,7 @@ function loadPropiedad_List() {
 				processing: true,
 				serverSide: true,
 				searching: false, // Desactiva el buscador
+				pageLength: 25,
 				ajax: {
 					url: ajaxUrl,
 					type: 'POST',
