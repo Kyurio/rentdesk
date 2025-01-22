@@ -182,7 +182,26 @@ function generarExcel(responseArray, id_officebanking, tasks) {
 					'monto_factura',
 					'no',
 					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
+					'no',
 					'monto_total_abono',
+					'no',
 					'email_beneficiario',
 					'glosa',
 				];
@@ -421,7 +440,7 @@ function getIdDate() {
 	const segundo = String(fecha.getSeconds()).padStart(2, '0');
 	const milisegundos = String(fecha.getMilliseconds()).padStart(3, '0');
 
-	const nombre = `${anio}${mes}${dia}${hora}${minuto}${segundo}${milisegundos}`;
+	const nombre = `${anio}-${mes}-${dia} ${hora}:${minuto}:${segundo}:${milisegundos}`;
 	return nombre;
 }
 

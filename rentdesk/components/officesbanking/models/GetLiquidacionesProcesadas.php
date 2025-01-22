@@ -6,6 +6,7 @@ error_reporting(E_ALL);
 
 require "../../../app/model/QuerysBuilder.php";
 
+
 use app\database\QueryBuilder;
 
 // Configuración de conexión BD
@@ -31,7 +32,7 @@ try {
         [],
         $conditions,
         '',
-        '',
+        'fecha_registro DESC',
         null,
         false
     );
