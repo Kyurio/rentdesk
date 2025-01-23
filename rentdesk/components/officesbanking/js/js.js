@@ -145,7 +145,130 @@ $(document).ready(function () {
 				}
 			}, 500);
 		});
+
+	//CONTRASEÑA
+
+	// Instanciamos el modal de Bootstrap usando jQuery
+	const modal = new bootstrap.Modal($('#modalMenuEditarPass')[0]);
+
+	// Abrir el modal al hacer clic en el botón
+	$('#abrirModalMenuEditarPass').click(function (event) {
+		event.preventDefault();
+		modal.show();
+	});
+
+	// Acción al hacer clic en "Cambiar contraseña"
+	$('#btnCambiarContrasenia').click(function (event) {
+		event.preventDefault(); // Evitamos el submit/reload del formulario
+
+		// Obtenemos los valores de los campos
+		const password = $('#contraseniaMenu').val();
+		const confirmPassword = $('#repetirContraseniaMenu').val();
+
+		// Validamos contraseñas
+		if (!validarPassword(password, confirmPassword)) {
+			return; // si no coinciden, salimos
+		}
+
+		// Llamada AJAX al archivo PHP
+		$.ajax({
+			url: 'components/officesbanking/models/UpdatePassword.php',
+			type: 'POST',
+			data: {
+				password: password,
+			},
+			success: function (data) {
+				// Manejo de la respuesta
+				const response = typeof data === 'string' ? JSON.parse(data) : data;
+				if (response.status === 'success') {
+					// Si la respuesta es "success"
+					Swal.fire({
+						title: 'Éxito',
+						text: 'Se ha actualizado la contraseña correctamente',
+						icon: 'success',
+						confirmButtonText: 'Aceptar',
+					});
+					modal.hide(); // Cerramos el modal
+					$('#contraseniaMenu').val(''); // Limpiamos los campos
+					$('#repetirContraseniaMenu').val(''); // Limpiamos los campos
+				} else {
+					// Si la respuesta es diferente
+					Swal.fire({
+						title: 'Info',
+						text: 'No se pudo actualizar la contraseña',
+						icon: 'info',
+						confirmButtonText: 'Aceptar',
+					});
+				}
+			},
+			error: function () {
+				// Manejo de error en la petición
+				Swal.fire({
+					title: 'Error',
+					text: 'Ha ocurrido un error al actualizar la contraseña',
+					icon: 'error',
+					confirmButtonText: 'Aceptar',
+				});
+			},
+		});
+	});
+
+	// Función para verificar que las contraseñas cumplan con los requisitos
+	function validarPassword(password, confirmPassword) {
+		// 1. Verificar que ambas contraseñas no estén vacías
+		if (!password || !confirmPassword) {
+			Swal.fire({
+				title: 'Complete los campos',
+				text: 'Ambos campos de contraseña son requeridos',
+				icon: 'info',
+				confirmButtonText: 'Aceptar',
+			});
+			return false;
+		}
+
+		// 2. Verificar longitud mínima
+		if (password.length < 6) {
+			Swal.fire({
+				title: 'Info',
+				text: 'La contraseña debe tener al menos 6 caracteres',
+				icon: 'info',
+				confirmButtonText: 'Aceptar',
+			});
+			return false;
+		}
+
+		// 3. Verificar que ambas contraseñas coincidan
+		if (password !== confirmPassword) {
+			Swal.fire({
+				title: 'Info',
+				text: 'Las contraseñas no coinciden',
+				icon: 'info',
+				confirmButtonText: 'Aceptar',
+			});
+			return false;
+		}
+
+		// 4. Si pasa todas las validaciones, retornamos true
+		return true;
+	}
 });
+
+//CONTRASEÑA
+
+function togglePasswordVisibility(inputId, toggleIconSelector) {
+	const passwordInput = document.getElementById(inputId);
+	const toggleIcon = document.querySelector(toggleIconSelector);
+
+	if (passwordInput.type === 'password') {
+		passwordInput.type = 'text';
+		toggleIcon.classList.remove('fa-eye-slash');
+		toggleIcon.classList.add('fa-eye');
+	} else {
+		passwordInput.type = 'password';
+		toggleIcon.classList.remove('fa-eye');
+		toggleIcon.classList.add('fa-eye-slash');
+	}
+}
 
 function generarExcel(responseArray, id_officebanking, tasks) {
 	return new Promise((resolve, reject) => {

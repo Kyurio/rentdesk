@@ -25,10 +25,97 @@
 						Documentos Office Banking
 					</button>
 				</li>
+
+				<li>
+					<a href="#" id="abrirModalMenuEditarPass" class="btn btn-primary"><i class="fa-solid fa-key"></i> Cambiar contraseña</a>
+				</li>
 			</ul>
-
-
 		</fieldset>
+
+		<!-- Modal Editar Contraseña (restaurando la estructura, conservando IDs nuevos) -->
+		<div class="modal fade" id="modalMenuEditarPass" tabindex="-1"
+			aria-labelledby="modalMenuEditarPassLabel" aria-hidden="true" data-bs-backdrop="static">
+			<div class="modal-dialog" style="max-width: 800px;">
+				<div class="modal-content">
+					<div class="modal-header">
+						<h5 class="modal-title" id="modalMenuEditarPassLabel">Edición Contraseña</h5>
+						<!-- Si deseas resetear el formulario al cerrar, usa el onclick -->
+						<button type="button" class="btn-close" data-bs-dismiss="modal"
+							onclick="resetModalUsuario('formMenuEditarContrasenia')"
+							aria-label="Close">
+						</button>
+					</div>
+					<div class="modal-body">
+						<!-- Formulario para editar la contraseña -->
+						<form id="formMenuEditarContrasenia" name="formMenuEditarContrasenia"
+							action="POST"
+							method="POST" enctype="multipart/form-data">
+							<div class="row">
+								<!-- Primera contraseña -->
+								<div class="col-lg-6">
+									<div class="form-group">
+										<label>Contraseña</label>
+										<div class="password-input-container">
+											<input
+												type="password"
+												class="form-control pr-password"
+												oninput="conteoInput('contraseniaMenu','cuentaCorreo');"
+												maxlength="60"
+												name="contraseniaMenu"
+												id="contraseniaMenu"
+												onblur="elimina_slash(this); elimina_comillas(this); elimina_blancos_inicio_fin(this);">
+											<!-- Ajusta la llamada a togglePasswordVisibility() 
+                       para usar el nuevo ID con el selector de ícono. -->
+											<span
+												class="toggle-password fa fa-eye-slash"
+												onclick="togglePasswordVisibility('contraseniaMenu', '.toggle-password')">
+											</span>
+										</div>
+									</div>
+								</div>
+
+								<!-- Repetir contraseña -->
+								<div class="col-lg-6">
+									<div class="form-group">
+										<label>Ingrese nuevamente contraseña</label>
+										<div class="password-input-container">
+											<input
+												type="password"
+												class="form-control"
+												oninput="conteoInput('repetirContraseniaMenu','cuentaCorreo');"
+												maxlength="60"
+												name="repetirContraseniaMenu"
+												id="repetirContraseniaMenu"
+												onblur="elimina_slash(this); elimina_comillas(this); elimina_blancos_inicio_fin(this);">
+											<!-- Ajusta la llamada a togglePasswordVisibility() 
+                       para el nuevo ID repetido. -->
+											<span
+												class="toggle-password-validacion fa fa-eye-slash"
+												onclick="togglePasswordVisibility('repetirContraseniaMenu', '.toggle-password-validacion')">
+											</span>
+
+										</div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Footer con botones -->
+							<div class="modal-footer mt-4">
+								<!-- Si deseas resetear el formulario al cerrar, usa el onclick -->
+								<button type="button" class="btn btn-info" data-bs-dismiss="modal"
+									onclick="resetModalUsuario('formMenuEditarContrasenia')">
+									Cerrar
+								</button>
+								<!-- El ID de este botón se mantiene del formulario nuevo -->
+								<button id="btnCambiarContrasenia" type="button" class="btn btn-danger">
+									Guardar
+								</button>
+							</div>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
 
 		<!-- contenido -->
 		<fieldset id="info-cliente" class="form-group border p-3">

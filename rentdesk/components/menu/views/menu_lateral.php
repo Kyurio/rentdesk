@@ -16,7 +16,7 @@
  					<i class="fa-solid fa-user"></i>
  				</div>
  				<div class="info">
- 					<span style="font-weight: 700;"><?php echo "$current_usuario->nombres " . "$current_usuario->apellidoPaterno"  ?></span>
+ 					<span style="font-weight: 700;"><?php echo isset($current_usuario) ? "$current_usuario->nombres $current_usuario->apellidoPaterno" : 'Usuario' ?></span>
  				</div>
 
  			</div>
@@ -29,6 +29,7 @@
 
  	</div>
 
+
  	<div class="mt-5">
  		<div class="text-center">
  			<a href="https://emasmas.cl/clientes/rentdeskhelper/" target="_blank"><i class="fa-solid fa-book"></i> Manual de usuario</a>
@@ -37,7 +38,23 @@
 
 
  	<div style="text-align: center; padding: 30px">
- 		Version: <?php echo $version_app ?>
+ 		Version: <?php echo $version_app ?? 'N/A' ?>
  	</div>
-
  </div>
+
+ <script>
+ 	// $(document).ready(function() {
+ 	// 	$("#abrirModalMenuEditarPass").click(function() {
+ 	// 		$.ajax({
+ 	// 			url: "components/menu/models/cambiar_password.php",
+ 	// 			type: "POST",
+ 	// 			data: {},
+ 	// 			success: function(data) {
+ 	// 				console.log('====================================');
+ 	// 				console.log(data);
+ 	// 				console.log('====================================');
+ 	// 			}
+ 	// 		});
+ 	// 	});
+ 	// });
+ </script>

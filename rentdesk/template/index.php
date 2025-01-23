@@ -198,12 +198,18 @@ $version_app = $config->version_app;
           </ul>
         </div>
 
+
+
+
       </footer>
     </div>
 
+
   </div>
 
+  <script>
 
+  </script>
   <!--
         <div class="">
         </div>
@@ -240,6 +246,7 @@ $version_app = $config->version_app;
   <div style="background-color: #f9203d; width:100%; margin-top:200px;">
         <img src="images/fuenzalida_footer.png">
       </div> -->
+
 
 
   <!-- Incluye jQuery y DataTables aquí -->
