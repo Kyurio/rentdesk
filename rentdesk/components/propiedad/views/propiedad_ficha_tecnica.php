@@ -2031,6 +2031,7 @@
 								<label for="ccTipoMovimientoAbono" class="form-label"><span class="obligatorio">*</span> Tipo Movimiento</label>
 								<select class="form-select form-select-sm" name="ccTipoMovimientoAbono" id="ccTipoMovimientoAbono">
 								</select>
+								<input type="text" id="idResponsableAbono" name="idResponsableAbono" />
 							</div>
 						</div>
 
@@ -2093,6 +2094,7 @@
 					<h5 class="modal-title" id="modalCuentaCorrienteIngresoDescuentoAutorizadoLabel">Ingresar Cargo</h5>
 					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
 				</div>
+	
 				<div class="modal-body">
 					<form id="cc_descuento_autorizado" name="cc_descuento_autorizado" method="post" enctype="multipart/form-data">
 						<div class="row">
@@ -2102,6 +2104,8 @@
 								<select class="form-select form-select-sm" name="ccTipoMovimiento" id="ccTipoMovimiento">
 								</select>
 							</div>
+							<input type="hidden" id="idResponsable" name="idResponsable" />
+
 
 						</div>
 						<div class="row">

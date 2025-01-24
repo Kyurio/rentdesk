@@ -837,11 +837,13 @@ function enviarRentdesk() {
 		}
 	});
 
+	var facturarComisionAdministracion = document.getElementById('facturarComisionAdministracion').value
+
 	// Convertimos los objetos a JSON y los agregamos al formData
 	formData.append('dataMeses', JSON.stringify(dataMeses));
 	formData.append('dataMonedas', JSON.stringify(dataMonedas));
 	formData.append('dataAplica', JSON.stringify(dataAplica));
-
+	formData.append('facturarComisionAdministracion', facturarComisionAdministracion);
 	// const propiedad_input = document.getElementById("codigo_propiedad");
 	// var propiedad = propiedad_input.value;
 

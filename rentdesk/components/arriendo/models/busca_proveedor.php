@@ -16,7 +16,7 @@ $opcion_proveedor_seguro = "";
 $opcion_proveedor_servicio = "";
 
 
-$num_reg = 20;
+$num_reg = 40;
 $inicio = 0;
 
 if($TipoServicio != null && $TipoServicio != ""){

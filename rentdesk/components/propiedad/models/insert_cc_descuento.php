@@ -21,6 +21,7 @@ $ccMoneda = @$_POST["ccIngresoDescAutorizadoMoneda"];
 $ccCobraComision = @$_POST["ccIngresoDescAutorizadoCobraComision"];
 $ccFecha = @$_POST["ccIngresoDescAutorizadoFecha"];
 $ccTipoMovimiento = @$_POST['ccTipoMovimiento'];
+$ccIdResponsable = @$_POST['ccidResponsable'];
 
 
 // Parse the date and time using DateTime
@@ -79,19 +80,18 @@ $resultado = $services->sendPostNoToken($url_services . '/util/paginacion', $dat
 $objArrendatario = json_decode($resultado);
 
 $objetoArrendatario = @$objArrendatario[0];
-
 $idFichaArriendo = @$objetoArrendatario->id;
 
-// var_dump("current_usuario",$current_usuario );
 
+// var_dump("current_usuario",$current_usuario );
 if (isset($idFichaArriendo)) {
     $queryInsertCcDescuento = "INSERT INTO propiedades.ficha_arriendo_cta_cte_movimientos
-(id_propiedad,id_ficha_arriendo, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cobro_comision)
- VALUES ($ccIdFicha,$idFichaArriendo,'$date $time', '$time', $ccTipoMovimiento, $ccMonto,'$ccRazon - $ccFecha', $ccCobraComision)";
+(id_propiedad,id_ficha_arriendo, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cobro_comision, id_responsable)
+ VALUES ($ccIdFicha,$idFichaArriendo,'$date $time', '$time', $ccTipoMovimiento, $ccMonto,'$ccRazon - $ccFecha', $ccCobraComision, $ccIdResponsable)";
 } else {
     $queryInsertCcDescuento = "INSERT INTO propiedades.ficha_arriendo_cta_cte_movimientos
-    (id_propiedad, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cobro_comision)
-     VALUES ($ccIdFicha,'$date $time', '$time', $ccTipoMovimiento, $ccMonto,'$ccRazon - $ccFecha', $ccCobraComision)";
+    (id_propiedad, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cobro_comision, id_responsable)
+     VALUES ($ccIdFicha,'$date $time', '$time', $ccTipoMovimiento, $ccMonto,'$ccRazon - $ccFecha', $ccCobraComision, $ccIdResponsable)";
 }
 
 $dataCab = array("consulta" => $queryInsertCcDescuento);

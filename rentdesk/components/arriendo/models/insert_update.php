@@ -1,8 +1,8 @@
 <?php
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
-error_reporting(E_ALL);
+// ini_set('display_errors', 1);
+// ini_set('display_startup_errors', 1);
+// error_reporting(E_ALL);
 
 
 session_start();
@@ -122,7 +122,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$monedaComisionAdministracion = @$_POST['monedaComisionAdministracion'];
 		$facturarComisionAdministracion = @$_POST['facturarComisionAdministracion'];
 		$tipoFacturaComisionAdministracion = @$_POST['tipoFacturaComisionAdministracion'];
-		//$facturarComisionAdministracion = @$_POST['facturarComisionAdministracion'];
 		$amoblado = @$_POST['amoblado'];
 		$archivo = @$_POST['monedaRetencion'];
 		$archivo_bd = @$_POST['motivoRetencion'];
@@ -141,6 +140,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		// multa dias crobo jhernandez
 		$diascobro = @$_POST['diascobro'];
 
+
+
+
+
 		if (!$diascobro) {
 
 			$diascobro = 0;
@@ -157,24 +160,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 
 
+
 		//var_dump("Enviar datos comision : ");
 
-		if ($facturarComisionArriendo = "SI") {
-			$facturarComisionArriendo = true;
+		if ($facturarComisionArriendo == "SI") {
+			$facturarComisionArriendo = '1';
 		} else {
-			$facturarComisionArriendo = false;
+			$facturarComisionArriendo = '0';
 		}
 
-		if ($facturarComisionAdministracion = "SI") {
-			$facturarComisionAdministracion = true;
+		if ($facturarComisionAdministracion == "SI") {
+			$facturarComisionAdministracion =  '1';
 		} else {
-			$facturarComisionAdministracion = false;
+			$facturarComisionAdministracion = '0';
 		}
 
-		if ($facturarComisionAdministracionLiquidacion = "SI") {
-			$facturarComisionAdministracionLiquidacion = true;
+		echo "<br>";
+		echo "resultado: ".$facturarComisionAdministracion;
+		echo "<br>";
+	
+
+		if ($facturarComisionAdministracionLiquidacion == "SI") {
+			$facturarComisionAdministracionLiquidacion = '1';
 		} else {
-			$facturarComisionAdministracionLiquidacion = false;
+			$facturarComisionAdministracionLiquidacion = '0';
 		}
 
 
@@ -185,6 +194,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		if ($CantidadReajuste == "") {
 			$CantidadReajuste = 0;
 		}
+
 
 
 
@@ -555,15 +565,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		);
 
 
-
-
-		// update de la tabla ficha arriendo jhernandez
-		if ($facturarComisionAdministracion == 1) {
-			$facturarComisionAdministracion = true;
-		} else {
-			$facturarComisionAdministracion = false;
-		}
-
 		$queryUpdateRegistroJ = "UPDATE propiedades.ficha_arriendo fa 
 			SET id_estado_contrato = 1 , 
 			meses_garantia = $mesesGarantia,
@@ -592,14 +593,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$data = array("consulta" => $queryUpdateRegistroJ);
 		$resultado  = $services->sendPostDirecto($url_services . '/util/dml', $data);
 
-		/**************    Envio de datos adicionales    ******************/
-		// $queryCabecera = " UPDATE propiedades.ficha_arriendo fa 
-		// 				SET id_estado_contrato = $estadoContrato , meses_garantia = $mesesGarantia, monto_garantia = $montoGarantia , 
-		// 				monto_multa_atraso = $montoMultaAtraso , id_tipo_multa = $tipoMulta , id_moneda_multa = $monedaMulta,
-		// 				adm_comision_id_moneda = $monedaComisionAdministracion , arriendo_comision_id_moneda =  $monedaComisionArriendo , arriendo_comision_monto = $comisionArriendo,
-		// 				adm_comision_monto = $comisionAdministracion,arriendo_comision_id_tipo_documento = $tipoFacturaComisionArriendo, adm_comision_id_tipo_documento = $tipoFacturaComisionAdministracion , adm_comision_cobro = '$cobrarComisionAdministracion',
-		// 				arriendo_comision_cobro = '$cobrarComisionArriendo' , adm_comision_primer_liquidacion = '$facturarComisionAdministracion' , num_cuotas_garantia = $num_cuotas_garantia
-		// 				WHERE TOKEN = '$token_arriendo' ";
+
 		$queryCabecera = "
 			UPDATE propiedades.ficha_arriendo fa
 			SET 
@@ -616,7 +610,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				arriendo_comision_id_tipo_documento = $tipoFacturaComisionArriendo,
 				adm_comision_id_tipo_documento = $tipoFacturaComisionArriendo,
 				adm_comision_cobro = '$cobrarComisionAdministracion',
-				arriendo_comision_cobro = '$cobrarComisionArriendo',
+				arriendo_comision_cobro = $cobrarComisionArriendo,
 				adm_comision_primer_liquidacion = '$facturarComisionAdministracion',
 				num_cuotas_garantia = $num_cuotas_garantia
 			WHERE 
@@ -1516,14 +1510,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
 
-		// update de la tabla ficha arriendo jhernandez
-		if ($facturarComisionAdministracion == 1) {
-			$facturarComisionAdministracion = true;
-		} else {
-			$facturarComisionAdministracion = false;
-		}
-
-
 
 		$queryUpdateRegistroJ = "UPDATE propiedades.ficha_arriendo fa 
 			SET id_estado_contrato = 1 , 
@@ -1554,7 +1540,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$resultado  = $services->sendPostDirecto($url_services . '/util/dml', $data);
 
 
-		echo "entro aquil...";
+		echo "<br>";
+		echo "resultado: ".$facturarComisionAdministracion;
+		echo "<br>";
 
 		/**************    Envio de datos adicionales    ******************/
 		$queryCabecera = "

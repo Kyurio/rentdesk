@@ -787,6 +787,7 @@ $opcion_tipo_moneda_precio = "<option value=''>Seleccione</option>";
 $opcion_tipo_moneda_comision_arriendo = "<option value=''>Seleccione</option>";
 $opcion_tipo_moneda_comision_adm = "<option value=''>Seleccione</option>";
 
+
 foreach ($json as $item) {
 	$select_propiedad = "";
 
@@ -892,6 +893,49 @@ $opcion_tipo_moneda_multa
 
 
 /*************************************************************************************************************************************************
+/*******************************************************************************************************************************************************
+
+/*SELECTOR - adm comision primer liquidacion jhernandez*/
+
+$num_reg = 10;
+$inicio = 0;
+
+$query = "SELECT adm_comision_primer_liquidacion, case  when adm_comision_primer_liquidacion = true then '1' else '2' end AS id
+	FROM propiedades.ficha_arriendo
+	where token = '$token'  ";
+$cant_rows = $num_reg;
+$num_pagina = round($inicio / $cant_rows) + 1;
+$data = array("consulta" => $query, "cantRegistros" => $cant_rows, "numPagina" => $num_pagina);
+$resultado = $services->sendPostNoToken($url_services . '/util/paginacion', $data, []);
+$json = json_decode($resultado);
+var_dump("json", $json);
+
+$facturarComisionAdministracion = "<option value=''>Seleccione</option>";
+
+foreach ($json as $item) {
+	$select_propiedad = "";
+
+	// var_dump("BANCO JSON: ", @$item->id == @$result->propietario->cuentasBancarias[0]->banco->id);
+
+	if ($item->id == '1') {
+		$facturarComisionAdministracion = $facturarComisionAdministracion . "<option  value='SI' id='1' Selected>SI</option>";
+		$facturarComisionAdministracion = $facturarComisionAdministracion . "<option  value='NO' id='2' >NO</option>";
+	} else if(($item->id == '2')) {
+		// var_dump("BANCO JSON: ", @$item->id == @$result->propietario->cuentasBancarias[0]->banco->id);
+		$facturarComisionAdministracion = $facturarComisionAdministracion . "<option  value='NO' id='2' Selected>NO</option>";
+		$facturarComisionAdministracion = $facturarComisionAdministracion . "<option  value='SI' id='1' >SI</option>";
+	} else{
+		$facturarComisionAdministracion = $facturarComisionAdministracion . "<option  value='NO' id='2'>NO</option>";
+		$facturarComisionAdministracion = $facturarComisionAdministracion . "<option  value='SI' id='1'>SI</option>";
+	}
+}	
+
+$facturarComisionAdministracion = "<select name='facturarComisionAdministracion' id='facturarComisionAdministracion' class='form-control'>
+$facturarComisionAdministracion
+</select>";
+
+
+/*************************************************************************************************************************************************
 
 
 /*SELECTOR - Tipo Ajuste - MANTENER PARA RENTDESK */
@@ -963,7 +1007,7 @@ $opcion_tipo_multa
 /*************************************************************************************************************************************************
 
 /*SELECTOR - servicios basicos - MANTENER PARA RENTDESK */
-$num_reg = 10;
+$num_reg = 40;
 $inicio = 0;
 
 $query = " SELECT nombre,id FROM propiedades.tp_tipo_servicio  where tipo_servicio = 'basico'  ";

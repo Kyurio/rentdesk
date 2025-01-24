@@ -169,8 +169,6 @@ $peso_archivo = $config->maxSizeMB;
 
 
 					<script>
-
-			
 						$("#precioContrato").keyup(function(event) {
 							if (event.which >= 37 && event.which <= 40) {
 								event.preventDefault();
@@ -178,7 +176,7 @@ $peso_archivo = $config->maxSizeMB;
 
 							var moneda = $('#monedaContrato').val();
 							console.log(moneda);
-					
+
 							// obtiene el value del tipo de moneda 
 							if (moneda == 'Pesos') {
 								$(this).val(function(index, value) {
@@ -438,7 +436,7 @@ $peso_archivo = $config->maxSizeMB;
 
 					</div>
 
-				
+
 
 
 				</div>
@@ -560,10 +558,8 @@ $peso_archivo = $config->maxSizeMB;
 							<div class="col-lg-8">
 								<div class="form-group">
 									<label for="facturarComisionAdministracion">¿Cobrar Administraciónde en primera liquidación?</label>
-									<select name="facturarComisionAdministracion" id="facturarComisionAdministracion" class="form-control" style="width: 120px">
-										<option selected="selected" value="SI" id="1">Si</option>
-										<option value="NO" id="2">No</option>
-									</select>
+									<?php echo $facturarComisionAdministracion; ?>
+
 								</div>
 							</div>
 						</div>
@@ -617,7 +613,7 @@ $peso_archivo = $config->maxSizeMB;
 						<div class="row">
 							<div class="col-lg-4">
 								<div class="form-group">
-								
+
 									<!-- <label for="tipoFacturaComisionAdministracion"><span class="obligatorio">*</span>tipo de documento</label> -->
 									<?php echo $opcion_documento_adm; ?>
 
