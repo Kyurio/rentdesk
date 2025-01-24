@@ -1655,6 +1655,19 @@ function cargarCCMovimientosList() {
 								return formatCurrency(data);
 							},
 						},
+						{
+							title: 'Acciones',
+							data: null,
+							orderable: false,
+							searchable: false,
+							render: function (data, type, row) {
+								return `
+									<button type="button" class="btn btn-danger m-0 mx-3" style="padding: .5rem;" title="Eliminar" onclick="eliminarRegistro(${row.idcc})">
+										<i class="fa-regular fa-trash-can px-1" style="font-size: .75rem;"></i>
+									</button>
+								`;
+							},
+						},
 					],
 					ordering: false,
 					language: {
@@ -1703,6 +1716,7 @@ function cargarCCMovimientosList() {
 						{ title: 'Abono', data: '' },
 						{ title: 'Cargo', data: '' },
 						{ title: 'Saldo', data: '' },
+						{ title: 'Acciones', data: '' },
 					],
 					ordering: false,
 					language: {
@@ -1724,10 +1738,9 @@ function cargarCCMovimientosList() {
 						},
 					},
 					createdRow: function (row) {
-						// Agregar un mensaje de "No hay resultados" en la primera columna
 						$('td', row)
 							.eq(0)
-							.attr('colspan', 6)
+							.attr('colspan', 7)
 							.html('No hay resultados disponibles')
 							.css({
 								'text-align': 'center',
@@ -1738,6 +1751,27 @@ function cargarCCMovimientosList() {
 		},
 		error: function (xhr, status, error) {
 			console.error('Error en la solicitud: ', error);
+		},
+	});
+}
+
+// Función para manejar la eliminación de un registro
+function eliminarRegistro(idcc) {
+	// Lógica para eliminar el registro utilizando el ID
+	alert(`Eliminar registro con IDCC: ${idcc}`);
+	// Aquí puedes realizar una solicitud AJAX al servidor para cambiar el estado del movimiento
+	$.ajax({
+		url: 'components/propiedad/models/eliminar_movimiento.php',
+		method: 'POST',
+		data: { idcc: idcc },
+		success: function (response) {
+			alert('Movimiento eliminado correctamente');
+			// Recargar la tabla después de eliminar
+			cargarCCMovimientosList();
+		},
+		error: function (xhr, status, error) {
+			alert('Error al eliminar el movimiento');
+			console.error(error);
 		},
 	});
 }
@@ -3959,7 +3993,6 @@ function eliminarInfoCoPropietario({
 	idPropietario,
 	tokenBeneficiario = null,
 }) {
-
 	Swal.fire({
 		title: '¿Estás seguro?',
 		text: 'Una vez eliminado, no podrás recuperar este propietario',

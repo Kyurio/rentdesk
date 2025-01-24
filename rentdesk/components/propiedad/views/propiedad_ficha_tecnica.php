@@ -783,6 +783,7 @@
 															<th>Monto 1</th>
 															<th>Monto 2</th>
 															<th>Saldo</th>
+															<th>Acciones</th>
 														</tr>
 													</thead>
 													<tbody>
