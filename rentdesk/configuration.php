@@ -10,7 +10,11 @@ class Config
 
 	// variables globlaes dte
 	public $url_DTE = 'https://dteqa.arpis.cl/WSFactLocal/DteLocal.asmx?WSDL';
-	public $wsdl = "https://dteqa.arpis.cl/wsconsulta/avanzado.asmx?WSDL";
+	//public $url_DTE = 'https://bes-dte.bestechnology.cl/wsconsulta/avanzado.asmx?wsdl';
+	
+	//public $wsdl = "https://dteqa.arpis.cl/wsconsulta/avanzado.asmx?WSDL";
+	public $wsdl = "https://bes-dte.bestechnology.cl/wsconsulta/avanzado.asmx?wsdl";
+	
 	// variables globlaes dte
 	public $rut = '77367969-K';
 	public $rut_empresa = '77367969K';

@@ -26,6 +26,10 @@ $ccMoneda = @$_POST["ccIngresoPagoNLMoneda"];
 $ccFecha = @$_POST["ccIngresoPagoNLFecha"];
 $ccTipoMovimientoAbono = @$_POST["ccTipoMovimientoAbono"];
 
+$ccIdresponsable = $_POST["ccIdresponsable"];
+$cccta_contable = $_POST["cccta_contable"];
+
+
 
 if (strpos($ccMonto, '.')) {
     $ccMonto = str_replace(".", "", $ccMonto);
@@ -93,10 +97,11 @@ try {
     } else {
 
         $queryInsertCcPago = "INSERT INTO propiedades.ficha_arriendo_cta_cte_movimientos
-        (id_propiedad, id_ficha_arriendo, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon)
-        VALUES ($objIdArriendo->id_propiedad, $objIdArriendo->id,'$ccFecha', '$time', $ccTipoMovimientoAbono, $ccMonto,'$ccRazon - $ccFecha')";
+        (id_propiedad, id_ficha_arriendo, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon,cta_contable, id_responsable)
+        VALUES ($objIdArriendo->id_propiedad, $objIdArriendo->id,'$ccFecha', '$time', $ccTipoMovimientoAbono, $ccMonto,'$ccRazon - $ccFecha', $cccta_contable,$ccIdresponsable)";
         $dataCab = array("consulta" => $queryInsertCcPago);
         $resultadoCab = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);
+
     }
 
 

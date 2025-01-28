@@ -22,6 +22,10 @@ $ccMoneda = @$_POST["ccIngresoPagoMoneda"];
 $ccCobraComision = @$_POST["ccIngresoPagoCobraComision"];
 $ccFecha = @$_POST["ccIngresoPagoFecha"];
 $ccTipoMovimientoCargo = @$_POST['ccTipoMovimientoCargo'];
+$ccidResponsable = $_POST['ccIdresponsable'];
+$ccta_contable = $_POST['cccta_contable'];
+
+
 
 
 if (strpos($ccMonto, '.')) {
@@ -96,15 +100,15 @@ if ($ccTipoMovimientoCargo == 4) {
     $dataCab = array("consulta" => $queryInsertCcPago);
     $resultadoCab = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);
 
-    var_dump($resultadoCab);
 
 } else {
 
     $queryInsertCcPago = "INSERT INTO propiedades.ficha_arriendo_cta_cte_movimientos
-    (id_propiedad, id_ficha_arriendo, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cobro_comision)
-    VALUES ($objIdArriendo->id_propiedad, $objIdArriendo->id,'$ccFecha', '$time', $ccTipoMovimientoCargo, $ccMonto,'$ccRazon - $ccFecha', false)";
+    (id_propiedad, id_ficha_arriendo, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cobro_comision, cta_contable, id_responsable)
+    VALUES ($objIdArriendo->id_propiedad, $objIdArriendo->id,'$ccFecha', '$time', $ccTipoMovimientoCargo, $ccMonto,'$ccRazon - $ccFecha', false, $ccta_contable ,$ccidResponsable)";
     $dataCab = array("consulta" => $queryInsertCcPago);
     $resultadoCab = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);
+
 }
 
 

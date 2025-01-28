@@ -19,16 +19,9 @@ $idPropiedad = @$_POST['idPropiedad'];
 $idPropietario = @$_POST['idPropietario'];
 $tokenBeneficiario = @$_POST['tokenBeneficiario'];
 
-var_dump("idRegistro: ", $idRegistro);
-var_dump("idPropiedad: ", $idPropiedad);
-var_dump("idPropietario: ", $idPropietario);
-var_dump("tokenBeneficiario: ", $tokenBeneficiario);
-
-die();
 
 if ($tokenBeneficiario) {
 
-    echo "entro al if";
 
     $queryUpdateInfoCoPropietario = "UPDATE propiedades.propiedad_copropietarios
         SET habilitado = false 
@@ -36,7 +29,6 @@ if ($tokenBeneficiario) {
 } else {
 
 
-    echo "entro al else";
 
     $queryUpdateInfoCoPropietario = "SELECT propiedades.update_habilitado_propietario_beneficiario($idRegistro, $idPropiedad, $idPropietario)";
 }

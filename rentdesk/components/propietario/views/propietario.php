@@ -1,34 +1,36 @@
 <script src="js/region_ciudad_comuna.js"></script>
 <script src="js/region_ciudad_comuna_com.js"></script>
 <script>
-	$(document).ready(function() {
+    $(document).ready(function() {
 
-		$('#DNI').on('keypress', function(event) {
-			var keyCode = event.which;
-			var keyChar = String.fromCharCode(keyCode);
+        $('#DNI').on('keypress', function(event) {
+            var keyCode = event.which;
+            var keyChar = String.fromCharCode(keyCode);
 
-			// Permitir solo letras, números y un guion (si aún no hay uno)
-			if (!/[a-zA-Z0-9]/.test(keyChar) && keyChar !== '-' && keyCode !== 8) {
-				event.preventDefault();
-			}
+            // Permitir solo letras, números, un espacio y un guion (si aún no hay uno)
+            if (!/[a-zA-Z0-9\s]/.test(keyChar) && keyChar !== '-' && keyCode !== 8) {
+                event.preventDefault();
+            }
 
-			// Permitir solo un guion
-			if (keyChar === '-' && $(this).val().indexOf('-') !== -1) {
-				event.preventDefault();
-			}
-		});
+            // Permitir solo un guion
+            if (keyChar === '-' && $(this).val().indexOf('-') !== -1) {
+                event.preventDefault();
+            }
+        });
 
-		$('#form2').submit(function(event) {
-			var rut = $('#DNI').val();
-			var rutRegex = /^\d{1,8}-[0-9Kk]$/;
+        $('#form2').submit(function(event) {
+            var rut = $('#DNI').val();
+            var rutRegex = /^\d{1,8}-[0-9Kk]$/;
 
-			if (!rutRegex.test(rut)) {
-				alert('Por favor, ingrese un RUT válido en el formato 12345678-K');
-				event.preventDefault(); // Evita que el formulario se envíe
-			}
-		});
-	});
+            if (!rutRegex.test(rut)) {
+                alert('Por favor, ingrese un RUT válido en el formato 12345678-K');
+                event.preventDefault(); // Evita que el formulario se envíe
+            }
+        });
+		
+    });
 </script>
+
 <script>
 	document.addEventListener("DOMContentLoaded", function() {
 		const addItemButton = document.getElementById("addItemButton");
@@ -168,7 +170,7 @@
 				<div class="col-md-3">
 					<label><span class="obligatorio">*</span> Busqueda por<?php if ($flag_solo_rut != 1) { ?> DNI /<?php } ?> RUT</label>
 					<div class="input-group mb-3">
-						<input type="text" class="form-control" id="DNI" name="nombre_cliente" placeholder="Nombre o Rut" value="<?php echo isset($token) && $result ? $result->dni : ''; ?>" onblur="ocultarAutocomplete('DNI');" form="form2" pattern="^\d{1,8}-[0-9Kk]$" autocomplete='off' onkeyup='buscarClienteAutocompleteGenerica(this.value,"DNI");'>
+						<input type="text" class="form-control" id="DNI" name="nombre_cliente" placeholder="Nombre o Rut" value="<?php echo isset($token) && $result ? $result->dni : ''; ?>" onblur="ocultarAutocomplete('DNI');" form="form2" autocomplete='off' onkeyup='buscarClienteAutocompleteGenerica(this.value,"DNI");'>
 						<button class="btn btn-info m-0" type="button" id="button-addon2" onClick="busquedaDNI();" data-bs-toggle="modal" data-bs-target="#modalArrendatario">Buscar</button>
 					</div>
 				</div>

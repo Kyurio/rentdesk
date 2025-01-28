@@ -20,8 +20,7 @@ $ccMonto = @$_POST["ccIngresoPagoNLMonto"];
 $ccMoneda = @$_POST["ccIngresoPagoNLMoneda"];
 $ccFecha = @$_POST["ccIngresoPagoNLFecha"];
 $ccTipoMovimientoAbono = @$_POST['ccTipoMovimientoAbono'];
-$ccIdResponsable = @$_POST['ccidResponsable'];
-
+$ccIdResponsable = @$_POST['ccidResponsableAbono'];
 
 
 // Parse the date and time using DateTime
@@ -91,15 +90,13 @@ $idFichaArriendo = @$objetoArrendatario->id;
 if (isset($idFichaArriendo)) {
     $queryInsertCcAbono = "INSERT INTO propiedades.ficha_arriendo_cta_cte_movimientos
     (id_propiedad,id_ficha_arriendo, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, id_responsable)
-     VALUES ($ccIdFicha,$idFichaArriendo,'$date $time', '$time', $ccTipoMovimientoAbono, $ccMonto,'$ccRazon - $ccFecha', $ccidResponsable)";
+     VALUES ($ccIdFicha,$idFichaArriendo,'$date $time', '$time', $ccTipoMovimientoAbono, $ccMonto,'$ccRazon - $ccFecha', $ccIdResponsable)";
 } else {
     $queryInsertCcAbono = "INSERT INTO propiedades.ficha_arriendo_cta_cte_movimientos
 (id_propiedad, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, id_responsable)
- VALUES ($ccIdFicha,'$date $time', '$time', $ccTipoMovimientoAbono, $ccMonto,'$ccRazon - $ccFecha', $ccidResponsable)";
+ VALUES ($ccIdFicha,'$date $time', '$time', $ccTipoMovimientoAbono, $ccMonto,'$ccRazon - $ccFecha', $ccIdResponsable)";
 }
 
-
-var_dump($queryInsertCcAbono);
 
 $dataCab = array("consulta" => $queryInsertCcAbono);
 $resultadoCab = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);

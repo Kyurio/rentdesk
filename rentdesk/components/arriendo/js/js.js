@@ -4060,7 +4060,7 @@ function guardarCcCargo() {
 	var jsonInformacionNueva = obtenerValoresFormulario('cc_cargo');
 	var id_ficha = $('#id_ficha').val();
 
-	
+
 	const ccTipoMovimientoCargo = document.getElementById(
 		'ccTipoMovimientoCargo'
 	);
@@ -4079,6 +4079,10 @@ function guardarCcCargo() {
 	var ccIngresoPagoFecha = cc_pago_fecha_input.value;
 
 	var tipo_movimiento = $('#ccTipoMovimientoCargo').val();
+
+	var ccIdresponsable = $('#idResponsableCargo').val();
+	var cccta_contable = $('#cccta_contableCargo').val();
+
 
 	if (tipo_movimiento != 4) {
 		if (ccIngresoPagoRazon == null || ccIngresoPagoRazon == '') {
@@ -4122,7 +4126,13 @@ function guardarCcCargo() {
 		formData.append('ccIngresoPagoMonto', ccIngresoPagoMonto);
 		formData.append('ccIngresoPagoMoneda', ccIngresoPagoMoneda);
 		formData.append('ccIngresoPagoFecha', ccIngresoPagoFecha);
+		
+		formData.append('ccIdresponsable', ccIdresponsable);
+		formData.append('cccta_contable', cccta_contable);
+
 		formData.append('id_ficha', id_ficha);
+
+
 	}
 
 	var url = window.location.href;
@@ -4233,11 +4243,18 @@ function GuardarAbonos() {
 		return;
 	}
 
+	var ccIdresponsable = $('#idResponsableAbono').val(); 
+	var cccta_contable = $('#cccta_contable').val();
+
 	formData.append('ccTipoMovimientoAbono', ccTipoMovimientoAbono);
 	formData.append('ccIngresoPagoNLRazon', ccIngresoPagoRazonAbono);
 	formData.append('ccIngresoPagoNLMonto', ccIngresoPagoMontoAbono);
 	formData.append('ccIngresoPagoNLMoneda', ccIngresoPagoMonedaAbono);
 	formData.append('ccIngresoPagoNLFecha', ccIngresoPagoFechaAbono);
+
+	formData.append('ccIdresponsable', ccIdresponsable);
+	formData.append('cccta_contable', cccta_contable);
+
 
 	var id_ficha = $('#id_ficha').val();
 	var url = window.location.href;
@@ -5643,122 +5660,130 @@ function ActualizarGarantia() {
 }
 
 // Función para guardar Abono
-function GuardarAbonos() {
-	var formData = new FormData(document.getElementById('cc_pago_no_liquidable'));
-	var jsonInformacionNueva = obtenerValoresFormulario('cc_pago_no_liquidable');
+// function GuardarAbonos() {
+// 	var formData = new FormData(document.getElementById('cc_pago_no_liquidable'));
+// 	var jsonInformacionNueva = obtenerValoresFormulario('cc_pago_no_liquidable');
 
-	const ccTipoMovimientoAbonoInput = document.getElementById(
-		'ccTipoMovimientoAbono'
-	);
-	var ccTipoMovimientoAbono = ccTipoMovimientoAbonoInput.value;
+// 	const ccTipoMovimientoAbonoInput = document.getElementById(
+// 		'ccTipoMovimientoAbono'
+// 	);
+// 	var ccTipoMovimientoAbono = ccTipoMovimientoAbonoInput.value;
 
-	const cc_pago_razon_input = document.getElementById(
-		'ccIngresoPagoRazonAbono'
-	);
-	var ccIngresoPagoRazonAbono = cc_pago_razon_input.value;
+// 	const cc_pago_razon_input = document.getElementById(
+// 		'ccIngresoPagoRazonAbono'
+// 	);
+// 	var ccIngresoPagoRazonAbono = cc_pago_razon_input.value;
 
-	const cc_pago_monto_input = document.getElementById(
-		'ccIngresoPagoMontoAbono'
-	);
-	var ccIngresoPagoMontoAbono = cc_pago_monto_input.value;
+// 	const cc_pago_monto_input = document.getElementById(
+// 		'ccIngresoPagoMontoAbono'
+// 	);
+// 	var ccIngresoPagoMontoAbono = cc_pago_monto_input.value;
 
-	const cc_pago_moneda_input = document.getElementById(
-		'ccIngresoPagoMonedaAbono'
-	);
-	var ccIngresoPagoMonedaAbono = cc_pago_moneda_input.value;
+// 	const cc_pago_moneda_input = document.getElementById(
+// 		'ccIngresoPagoMonedaAbono'
+// 	);
+// 	var ccIngresoPagoMonedaAbono = cc_pago_moneda_input.value;
 
-	const cc_pago_fecha_input = document.getElementById(
-		'ccIngresoPagoFechaAbono'
-	);
-	var ccIngresoPagoFechaAbono = cc_pago_fecha_input.value;
+// 	const cc_pago_fecha_input = document.getElementById(
+// 		'ccIngresoPagoFechaAbono'
+// 	);
+// 	var ccIngresoPagoFechaAbono = cc_pago_fecha_input.value;
 
-	var tipo_movimiento = $('#ccTipoMovimientoAbono').val();
+// 	var ccIdresponsable = $('#ccIdresponsable').val();
+// 	var cccta_contable = $('#cccta_contable').val();
 
-	if (tipo_movimiento != 1) {
-		if (ccIngresoPagoRazonAbono == null || ccIngresoPagoRazonAbono == '') {
-			Swal.fire({
-				title: 'Atención ',
-				text: 'Debe agregar una razón',
-				icon: 'warning',
-			});
-			return;
-		}
+// 	if (tipo_movimiento != 1) {
+// 		if (ccIngresoPagoRazonAbono == null || ccIngresoPagoRazonAbono == '') {
+// 			Swal.fire({
+// 				title: 'Atención ',
+// 				text: 'Debe agregar una razón',
+// 				icon: 'warning',
+// 			});
+// 			return;
+// 		}
 
-		if (ccIngresoPagoMonedaAbono == null || ccIngresoPagoMonedaAbono == '') {
-			Swal.fire({
-				title: 'Atención ',
-				text: 'Debe agregar una Moneda',
-				icon: 'warning',
-			});
-			return;
-		}
+// 		if (ccIngresoPagoMonedaAbono == null || ccIngresoPagoMonedaAbono == '') {
+// 			Swal.fire({
+// 				title: 'Atención ',
+// 				text: 'Debe agregar una Moneda',
+// 				icon: 'warning',
+// 			});
+// 			return;
+// 		}
 
-		if (ccIngresoPagoFechaAbono == null || ccIngresoPagoFechaAbono == '') {
-			Swal.fire({
-				title: 'Atención ',
-				text: 'Debe agregar fecha de pago',
-				icon: 'warning',
-			});
-			return;
-		}
+// 		if (ccIngresoPagoFechaAbono == null || ccIngresoPagoFechaAbono == '') {
+// 			Swal.fire({
+// 				title: 'Atención ',
+// 				text: 'Debe agregar fecha de pago',
+// 				icon: 'warning',
+// 			});
+// 			return;
+// 		}
 
-		if (ccTipoMovimientoAbono == null || ccTipoMovimientoAbono == '') {
-			Swal.fire({
-				title: 'Atención ',
-				text: 'Debe seleccionar un tipo de movimiento',
-				icon: 'warning',
-			});
-			return;
-		}
-	}
+// 		if (ccTipoMovimientoAbono == null || ccTipoMovimientoAbono == '') {
+// 			Swal.fire({
+// 				title: 'Atención ',
+// 				text: 'Debe seleccionar un tipo de movimiento',
+// 				icon: 'warning',
+// 			});
+// 			return;
+// 		}
+// 	}
 
-	if (ccIngresoPagoMontoAbono == null || ccIngresoPagoMontoAbono == '') {
-		Swal.fire({
-			title: 'Atención ',
-			text: 'Debe agregar un monto',
-			icon: 'warning',
-		});
-		return;
-	}
+// 	if (ccIngresoPagoMontoAbono == null || ccIngresoPagoMontoAbono == '') {
+// 		Swal.fire({
+// 			title: 'Atención ',
+// 			text: 'Debe agregar un monto',
+// 			icon: 'warning',
+// 		});
+// 		return;
+// 	}
 
-	formData.append('ccTipoMovimientoAbono', ccTipoMovimientoAbono);
-	formData.append('ccIngresoPagoNLRazon', ccIngresoPagoRazonAbono);
-	formData.append('ccIngresoPagoNLMonto', ccIngresoPagoMontoAbono);
-	formData.append('ccIngresoPagoNLMoneda', ccIngresoPagoMonedaAbono);
-	formData.append('ccIngresoPagoNLFecha', ccIngresoPagoFechaAbono);
+// 	alert(ccIdresponsable);
+// 	alert(cccta_contable);
 
-	var id_ficha = $('#id_ficha').val();
-	var url = window.location.href;
-	//console.log(url);
-	var parametros = new URL(url).searchParams;
-	//console.log(parametros.get("token"));
-	formData.append('token', parametros.get('token'));
+// 	formData.append('ccTipoMovimientoAbono', ccTipoMovimientoAbono);
+// 	formData.append('ccIngresoPagoNLRazon', ccIngresoPagoRazonAbono);
+// 	formData.append('ccIngresoPagoNLMonto', ccIngresoPagoMontoAbono);
+// 	formData.append('ccIngresoPagoNLMoneda', ccIngresoPagoMonedaAbono);
+// 	formData.append('ccIdresponsable', ccIdresponsable);
+// 	formData.append('cccta_contable', cccta_contable);
 
-	$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+// 	var id_ficha = $('#id_ficha').val();
+// 	var url = window.location.href;
+// 	//console.log(url);
+// 	var parametros = new URL(url).searchParams;
+// 	//console.log(parametros.get("token"));
+// 	formData.append('token', parametros.get('token'));
 
-	$.ajax({
-		url: 'components/arriendo/models/insert_cc_abono.php',
-		type: 'post',
-		dataType: 'text',
-		data: formData,
-		cache: false,
-		contentType: false,
-		processData: false,
-	})
-		.done(function (res) {
-			$('#modalCuentaCorrienteIngresoAbonos').modal('hide');
-			$('#cc_abono')[0].reset();
-			Swal.fire(
-				'Abono registrado',
-				'El abono se registró correctamente',
-				'success'
-			);
-			ccMovimientosTable.ajax.reload(); // Recargar la tabla
-		})
-		.fail(function () {
-			Swal.fire('Atención', 'El abono no se registró', 'warning');
-		});
-}
+// 	$(document).ajaxStart($.blockUI).ajaxStop($.unblockUI);
+
+// 	$.ajax({
+// 		url: 'components/arriendo/models/insert_cc_abono.php',
+// 		type: 'post',
+// 		dataType: 'text',
+// 		data: formData,
+// 		cache: false,
+// 		contentType: false,
+// 		processData: false,
+// 	})
+// 		.done(function (res) {
+// 			$('#modalCuentaCorrienteIngresoAbonos').modal('hide');
+// 			$('#cc_abono')[0].reset();
+// 			Swal.fire(
+// 				'Abono registrado',
+// 				'El abono se registró correctamente',
+// 				'success'
+// 			);
+// 			ccMovimientosTable.ajax.reload(); // Recargar la tabla
+// 		})
+// 		.fail(function () {
+// 			Swal.fire('Atención', 'El abono no se registró', 'warning');
+// 		});
+
+// }
+
+
 // Función para guardar Descuento
 function guardarDescuento(token) {
 	// Captura los datos del formulario
@@ -6013,6 +6038,29 @@ function actualizarEstados(nombre, token, boolean) {
 	});
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // jhernandez funcion para listar los tipos de movimientos de cuentas corrientes cargos.
 function CargarSelectTipoMovimientosCC() {
 	// Realizar la solicitud AJAX
@@ -6023,14 +6071,38 @@ function CargarSelectTipoMovimientosCC() {
 		success: function (data) {
 			// Ordenar los datos por la descripción
 			data.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
-			// Si la solicitud es exitosa, llenamos el select con los datos
+			
+			// Limpiar el select y agregar opción inicial
+			const select = $('#ccTipoMovimientoCargo');
+			select.empty(); // Limpiamos el select antes de añadir opciones
+			select.append(
+				$('<option>', {
+					value: '', // Valor vacío
+					text: 'Selecciona una opción', // Texto visible
+					disabled: true, // Deshabilitado para evitar selección
+					selected: true, // Marcado como predeterminado
+				})
+			);
+
+			// Llenar el select con los datos del servidor
 			$.each(data, function (index, movimiento) {
-				$('#ccTipoMovimientoCargo').append(
+				select.append(
 					$('<option>', {
 						value: movimiento.id,
 						text: movimiento.descripcion,
+						'data-idresponsablecargo': movimiento.id_responsable, // Agregar atributo data
+						'data-ctacorriente': movimiento.cuentaco,
 					})
 				);
+			});
+
+			// Asignar manejador al evento change
+			select.off('change').on('change', function () {
+				const id_responsable_cargo = $(this).find(':selected').data('idresponsablecargo');
+				$('#idResponsableCargo').val(id_responsable_cargo);
+
+				const cta_corriente = $(this).find(':selected').data('ctacorriente');
+				$('#cccta_contableCargo').val(cta_corriente || '');
 			});
 		},
 		error: function (xhr, status, error) {
@@ -6039,34 +6111,90 @@ function CargarSelectTipoMovimientosCC() {
 		},
 	});
 }
+
 
 // jhernandez funcion para listar los tipos de movimientos de cuentas corrientes abonos.
 function CargarSelectTipoMovimientosCCAbono() {
-	// Realizar la solicitud AJAX
-	$.ajax({
-		url: 'components/arriendo/models/TipoMovimientosAbono.php',
-		method: 'GET', // Método de la solicitud (puede ser GET o POST según sea necesario)
-		dataType: 'json', // Esperamos una respuesta en formato JSON
-		success: function (data) {
-			// Ordenar los datos por la descripción
-			data.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
+    $.ajax({
+        url: 'components/arriendo/models/TipoMovimientosAbono.php',
+        method: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            console.log('Datos recibidos:', data); // Verificar datos recibidos
 
-			// Si la solicitud es exitosa, llenamos el select con los datos
-			$.each(data, function (index, movimiento) {
-				$('#ccTipoMovimientoAbono').append(
-					$('<option>', {
-						value: movimiento.id,
-						text: movimiento.descripcion,
-					})
-				);
-			});
-		},
-		error: function (xhr, status, error) {
-			// Manejo de errores
-			console.error('Error al obtener los datos: ', error);
-		},
-	});
+            // Ordenar los datos por descripción
+            data.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
+
+            // Limpiar el select y agregar opción inicial
+            const select = $('#ccTipoMovimientoAbono');
+            select.empty(); // Limpiar el select
+            select.append(
+                $('<option>', {
+                    value: '', // Valor vacío
+                    text: 'Selecciona una opción', // Texto visible
+                    disabled: true, // Deshabilitado para evitar selección
+                    selected: true, // Marcado como predeterminado
+                })
+            );
+
+            // Crear opciones en el select con los datos recibidos
+            $.each(data, function (index, movimiento) {
+                select.append(
+                    $('<option>', {
+                        value: movimiento.id,
+                        text: movimiento.descripcion,
+                        'data-idresponsableabono': movimiento.id_responsable,
+                        'data-cta_corriente': movimiento.cuentaco,
+                    })
+                );
+            });
+
+            // Manejar el evento de cambio del select
+            select.off('change').on('change', function () {
+                // Obtener valores del option seleccionado
+                const selectedOption = $(this).find(':selected');
+
+                const id_responsable_abono = selectedOption.data('idresponsableabono');
+                $('#idResponsableAbono').val(id_responsable_abono || '');
+
+                const cta_corriente = selectedOption.data('cta_corriente');
+                $('#cccta_contable').val(cta_corriente || '');
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error('Error al obtener los datos:', error);
+        },
+    });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+$(document).ready(function () {
+    CargarSelectTipoMovimientosCCAbono();
+});
+
+
 
 // jhernandez validacion de propiedades en estado retirada
 function ValidarPropiedadAarrendar(id) {
@@ -6318,35 +6446,35 @@ function LimpiarValorTipoMoneda() {
 // llena los select al editar los campos 
 
 function SeleccionacobrarComisionAdministracion() {
- 
-    // Obtener la URL actual
-    const url = new URL(window.location.href);
-    const token = url.searchParams.get('token');
 
-    $.ajax({
-        url: 'components/arriendo/models/SelectcobrarComisionAdministracion.php', // URL del archivo PHP
-        method: 'POST', // Método POST
-        dataType: 'json', // El servidor devolverá un JSON
-        data: { // Parámetros que se envían al PHP
-            token: token
-        },
-        success: function (data) {
-        
-            if (data && data[0]) {
-                const $selectAdmin = $('#cobrarComisionAdministracion');
-                const $selectArriendo = $('#cobrarComisionArriendo');
+	// Obtener la URL actual
+	const url = new URL(window.location.href);
+	const token = url.searchParams.get('token');
 
-                // Seleccionar el valor correspondiente para cobrarComisionAdministracion
-                $selectAdmin.val(data[0].adm_comision_cobro.toString());
+	$.ajax({
+		url: 'components/arriendo/models/SelectcobrarComisionAdministracion.php', // URL del archivo PHP
+		method: 'POST', // Método POST
+		dataType: 'json', // El servidor devolverá un JSON
+		data: { // Parámetros que se envían al PHP
+			token: token
+		},
+		success: function (data) {
 
-                // Seleccionar el valor correspondiente para cobrarComisionArriendo
-                $selectArriendo.val(data[0].arriendo_comision_cobro.toString());
-            } else {
-                console.error('Respuesta inesperada o sin datos.');
-            }
-        },
-        error: function (xhr, status, error) {
-            console.error('Error al cargar los datos:', error);
-        }
-    });
+			if (data && data[0]) {
+				const $selectAdmin = $('#cobrarComisionAdministracion');
+				const $selectArriendo = $('#cobrarComisionArriendo');
+
+				// Seleccionar el valor correspondiente para cobrarComisionAdministracion
+				$selectAdmin.val(data[0].adm_comision_cobro.toString());
+
+				// Seleccionar el valor correspondiente para cobrarComisionArriendo
+				$selectArriendo.val(data[0].arriendo_comision_cobro.toString());
+			} else {
+				console.error('Respuesta inesperada o sin datos.');
+			}
+		},
+		error: function (xhr, status, error) {
+			console.error('Error al cargar los datos:', error);
+		}
+	});
 }

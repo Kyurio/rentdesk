@@ -2032,6 +2032,8 @@
 								<select class="form-select form-select-sm" name="ccTipoMovimientoAbono" id="ccTipoMovimientoAbono">
 								</select>
 								<input type="text" id="idResponsableAbono" name="idResponsableAbono" />
+								<input type="text" id="ctacorrienteAbono" name="ctacorrienteAbono" />
+
 							</div>
 						</div>
 
@@ -2104,7 +2106,8 @@
 								<select class="form-select form-select-sm" name="ccTipoMovimiento" id="ccTipoMovimiento">
 								</select>
 							</div>
-							<input type="hidden" id="idResponsable" name="idResponsable" />
+							<input type="text" id="idResponsable" name="idResponsable" />
+							<input type="text" id="cuencacorrientecargo" name="cuencacorrientecargo" />
 
 
 						</div>

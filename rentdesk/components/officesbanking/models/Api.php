@@ -626,6 +626,7 @@ function CobrarAdministracionArriendo($QueryBuilder, $id_ficha_arriendo)
 
     return $result;
 }
+
 function CobrarAdministraCorretaje($QueryBuilder, $id_ficha_arriendo)
 {
 
@@ -1373,7 +1374,9 @@ function generarPDF(
                             );
                         }
                     }
+
                 }
+
             } else {
 
 
@@ -1536,23 +1539,26 @@ function generarPDF(
 
             // guarda el detalle de liquidacion de  comsion arriendo
             if ($NumeroLiquidaciones === 0) {
-                if ($comision_administracion > 0) {
-                    GuardarDetalleLiquidacion(
-                        $services,
-                        $url_services,
-                        $ficha_tecnica_propiedad,
-                        'COMISIÓN CORRETAJE',
-                        $comision_administracion,
-                        $iva,
-                        $id_liquidacion
-                    );
-                }
+                if ($adm_comision_cobro == true) {
+                    if ($comision_administracion > 0) {
+                        GuardarDetalleLiquidacion(
+                            $services,
+                            $url_services,
+                            $ficha_tecnica_propiedad,
+                            'COMISIÓN CORRETAJE',
+                            $comision_administracion,
+                            $iva,
+                            $id_liquidacion
+                        );
+                    }
+		       }
             }
 
 
             // guarda el detalle de liquidacion de COMISIÓN ADMINISTRACIÓN
-            if ($comision_arriendo > 0) {
-                GuardarDetalleLiquidacion(
+            if ($NumeroLiquidaciones === 0) {
+                if ($adm_cobro_primra_liquidacion == true) {
+                    GuardarDetalleLiquidacion(
                     $services,
                     $url_services,
                     $ficha_tecnica_propiedad,
@@ -1561,7 +1567,22 @@ function generarPDF(
                     $iva,
                     $id_liquidacion
                 );
-            }
+               }
+	        }
+	        else {
+	
+               if ($arriendo_comision_cobro == true) {
+                    GuardarDetalleLiquidacion(
+                    $services,
+                    $url_services,
+                    $ficha_tecnica_propiedad,
+                    'COMISIÓN ADMINISTRACIÓN',
+                    $comision_arriendo,
+                    $iva,
+                    $id_liquidacion
+                );
+	           }
+	        }
 
             // guarda el detalle de liquidacion COBRO ANTICIPOS
             if ($TotalAnticipos > 0) {

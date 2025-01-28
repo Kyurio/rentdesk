@@ -13,6 +13,7 @@ $password = "RENTA";
 // URL del servicio SOAP
 $wsdl = $config->wsdl;
 
+
 try {
     // Inicializar el cliente SOAP
     $client = new SoapClient($wsdl, [
@@ -35,8 +36,8 @@ try {
     // Verificar la respuesta
     if (isset($response->getLinkPDFResult) && is_object($response->getLinkPDFResult)) {
         $pdfResult = $response->getLinkPDFResult;
-
-        // Extraer el enlace del campo MsgEstatus
+        
+        // Extraer el enlace del campo MsgEstatus     
         if (isset($pdfResult->MsgEstatus) && filter_var($pdfResult->MsgEstatus, FILTER_VALIDATE_URL)) {
             $pdfLink = $pdfResult->MsgEstatus;
 

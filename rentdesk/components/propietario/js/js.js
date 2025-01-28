@@ -734,6 +734,8 @@ function busquedaFiltros() {
 }
 
 function busquedaDNI() {
+
+
 	//var formData = dni;
 	$('#DNI').prop('disabled', true);
 	$('#button-addon2').hide();
@@ -1108,9 +1110,14 @@ function cargarComentaris() {}
 function ocultarAutocomplete(tipo) {
 	$('#suggestions_' + tipo).fadeOut(500);
 }
+
+
 function buscarClienteAutocompleteGenerica(valor, tipo) {
+
+
 	var codigo = document.getElementById(tipo).value;
 	var caracteres = codigo.length;
+
 	//Si por lo menos ha ingresado 3 caracteres comenzamos a autocompletar
 	if (caracteres >= 3) {
 		$.ajax({
@@ -1135,6 +1142,7 @@ function buscarClienteAutocompleteGenerica(valor, tipo) {
 		ocultarAutocomplete(tipo);
 	}
 }
+
 
 function guardarProp() {
 	if ($('input[name="cta[]"]').length > 0) {

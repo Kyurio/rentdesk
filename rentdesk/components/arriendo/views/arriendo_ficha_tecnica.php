@@ -1243,6 +1243,10 @@ $peso_archivo = $config->maxSizeMB;
 									onchange="TipoFormularioAbonosMovimientos()">
 									<option value="" selected>Selecciona una opcion</option>
 								</select>
+
+								<input type="hidden" id="idResponsableAbono" name="idResponsableAbono">
+								<input type="hidden" id="cccta_contable" name="cccta_contable">
+
 							</div>
 						</div>
 
@@ -1316,6 +1320,10 @@ $peso_archivo = $config->maxSizeMB;
 									onchange="TipoFormularioCargosMovimientos()">
 								</select>
 							</div>
+
+							<input type="hidden" id="idResponsableCargo" name="idResponsableCargo">
+							<input type="hidden" id="cccta_contableCargo" name="cccta_contableCargo">
+
 						</div>
 
 
