@@ -3959,7 +3959,6 @@ function eliminarInfoCoPropietario({
 	idPropietario,
 	tokenBeneficiario = null,
 }) {
-
 	Swal.fire({
 		title: '¿Estás seguro?',
 		text: 'Una vez eliminado, no podrás recuperar este propietario',
@@ -7939,7 +7938,45 @@ function CargarSelectTipoMovimientosCCAbono() {
 	});
 }
 
-//bruno
+//bruno direccion
+
+function getDireccion() {
+	// Obtener token de la URL
+	var url = window.location.href;
+	var parametros = new URL(url).searchParams;
+	var token_propiedad = parametros.get('token');
+
+	// Llamada AJAX
+	$.ajax({
+		url: 'components/propiedad/models/get_direccion.php',
+		type: 'post',
+		data: {
+			token: token_propiedad,
+		},
+		success: function (response) {
+			// Aquí puedes procesar la respuesta, p.ej. parsear JSON
+			const data = JSON.parse(response);
+			if (data && data.length > 0) {
+				// Asumiendo que solo tomas la primera fila, por ejemplo
+				// Parsea la respuesta JSON
+				const data = JSON.parse(response);
+				if (data && data.length > 0) {
+					// Asigna el texto al span
+					$('#direccionFichaPropiedad').text(data[0].direccion);
+				} else {
+					console.log('No se encontró dirección');
+				}
+			} else {
+				console.log('No se encontró dirección');
+			}
+		},
+		error: function (xhr, status, error) {
+			console.error('Error:', error);
+		},
+	});
+}
+
+//bruno recordatorios
 function ListadoNotificaciones() {
 	const ficha_tecnica = document.getElementById('ficha_tecnica_id').value;
 	const tablaId = '#ListadoRecordatiorios';
@@ -8074,6 +8111,7 @@ function eliminarRecordatorio(id) {
 
 $(document).ready(function () {
 	cargarRetencionesList(); // Llama a la función al cargar la página
+	getDireccion();
 });
 
 // Función para cargar retenciones

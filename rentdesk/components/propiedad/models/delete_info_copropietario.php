@@ -19,12 +19,6 @@ $idPropiedad = @$_POST['idPropiedad'];
 $idPropietario = @$_POST['idPropietario'];
 $tokenBeneficiario = @$_POST['tokenBeneficiario'];
 
-var_dump("idRegistro: ", $idRegistro);
-var_dump("idPropiedad: ", $idPropiedad);
-var_dump("idPropietario: ", $idPropietario);
-var_dump("tokenBeneficiario: ", $tokenBeneficiario);
-
-die();
 
 if ($tokenBeneficiario) {
 
