@@ -2015,6 +2015,13 @@
 
 
 
+
+
+
+
+
+
+
 	<!-- Modal Cuenta Corriente - Ingresar Pago No Liquidable-->
 	<div class="modal fade" data-bs-backdrop="static" id="modalCuentaCorrienteIngresoPagoNoLiquidable" tabindex="-1" aria-labelledby="modalCuentaCorrienteIngresoPagoNoLiquidableLabel" aria-hidden="true">
 		<div class="modal-dialog modal-lg">
@@ -2031,8 +2038,8 @@
 								<label for="ccTipoMovimientoAbono" class="form-label"><span class="obligatorio">*</span> Tipo Movimiento</label>
 								<select class="form-select form-select-sm" name="ccTipoMovimientoAbono" id="ccTipoMovimientoAbono">
 								</select>
-								<input type="text" id="idResponsableAbono" name="idResponsableAbono" />
-								<input type="text" id="ctacorrienteAbono" name="ctacorrienteAbono" />
+								<input type="hidden" id="idResponsableAbono" name="idResponsableAbono" />
+								<input type="hidden" id="ctacorrienteAbono" name="ctacorrienteAbono" />
 
 							</div>
 						</div>
@@ -2088,6 +2095,23 @@
 		</div>
 	</div>
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	
 	<!-- Modal Cuenta Corriente - Ingresar cargo Autorizado-->
 	<div class="modal fade" data-bs-backdrop="static" id="modalCuentaCorrienteIngresoDescuentoAutorizado" tabindex="-1" aria-labelledby="modalCuentaCorrienteIngresoDescuentoAutorizadoLabel" aria-hidden="true">
 		<div class="modal-dialog  modal-lg">
@@ -2102,12 +2126,12 @@
 						<div class="row">
 
 							<div class="col mb-3">
-								<label for="ccTipoMovimiento" class="form-label"><span class="obligatorio">*</span> Tipo Movimiento</label>
-								<select class="form-select form-select-sm" name="ccTipoMovimiento" id="ccTipoMovimiento">
+								<label for="ccTipoMovimientoCargo" class="form-label"><span class="obligatorio">*</span> Tipo Movimiento</label>
+								<select class="form-select form-select-sm" name="ccTipoMovimientoCargo" id="ccTipoMovimientoCargo">
 								</select>
 							</div>
-							<input type="text" id="idResponsable" name="idResponsable" />
-							<input type="text" id="cuencacorrientecargo" name="cuencacorrientecargo" />
+							<input type="hidden" id="idResponsableCargo" name="idResponsableCargo" />
+							<input type="hidden" id="cccta_contableCargo" name="cccta_contableCargo" />
 
 
 						</div>
@@ -2182,6 +2206,36 @@
 			</div>
 		</div>
 	</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	<!-- Modal Comentarios - Ingreso-->
 

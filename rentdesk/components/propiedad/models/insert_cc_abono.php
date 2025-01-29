@@ -21,6 +21,8 @@ $ccMoneda = @$_POST["ccIngresoPagoNLMoneda"];
 $ccFecha = @$_POST["ccIngresoPagoNLFecha"];
 $ccTipoMovimientoAbono = @$_POST['ccTipoMovimientoAbono'];
 $ccIdResponsable = @$_POST['ccidResponsableAbono'];
+$ccctacorrienteAbono = $_POST['ccctacorrienteAbono'];
+
 
 
 // Parse the date and time using DateTime
@@ -89,12 +91,12 @@ $idFichaArriendo = @$objetoArrendatario->id;
 
 if (isset($idFichaArriendo)) {
     $queryInsertCcAbono = "INSERT INTO propiedades.ficha_arriendo_cta_cte_movimientos
-    (id_propiedad,id_ficha_arriendo, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, id_responsable)
-     VALUES ($ccIdFicha,$idFichaArriendo,'$date $time', '$time', $ccTipoMovimientoAbono, $ccMonto,'$ccRazon - $ccFecha', $ccIdResponsable)";
+    (id_propiedad,id_ficha_arriendo, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cta_contable, id_responsable)
+     VALUES ($ccIdFicha,$idFichaArriendo,'$date $time', '$time', $ccTipoMovimientoAbono, $ccMonto,'$ccRazon - $ccFecha', $ccctacorrienteAbono, $ccIdResponsable)";
 } else {
     $queryInsertCcAbono = "INSERT INTO propiedades.ficha_arriendo_cta_cte_movimientos
-(id_propiedad, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, id_responsable)
- VALUES ($ccIdFicha,'$date $time', '$time', $ccTipoMovimientoAbono, $ccMonto,'$ccRazon - $ccFecha', $ccIdResponsable)";
+(id_propiedad, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cta_contable, id_responsable)
+ VALUES ($ccIdFicha,'$date $time', '$time', $ccTipoMovimientoAbono, $ccMonto,'$ccRazon - $ccFecha', $ccctacorrienteAbono, $ccIdResponsable)";
 }
 
 

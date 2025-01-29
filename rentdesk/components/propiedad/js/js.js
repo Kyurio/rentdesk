@@ -349,7 +349,35 @@ function cargarInfoCuentaCorriente() {
 	cargarCCMovimientosList();
 	cargarCCMovimientoSaldoActual();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function guardarCcAbono() {
+
 	var formData = new FormData(document.getElementById('cc_pago_no_liquidable'));
 
 	var jsonInformacionNueva = obtenerValoresFormulario('cc_pago_no_liquidable');
@@ -357,6 +385,7 @@ function guardarCcAbono() {
 	const ccTipoMovimientoAbonoinput = document.getElementById(
 		'ccTipoMovimientoAbono'
 	);
+
 	var ccTipoMovimientoAbono = ccTipoMovimientoAbonoinput.value;
 
 	const cc_pago_razon_input = document.getElementById('ccIngresoPagoNLRazon');
@@ -374,8 +403,6 @@ function guardarCcAbono() {
 	var ccidResponsableAbono = document.getElementById('idResponsableAbono').value;
 	var ccctacorrienteAbono = document.getElementById('ctacorrienteAbono').value;
 
-	alert(ccidResponsableAbono);
-	alert(ccctacorrienteAbono);
 
 	if (ccIngresoPagoNLRazon == null || ccIngresoPagoNLRazon == '') {
 		Swal.fire({
@@ -490,6 +517,27 @@ function guardarCcAbono() {
 	cargarCCMovimientoSaldoActual();
 	cargarCCMovimientosList();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // funcion cargar ejecutivos jhernandez
 function CargarListadoEjecutivos() {
@@ -1135,7 +1183,7 @@ function guardarCcDescuento() {
 		document.getElementById('cc_descuento_autorizado')
 	);
 
-	var ccTipoMovimiento = document.getElementById('ccTipoMovimiento');
+	var ccTipoMovimiento = document.getElementById('ccTipoMovimientoCargo');
 
 	var jsonInformacionNueva = obtenerValoresFormulario(
 		'cc_descuento_autorizado'
@@ -1166,7 +1214,8 @@ function guardarCcDescuento() {
 	);
 	var ccIngresoDescAutorizadoFecha = cc_pago_fecha_input.value;
 
-	var ccidResponsable = document.getElementById('idResponsable').value;
+	var ccidResponsable = document.getElementById('idResponsableCargo').value;
+	var cccta_contableCargo = document.getElementById('cccta_contableCargo').value;
 
 	if (ccTipoMovimiento == null || ccTipoMovimiento == '') {
 		Swal.fire({
@@ -1244,6 +1293,9 @@ function guardarCcDescuento() {
 	formData.append('ccIngresoDescAutorizadoCobraComision', ccIngresoDescAutorizadoCobraComision);
 	formData.append('ccIngresoDescAutorizadoFecha', ccIngresoDescAutorizadoFecha);
 	formData.append('ccidResponsable', ccidResponsable);
+	formData.append('cccta_contableCargo', cccta_contableCargo);
+
+
 
 	var id_ficha = $('#id_ficha').val();
 	var url = window.location.href;
@@ -1268,8 +1320,8 @@ function guardarCcDescuento() {
 			$('#cc_descuento_autorizado')[0].reset();
 
 			Swal.fire({
-				title: 'Descuento registrado',
-				text: 'El descuento se registro correctamente',
+				title: 'Cargo registrado',
+				text: 'El cargo se registro correctamente',
 				icon: 'success',
 			});
 			var id_comentario = res;
@@ -1281,7 +1333,7 @@ function guardarCcDescuento() {
 				'Crear',
 				'',
 				jsonInformacionNueva,
-				'Cuenta Corriente - Descuento',
+				'Cuenta Corriente - cargo',
 				id_ficha,
 				id_comentario
 			);
@@ -1291,7 +1343,7 @@ function guardarCcDescuento() {
 
 			Swal.fire({
 				title: 'Atención',
-				text: 'El descuento no se registró',
+				text: 'El cargo no se registró',
 				icon: 'warning',
 			});
 
@@ -7860,6 +7912,126 @@ function GrabarValorRol() {
 	});
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// // jhernandez funcion para listar los tipos de movimientos de cuentas corrientes cargos.
+// function CargarSelectTipoMovimientosCC() {
+// 	// Realizar la solicitud AJAX
+// 	$.ajax({
+// 		url: 'components/propiedad/models/TipoMovimientos.php',
+// 		method: 'GET', // Método de la solicitud (puede ser GET o POST según sea necesario)
+// 		dataType: 'json', // Esperamos una respuesta en formato JSON
+// 		success: function (data) {
+// 			// Limpiar el contenido previo del <select> y agregar opción inicial
+// 			const select = $('#ccTipoMovimiento');
+// 			select.empty();
+// 			select.append(
+// 				$('<option>', {
+// 					value: '', // Valor vacío
+// 					text: 'Selecciona una opción', // Texto visible
+// 					disabled: true, // Deshabilitado para evitar selección
+// 					selected: true, // Marcado como predeterminado
+// 				})
+// 			);
+
+// 			// Ordenar los datos por la descripción
+// 			data.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
+
+// 			// Si la solicitud es exitosa, llenamos el select con los datos
+// 			$.each(data, function (index, item) {
+// 				select.append(
+// 					$('<option>', {
+// 						value: item.id,
+// 						text: item.descripcion,
+// 						'data-idresponsable': item.id_responsable,
+// 						'data-cuentacorrientecargo': item.cuentaco,
+// 					})
+// 				);
+// 			});
+
+// 			// Actualiza el input oculto con el idResponsable al cambiar la selección
+// 			select.off('change').on('change', function () {
+// 				const idResponsable = $(this).find(':selected').data('idresponsable');
+// 				$('#idResponsable').val(idResponsable || '');
+// 			});
+// 		},
+// 		error: function (xhr, status, error) {
+// 			// Manejo de errores
+// 			console.error('Error al obtener los datos: ', error);
+// 		},
+// 	});
+// }
+
+
+// function CargarSelectTipoMovimientosCCAbono() {
+// 	$.ajax({
+// 		url: 'components/propiedad/models/TipoMovimientosAbono.php',
+// 		method: 'GET',
+// 		dataType: 'json',
+// 		success: function (data) {
+// 			// Limpiar el contenido previo del <select> y agregar opción inicial
+// 			const select = $('#ccTipoMovimientoAbono');
+// 			select.empty();
+// 			select.append(
+// 				$('<option>', {
+// 					value: '', // Valor vacío
+// 					text: 'Selecciona una opción', // Texto visible
+// 					disabled: true, // Deshabilitado para evitar selección
+// 					selected: true, // Marcado como predeterminado
+// 				})
+// 			);
+
+// 			// Ordenar los datos por descripción
+// 			data.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
+
+// 			// Poblar el select con los datos recibidos
+// 			$.each(data, function (index, item) {
+// 				alert(item.cuentacto); // Verificar valor de item.cuentacto
+// 				select.append(
+// 					$('<option>', {
+// 						value: item.id,
+// 						text: item.descripcion,
+// 						'data-idresponsableabono': item.id_responsable,
+// 						'data-ctacorrienteabono': item.cuentacto, // Usar el nombre exacto
+// 					})
+// 				);
+// 			});
+
+// 			// Asignar manejador al evento change
+// 			select.off('change').on('change', function () {
+// 				const id_responsable_cargo = $(this).find(':selected').data('idresponsableabono');
+// 				$('#idResponsableAbono').val(id_responsable_cargo || '');
+
+// 				const cta_corriente = $(this).find(':selected').data('ctacorrienteabono'); // Acceder usando el nombre correcto
+// 				alert(cta_corriente); // Verificar valor obtenido
+// 				$('#ctacorrienteAbono').val(cta_corriente || '');
+// 			});
+// 		},
+// 		error: function (xhr, status, error) {
+// 			console.error('Error en AJAX:', error);
+// 		},
+// 	});
+// }
+
+
+
+
+
 // jhernandez funcion para listar los tipos de movimientos de cuentas corrientes cargos.
 function CargarSelectTipoMovimientosCC() {
 	// Realizar la solicitud AJAX
@@ -7868,9 +8040,12 @@ function CargarSelectTipoMovimientosCC() {
 		method: 'GET', // Método de la solicitud (puede ser GET o POST según sea necesario)
 		dataType: 'json', // Esperamos una respuesta en formato JSON
 		success: function (data) {
-			// Limpiar el contenido previo del <select> y agregar opción inicial
-			const select = $('#ccTipoMovimiento');
-			select.empty();
+			// Ordenar los datos por la descripción
+			data.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
+			
+			// Limpiar el select y agregar opción inicial
+			const select = $('#ccTipoMovimientoCargo');
+			select.empty(); // Limpiamos el select antes de añadir opciones
 			select.append(
 				$('<option>', {
 					value: '', // Valor vacío
@@ -7880,25 +8055,25 @@ function CargarSelectTipoMovimientosCC() {
 				})
 			);
 
-			// Ordenar los datos por la descripción
-			data.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
-
-			// Si la solicitud es exitosa, llenamos el select con los datos
-			$.each(data, function (index, item) {
+			// Llenar el select con los datos del servidor
+			$.each(data, function (index, movimiento) {
 				select.append(
 					$('<option>', {
-						value: item.id,
-						text: item.descripcion,
-						'data-idresponsable': item.id_responsable,
-						'data-cuentacorrientecargo': item.cuentaco,
+						value: movimiento.id,
+						text: movimiento.descripcion,
+						'data-idresponsablecargo': movimiento.id_responsable, // Agregar atributo data
+						'data-ctacorriente': movimiento.cuentaco,
 					})
 				);
 			});
 
-			// Actualiza el input oculto con el idResponsable al cambiar la selección
+			// Asignar manejador al evento change
 			select.off('change').on('change', function () {
-				const idResponsable = $(this).find(':selected').data('idresponsable');
-				$('#idResponsable').val(idResponsable || '');
+				const id_responsable_cargo = $(this).find(':selected').data('idresponsablecargo');
+				$('#idResponsableCargo').val(id_responsable_cargo);
+
+				const cta_corriente = $(this).find(':selected').data('ctacorriente');
+				$('#cccta_contableCargo').val(cta_corriente || '');
 			});
 		},
 		error: function (xhr, status, error) {
@@ -7909,55 +8084,83 @@ function CargarSelectTipoMovimientosCC() {
 }
 
 
+// jhernandez funcion para listar los tipos de movimientos de cuentas corrientes abonos.
 function CargarSelectTipoMovimientosCCAbono() {
 	$.ajax({
-		url: 'components/propiedad/models/TipoMovimientosAbono.php',
-		method: 'GET',
-		dataType: 'json',
-		success: function (data) {
-			// Limpiar el contenido previo del <select> y agregar opción inicial
-			const select = $('#ccTipoMovimientoAbono');
-			select.empty();
-			select.append(
-				$('<option>', {
-					value: '', // Valor vacío
-					text: 'Selecciona una opción', // Texto visible
-					disabled: true, // Deshabilitado para evitar selección
-					selected: true, // Marcado como predeterminado
-				})
-			);
+        url: 'components/propiedad/models/TipoMovimientosAbono.php',
+        method: 'GET',
+        dataType: 'json',
+        success: function (data) {
 
-			// Ordenar los datos por descripción
-			data.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
+            // Ordenar los datos por descripción
+            data.sort((a, b) => a.descripcion.localeCompare(b.descripcion));
 
-			// Poblar el select con los datos recibidos
-			$.each(data, function (index, item) {
-				alert(item.cuentacto); // Verificar valor de item.cuentacto
-				select.append(
-					$('<option>', {
-						value: item.id,
-						text: item.descripcion,
-						'data-idresponsableabono': item.id_responsable,
-						'data-ctacorrienteabono': item.cuentacto, // Usar el nombre exacto
-					})
-				);
-			});
+            // Limpiar el select y agregar opción inicial
+            const select = $('#ccTipoMovimientoAbono');
+            select.empty(); // Limpiar el select
+            select.append(
+                $('<option>', {
+                    value: '', // Valor vacío
+                    text: 'Selecciona una opción', // Texto visible
+                    disabled: true, // Deshabilitado para evitar selección
+                    selected: true, // Marcado como predeterminado
+                })
+            );
 
-			// Asignar manejador al evento change
-			select.off('change').on('change', function () {
-				const id_responsable_cargo = $(this).find(':selected').data('idresponsableabono');
-				$('#idResponsableAbono').val(id_responsable_cargo || '');
+            // Crear opciones en el select con los datos recibidos
+            $.each(data, function (index, movimiento) {
+                select.append(
+                    $('<option>', {
+                        value: movimiento.id,
+                        text: movimiento.descripcion,
+                        'data-idresponsableabono': movimiento.id_responsable,
+                        'data-cta_corriente': movimiento.cuentaco,
+                    })
+                );
+            });
 
-				const cta_corriente = $(this).find(':selected').data('ctacorrienteabono'); // Acceder usando el nombre correcto
-				alert(cta_corriente); // Verificar valor obtenido
-				$('#ctacorrienteAbono').val(cta_corriente || '');
-			});
-		},
-		error: function (xhr, status, error) {
-			console.error('Error en AJAX:', error);
-		},
-	});
+            // Manejar el evento de cambio del select
+            select.off('change').on('change', function () {
+                // Obtener valores del option seleccionado
+                const selectedOption = $(this).find(':selected');
+
+                const id_responsable_abono = selectedOption.data('idresponsableabono');
+                $('#idResponsableAbono').val(id_responsable_abono || '');
+
+                const cta_corriente = selectedOption.data('cta_corriente');
+                $('#ctacorrienteAbono').val(cta_corriente || '');
+				
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error('Error al obtener los datos:', error);
+        },
+    });
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 // end jose

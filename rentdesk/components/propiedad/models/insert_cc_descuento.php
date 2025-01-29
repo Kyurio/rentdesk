@@ -22,6 +22,8 @@ $ccCobraComision = @$_POST["ccIngresoDescAutorizadoCobraComision"];
 $ccFecha = @$_POST["ccIngresoDescAutorizadoFecha"];
 $ccTipoMovimiento = @$_POST['ccTipoMovimiento'];
 $ccIdResponsable = @$_POST['ccidResponsable'];
+$cccta_contableCargo = $_POST['cccta_contableCargo'];
+
 
 
 // Parse the date and time using DateTime
@@ -86,13 +88,14 @@ $idFichaArriendo = @$objetoArrendatario->id;
 // var_dump("current_usuario",$current_usuario );
 if (isset($idFichaArriendo)) {
     $queryInsertCcDescuento = "INSERT INTO propiedades.ficha_arriendo_cta_cte_movimientos
-(id_propiedad,id_ficha_arriendo, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cobro_comision, id_responsable)
- VALUES ($ccIdFicha,$idFichaArriendo,'$date $time', '$time', $ccTipoMovimiento, $ccMonto,'$ccRazon - $ccFecha', $ccCobraComision, $ccIdResponsable)";
+(id_propiedad,id_ficha_arriendo, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cobro_comision, cta_contable, id_responsable)
+ VALUES ($ccIdFicha,$idFichaArriendo,'$date $time', '$time', $ccTipoMovimiento, $ccMonto,'$ccRazon - $ccFecha',$ccCobraComision, $cccta_contableCargo, $ccIdResponsable)";
 } else {
     $queryInsertCcDescuento = "INSERT INTO propiedades.ficha_arriendo_cta_cte_movimientos
-    (id_propiedad, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cobro_comision, id_responsable)
-     VALUES ($ccIdFicha,'$date $time', '$time', $ccTipoMovimiento, $ccMonto,'$ccRazon - $ccFecha', $ccCobraComision, $ccIdResponsable)";
+    (id_propiedad, fecha_movimiento, hora_movimiento, id_tipo_movimiento_cta_cte, monto, razon, cobro_comision, cta_contable, id_responsable)
+     VALUES ($ccIdFicha,'$date $time', '$time', $ccTipoMovimiento, $ccMonto,'$ccRazon - $ccFecha',$ccCobraComision, $cccta_contableCargo, $ccIdResponsable)";
 }
+
 
 $dataCab = array("consulta" => $queryInsertCcDescuento);
 $resultadoCab = $services->sendPostDirecto($url_services . '/util/dml', $dataCab);
@@ -104,11 +107,3 @@ if ($resultadoCab != "OK") {
 
 echo ",xxx,OK,xxx,Descuento Ingresado Correctamente,xxx,-,xxx,";
 
-// $queryInsertCcPagoRef = "SELECT propiedades.fn_inserta_tipo_mov_pago('FICHA_ARRIENDO',$ccIdFicha, 3)";
-
-// var_dump($queryInsertCcPagoRef);
-
-// $dataCabRef = array("consulta" => $queryInsertCcPagoRef);
-// $resultadoCabRef = $services->sendPostDirecto($url_services . '/util/dml', $dataCabRef);
-
-//echo "insert ".$textoDiferencia." ".$tipoRegistro." ".$component." ".$view." ".$token;
