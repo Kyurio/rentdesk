@@ -89,14 +89,12 @@ class QueryBuilder
                 $value = $condition;
 
                 // Detectar si se proporcionó un operador personalizado o expresión compleja
-                // Por ejemplo: 'fa.token' => ['=', 'ABC123']
                 if (is_array($condition) && isset($condition[0])) {
                     [$operator, $value] = $condition;
                 }
 
                 // Quitar los puntos del nombre del parámetro
                 $paramKey = str_replace('.', '_', $key);
-                // (Por ej: "fa.token" => "fa_token")
 
                 // Manejar condiciones especiales como IN, NOT IN, LIKE, IS NULL, IS NOT NULL
                 if (strtoupper($operator) === 'IN' && is_array($value)) {
@@ -108,7 +106,7 @@ class QueryBuilder
                         $placeholderArray[] = ":{$paramKeyItem}";
                         $params[$paramKeyItem] = $val;
                     }
-                    // Ej: "fa.token IN (:fa_token_0, :fa_token_1, ...)"
+
                     $clauses[] = "{$key} IN (" . implode(', ', $placeholderArray) . ")";
                 } elseif (strtoupper($operator) === 'NOT IN' && is_array($value)) {
                     $placeholderArray = [];
