@@ -246,6 +246,7 @@ $(document).ready(function () {
 				//    (Sucusal, Ejecutivo, Propietario, Tipo de Propiedad, Dirección, etc.)
 				var formattedData = response.map(function (row) {
 					return {
+						'Codigo Propiedad': row.codigo_propiedad,
 						Sucursal: row.sucursal,
 						Ejecutivo: row.ejecutivo,
 						Propietario: row.propietarios,

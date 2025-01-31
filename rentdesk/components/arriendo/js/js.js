@@ -38,8 +38,8 @@ $(document).ready(function () {
 				// 1) Transforma la respuesta para renombrar y ordenar columnas en el Excel
 				var formattedData = response.map(function (row) {
 					return {
-						'Ficha Técnica': row.id_arriendo,
-						'Propiedad ID': row.propiedad_id,
+						// 'Ficha Técnica': row.id_arriendo,
+						'Código Propiedad': row.codigo_propiedad,
 						Dirección: row.direccion,
 						'Estado Propiedad': row.estado_propiedad,
 						Estado: row.estado,
