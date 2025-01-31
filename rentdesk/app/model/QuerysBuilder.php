@@ -88,52 +88,58 @@ class QueryBuilder
                 $operator = '=';
                 $value = $condition;
 
-                // Detectar si se proporcionó un operador personalizado o agrupado
+                // Detectar si se proporcionó un operador personalizado o expresión compleja
                 if (is_array($condition) && isset($condition[0])) {
-                    // Condición con operador o expresión compleja
                     [$operator, $value] = $condition;
                 }
 
+                // Quitar los puntos del nombre del parámetro
+                $paramKey = str_replace('.', '_', $key);
+
                 // Manejar condiciones especiales como IN, NOT IN, LIKE, IS NULL, IS NOT NULL
                 if (strtoupper($operator) === 'IN' && is_array($value)) {
-                    $placeholders = implode(', ', array_map(fn($i) => ":{$key}_{$i}", array_keys($value)));
-                    $clauses[] = "{$key} IN ({$placeholders})";
+                    // Creamos placeholders individuales
+                    $placeholderArray = [];
                     foreach ($value as $i => $val) {
-                        $params["{$key}_{$i}"] = $val;
+                        // Cada elemento debe tener su propio nombre de placeholder
+                        $paramKeyItem = "{$paramKey}_{$i}";
+                        $placeholderArray[] = ":{$paramKeyItem}";
+                        $params[$paramKeyItem] = $val;
                     }
+
+                    $clauses[] = "{$key} IN (" . implode(', ', $placeholderArray) . ")";
                 } elseif (strtoupper($operator) === 'NOT IN' && is_array($value)) {
-                    $placeholders = implode(', ', array_map(fn($i) => ":{$key}_{$i}", array_keys($value)));
-                    $clauses[] = "{$key} NOT IN ({$placeholders})";
+                    $placeholderArray = [];
                     foreach ($value as $i => $val) {
-                        $params["{$key}_{$i}"] = $val;
+                        $paramKeyItem = "{$paramKey}_{$i}";
+                        $placeholderArray[] = ":{$paramKeyItem}";
+                        $params[$paramKeyItem] = $val;
                     }
+                    $clauses[] = "{$key} NOT IN (" . implode(', ', $placeholderArray) . ")";
                 } elseif (strtoupper($operator) === 'LIKE') {
-                    $clauses[] = "{$key} LIKE :{$key}";
-                    $params[$key] = $value;
+                    $clauses[] = "{$key} LIKE :{$paramKey}";
+                    $params[$paramKey] = $value;
                 } elseif (strtoupper($operator) === 'IS NULL') {
                     $clauses[] = "{$key} IS NULL";
                 } elseif (strtoupper($operator) === 'IS NOT NULL') {
                     $clauses[] = "{$key} IS NOT NULL";
                 } else {
-                    $clauses[] = "{$key} {$operator} :{$key}";
-                    $params[$key] = $value;
+                    // Caso simple:  "fa.token = :fa_token"
+                    $clauses[] = "{$key} {$operator} :{$paramKey}";
+                    $params[$paramKey] = $value;
                 }
             }
 
             $sql .= " WHERE " . implode(" AND ", $clauses);
         }
 
-        // Agregar GROUP BY si se proporciona
+        // Agregar GROUP BY, ORDER BY, LIMIT, etc.
         if (!empty($groupBy)) {
             $sql .= " GROUP BY {$groupBy}";
         }
-
-        // Agregar ORDER BY si se proporciona
         if (!empty($orderBy)) {
             $sql .= " ORDER BY {$orderBy}";
         }
-
-        // Agregar LIMIT si se proporciona
         if (!empty($limit)) {
             $sql .= " LIMIT {$limit}";
         }
@@ -146,6 +152,7 @@ class QueryBuilder
 
         return $this->execute($sql, $params, $isCount);
     }
+
 
     /**
      * Ejecuta consultas SQL complejas directamente.

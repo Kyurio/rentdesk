@@ -65,6 +65,7 @@
         <ol class="breadcrumb d-flex align-items-center m-0">
             <li class="breadcrumb-item"><a href="index.php?component=dashboard&view=dashboard" style="text-decoration: none;color:#66615b"><span>Inicio</span></a></li>
             <li class="breadcrumb-item active" style="font-weight:600;color: #e62238" aria-current="page">Arriendos</li>
+            </li>
 
             <li>
 
