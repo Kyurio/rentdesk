@@ -77,6 +77,7 @@ $(document).ready(function () {
 				const cierre = $(checkedItems[i]).closest('tr').find('td:first').text();
 
 				try {
+					// Obtener las liquidaciones (aunque no las iteremos, necesitamos el id_liquidacion)
 					const liquidaciones = await $.ajax({
 						url: 'components/officesbanking/models/GetIdLiquidaciones.php',
 						method: 'GET',
@@ -84,47 +85,47 @@ $(document).ready(function () {
 						dataType: 'json',
 					});
 
-					for (const item of liquidaciones) {
-						const id_liquidacion = item.id;
+					// Asumimos que solo necesitamos el primer id_liquidacion (o el único)
+					const id_liquidacion = liquidaciones[0].id;
 
-						const updateLiquidacion = await $.ajax({
-							url: 'components/officesbanking/models/UpdateOfficeBankingLiquidacion.php',
-							method: 'POST',
-							data: { id_liquidacion: id_liquidacion, id_date: idDate },
-							dataType: 'json',
-						});
+					// Actualizar la liquidación
+					await $.ajax({
+						url: 'components/officesbanking/models/UpdateOfficeBankingLiquidacion.php',
+						method: 'POST',
+						data: { id_liquidacion: id_liquidacion, id_date: idDate },
+						dataType: 'json',
+					});
 
-						// Generar datos para Office Banking
-						const officeBanking = await $.ajax({
-							url: 'components/officesbanking/models/GenerarOfficeBanking.php',
-							method: 'GET',
-							data: { cierre: cierre },
-							dataType: 'json',
-						});
+					// Generar datos para Office Banking
+					const officeBanking = await $.ajax({
+						url: 'components/officesbanking/models/GenerarOfficeBanking.php',
+						method: 'GET',
+						data: { cierre: cierre },
+						dataType: 'json',
+					});
 
-						const officeBankingDoc = await $.ajax({
-							url: 'components/officesbanking/models/GenerarDocumetoOfficeBanking.php',
-							method: 'GET',
-							data: { cierre: cierre },
-							dataType: 'json',
-						});
-						offbnk.push(officeBankingDoc);
+					const officeBankingDoc = await $.ajax({
+						url: 'components/officesbanking/models/GenerarDocumetoOfficeBanking.php',
+						method: 'GET',
+						data: { cierre: cierre },
+						dataType: 'json',
+					});
+					offbnk.push(officeBankingDoc);
 
-						// Generar datos para Thomson
-						const thomsonData = await $.ajax({
-							url: 'components/officesbanking/models/GenerarThompson.php',
-							method: 'GET',
-							data: { cierre: cierre },
-							dataType: 'json',
-						});
-						const thomsonDoc = await $.ajax({
-							url: 'components/officesbanking/models/GenerarDocumentosThomson.php',
-							method: 'GET',
-							data: { cierre: cierre },
-							dataType: 'json',
-						});
-						thomson.push(thomsonDoc);
-					}
+					// Generar datos para Thomson
+					const thomsonData = await $.ajax({
+						url: 'components/officesbanking/models/GenerarThompson.php',
+						method: 'GET',
+						data: { cierre: cierre },
+						dataType: 'json',
+					});
+					const thomsonDoc = await $.ajax({
+						url: 'components/officesbanking/models/GenerarDocumentosThomson.php',
+						method: 'GET',
+						data: { cierre: cierre },
+						dataType: 'json',
+					});
+					thomson.push(thomsonDoc);
 				} catch (error) {
 					console.error('Error procesando cierre:', cierre, error);
 				}
