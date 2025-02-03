@@ -1662,7 +1662,7 @@ function cargarCCMovimientosList() {
 							searchable: false,
 							render: function (data, type, row) {
 								return `
-									<button type="button" class="btn btn-danger m-0 mx-3" style="padding: .5rem;" title="Eliminar" onclick="eliminarRegistro(${row.idcc})">
+									<button type="button" class="btn btn-danger m-0 mx-3" style="padding: .5rem;" title="Eliminar" onclick="eliminarMovimiento(${row.idcc}, ${row.elimina})">
 										<i class="fa-regular fa-trash-can px-1" style="font-size: .75rem;"></i>
 									</button>
 								`;
@@ -1756,22 +1756,36 @@ function cargarCCMovimientosList() {
 }
 
 // Función para manejar la eliminación de un registro
-function eliminarRegistro(idcc) {
-	// Lógica para eliminar el registro utilizando el ID
-	alert(`Eliminar registro con IDCC: ${idcc}`);
+function eliminarMovimiento(idcc, elimina) {
+	//Validacion elimina (0 = no se puede eliminar, 1 = se puede eliminar)
+
+	if (elimina == 0) {
+		Swal.fire({
+			title: 'Acción no permitida',
+			text: 'El movimiento no puede ser eliminado.',
+			icon: 'info',
+		});
+		return;
+	}
+
 	// Aquí puedes realizar una solicitud AJAX al servidor para cambiar el estado del movimiento
 	$.ajax({
 		url: 'components/propiedad/models/eliminar_movimiento.php',
 		method: 'POST',
 		data: { idcc: idcc },
 		success: function (response) {
-			alert('Movimiento eliminado correctamente');
-			// Recargar la tabla después de eliminar
+			Swal.fire({
+				title: 'Movimiento eliminado',
+				icon: 'success',
+			});
 			cargarCCMovimientosList();
 		},
 		error: function (xhr, status, error) {
-			alert('Error al eliminar el movimiento');
-			console.error(error);
+			Swal.fire({
+				title: 'Error al eliminar el movimiento',
+				text: 'El movimiento no pudo ser eliminado',
+				icon: 'info',
+			});
 		},
 	});
 }
