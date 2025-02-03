@@ -5,11 +5,11 @@
 
                 <div class="d-flex">
                     <div class="p-2 w-100">
-                            <label for="formFile" class="form-label">Subir archivo</label>
-                            <input class="form-control" type="file" id="formFile" name="file" required>
+                        <label for="formFile" class="form-label">Subir archivo Servipag</label>
+                        <input class="form-control" type="file" id="formFile" name="file" required>
                     </div>
                     <div class="p-2 flex-shrink-1">
-                        <div class="mt-3"> 
+                        <div class="mt-3">
                             <button type="submit" class="btn btn-primary">Subir</button>
                         </div>
                     </div>
@@ -17,7 +17,7 @@
 
             </form>
 
-               <button class="btn btn-dark" onclick="ProcesarListado()">Procesar Pagos</button> 
+            <button class="btn btn-dark" onclick="ProcesarListado()">Procesar Pagos</button>
 
         </div>
     </div>
@@ -29,7 +29,7 @@
             <table id="servipagTable" class="table caption-top">
                 <caption>Servipag</caption>
                 <thead>
-                    <tr>    
+                    <tr>
                         <td>Nro</td>
                         <td>Rut</td>
                         <td>ID propiedad</td>

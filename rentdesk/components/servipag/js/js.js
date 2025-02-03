@@ -32,7 +32,11 @@ function LeerServipag() {
 					    <td>${item.id}</td>
                         <td>${item.rut}</td>
 						<td>${item.ficha_propiedad}</td>
-                        <td><a href="index.php?component=arriendo&view=arriendo_ficha_tecnica&token=${item.token}" target="_blank"> ${item.id_arriendo}</a> ${item.direccion}</td>
+                        <td><a href="index.php?component=arriendo&view=arriendo_ficha_tecnica&token=${
+													item.token
+												}" target="_blank"> ${item.id_arriendo}</a> ${
+					item.direccion
+				}</td>
                         <td>${item.estado}</td>
                         <td>${formatoFecha(item.fecha_pago)}</td>
                         <td>${formatoMonedaChile(item.valor_arriendo)}</td>
@@ -47,7 +51,6 @@ function LeerServipag() {
 			if ($.fn.DataTable.isDataTable('#servipagTable')) {
 				$('#servipagTable').DataTable().destroy();
 			}
-
 		},
 		error: function (xhr, status, error) {
 			console.error('Error al cargar los datos:', error);
@@ -62,7 +65,6 @@ function LeerServipag() {
 
 // funcion para carga el txt en la bd
 async function CargarServipag() {
-
 	const fileInput = document.getElementById('formFile');
 
 	if (fileInput.files.length === 0) {
@@ -98,18 +100,22 @@ async function CargarServipag() {
 			}
 		);
 
-		if (response.ok) {
+		// Convertir la respuesta en JSON
+		const result = await response.json();
+
+		// Si el servidor retornó success: true se muestra el mensaje de éxito
+		if (result.success) {
 			Swal.fire({
 				icon: 'success',
 				title: 'Éxito',
-				text: 'Archivo subido y procesado con éxito.',
+				text: result.message,
 			});
 		} else {
-			const errorText = await response.text(); // Capturar posibles errores del servidor
+			// En caso de success: false, se muestra una alerta de error con el mensaje recibido
 			Swal.fire({
 				icon: 'error',
 				title: 'Error',
-				text: 'Hubo un problema al procesar el archivo. Por favor intenta nuevamente.',
+				text: result.message,
 			});
 		}
 	} catch (error) {
@@ -125,74 +131,72 @@ async function CargarServipag() {
 
 // procesar listado
 function ProcesarListado() {
+	const tableRows = $('#servipagTable tbody tr');
 
-    const tableRows = $("#servipagTable tbody tr");
-    
-    // Verificar si la tabla está vacía
-    if (tableRows.length === 0) {
-        Swal.fire({
-            icon: 'warning',
-            title: 'Tabla vacía',
-            text: 'No hay datos para procesar.',
-        });
-        return; // Detener la ejecución si no hay filas
-    }
+	// Verificar si la tabla está vacía
+	if (tableRows.length === 0) {
+		Swal.fire({
+			icon: 'warning',
+			title: 'Tabla vacía',
+			text: 'No hay datos para procesar.',
+		});
+		return; // Detener la ejecución si no hay filas
+	}
 
-    const dataToSend = [];
+	const dataToSend = [];
 
-    // Recorrer cada fila de la tabla para capturar los datos
-    tableRows.each(function () {
-        const row = $(this).find("td");
-        const dataRow = {
-            id_servipag: row.eq(0).text().trim(),
-            id_propiedad: row.eq(2).text().trim(),
-            fecha_pago: row.eq(5).text().trim(),
-            monto_pagado: row.eq(7).text().replace(/\D/g, '')
-        };
-        dataToSend.push(dataRow);
-    });
+	// Recorrer cada fila de la tabla para capturar los datos
+	tableRows.each(function () {
+		const row = $(this).find('td');
+		const dataRow = {
+			id_servipag: row.eq(0).text().trim(),
+			id_propiedad: row.eq(2).text().trim(),
+			fecha_pago: row.eq(5).text().trim(),
+			monto_pagado: row.eq(7).text().replace(/\D/g, ''),
+		};
+		dataToSend.push(dataRow);
+	});
 
-    // Mostrar mensaje de "Procesando"
-    Swal.fire({
-        title: 'Procesando',
-        text: 'Por favor, espera mientras procesamos los datos...',
-        icon: 'info',
-        allowOutsideClick: false,
-        showConfirmButton: false,
-        didOpen: () => {
-            Swal.showLoading();
-        }
-    });
+	// Mostrar mensaje de "Procesando"
+	Swal.fire({
+		title: 'Procesando',
+		text: 'Por favor, espera mientras procesamos los datos...',
+		icon: 'info',
+		allowOutsideClick: false,
+		showConfirmButton: false,
+		didOpen: () => {
+			Swal.showLoading();
+		},
+	});
 
-    // Enviar los datos al backend
-    $.ajax({
-        url: 'components/servipag/models/pago_transferencias.php', // Reemplaza con la ruta correcta
-        method: 'POST',
-        contentType: 'application/json',
-        data: JSON.stringify(dataToSend),
-        success: function (response) {
-            Swal.close();
-            Swal.fire({
-                icon: 'success',
-                title: 'Procesado',
-                text: 'Los datos se enviaron correctamente.',
-            });
+	// Enviar los datos al backend
+	$.ajax({
+		url: 'components/servipag/models/pago_transferencias.php', // Reemplaza con la ruta correcta
+		method: 'POST',
+		contentType: 'application/json',
+		data: JSON.stringify(dataToSend),
+		success: function (response) {
+			Swal.close();
+			Swal.fire({
+				icon: 'success',
+				title: 'Procesado',
+				text: 'Los datos se enviaron correctamente.',
+			});
 
-            LeerServipag();
-        },
-        error: function (xhr, status, error) {
-            Swal.close();
-            Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Hubo un error al procesar los datos.',
-            });
-        }
-    });
+			LeerServipag();
+		},
+		error: function (xhr, status, error) {
+			Swal.close();
+			Swal.fire({
+				icon: 'error',
+				title: 'Error',
+				text: 'Hubo un error al procesar los datos.',
+			});
+		},
+	});
 
-    LeerServipag();
+	LeerServipag();
 }
-
 
 // ejecucion automatica
 $(document).ready(function () {
