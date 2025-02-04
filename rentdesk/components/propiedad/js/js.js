@@ -6186,25 +6186,31 @@ function toggleButtonState() {
 // jhernandez
 function cargarLiquidacionesGenMasivaList() {
 	$.ajax({
-		url: 'components/propiedad/models/PropiedadesPorLiquidar.php', // URL de la solicitud
-		method: 'GET', // Método HTTP
-		dataType: 'json', // Tipo de datos esperados
+		url: 'components/propiedad/models/PropiedadesPorLiquidar.php',
+		method: 'GET',
+		dataType: 'json',
 		success: function (data) {
 			// Ordenar los datos por idcontrato en orden descendente
 			data.sort(function (a, b) {
-				return b.idcontrato - a.idcontrato; // Orden descendente
+				return b.idcontrato - a.idcontrato;
 			});
 
-			var tableBody = $('#liq-generacion-masiva-table tbody');
-			tableBody.empty(); // Limpiar la tabla antes de llenarla
+			// Si la tabla ya está inicializada como DataTable, destruirla
+			if ($.fn.DataTable.isDataTable('#liq-generacion-masiva-table')) {
+				$('#liq-generacion-masiva-table').DataTable().destroy();
+			}
 
+			// Vaciar el cuerpo de la tabla
+			var tableBody = $('#liq-generacion-masiva-table tbody');
+			tableBody.empty();
+
+			// Recorrer los datos y agregar cada fila a la tabla
 			$.each(data, function (index, item) {
 				// Verificar si "detalle" y "conciliacion" existen
-				if (item.detalle && item.detalle.conciliacion !== undefined) {
-					var cierre = item.detalle.conciliacion;
-				} else {
-					var cierre = 0;
-				}
+				var cierre =
+					item.detalle && item.detalle.conciliacion !== undefined
+						? item.detalle.conciliacion
+						: 0;
 
 				// Verificar si las propiedades existen
 				var direccion = item.direccion || 'Sin dato';
@@ -6212,8 +6218,6 @@ function cargarLiquidacionesGenMasivaList() {
 				var idContrato = item.idcontrato || 'Sin dato';
 
 				var precioNumerico = parseFloat(item.saldo);
-
-				// Validar si el precio es numérico y mayor a 0
 				var montoFormateado = isNaN(precioNumerico)
 					? 'No definido'
 					: new Intl.NumberFormat('es-CL', {
@@ -6225,12 +6229,12 @@ function cargarLiquidacionesGenMasivaList() {
 				if (idPropiedad !== 'Sin dato' && idContrato !== 'Sin dato') {
 					tableBody.append(`
                         <tr>
-						    <td>${direccion}</td>
+                            <td>${direccion}</td>
                             <td>${idPropiedad}</td>
                             <td>${idContrato}</td>
-                            <td>${montoFormateado}</td>
-							<td>${cierre}</td>
-							<td>-</td>
+                            <td data-order="${precioNumerico}">${montoFormateado}</td>
+                            <td>${cierre}</td>
+                            <td>-</td>
                             <td>
                                 <div class="d-flex">
                                     <label class="switch">
@@ -6247,16 +6251,16 @@ function cargarLiquidacionesGenMasivaList() {
 				}
 			});
 
-			// Inicializar o reiniciar DataTable
-			if (!$.fn.DataTable.isDataTable('#liq-generacion-masiva-table')) {
-				$('#liq-generacion-masiva-table').DataTable();
-			} else {
-				$('#liq-generacion-masiva-table').DataTable().destroy();
-				$('#liq-generacion-masiva-table').DataTable();
-			}
+			// Re-inicializar DataTable con la opción para modificar el menú de cantidad de registros
+			$('#liq-generacion-masiva-table').DataTable({
+				lengthMenu: [
+					[25, 50, 100, 200, 300],
+					[25, 50, 100, 200, 300],
+				],
+			});
 		},
 		error: function (xhr, status, error) {
-			console.error('Error en la solicitud:', error); // Manejo de errores
+			console.error('Error en la solicitud:', error);
 		},
 	});
 }
