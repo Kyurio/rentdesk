@@ -1,4 +1,3 @@
-
 /*
 #limpiarFiltrosboton{
 	display:none;
@@ -89,5 +88,9 @@ label {
 	text-transform: uppercase !important;
 	font-weight: bold !important;
 	color: #000 !important;
-	font-size: 12px  !important;
+	font-size: 12px !important;
+}
+
+.dataTables_wrapper .dt-buttons {
+	margin-right: 20px;
 }

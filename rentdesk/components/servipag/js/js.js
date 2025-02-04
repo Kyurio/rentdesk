@@ -13,44 +13,121 @@ function formatoFecha(fecha) {
 	return fechaFormateada;
 }
 
-// funcion para leer el listado de servipag registrado en la bd
+// Función para leer el listado de Servipag registrado en la BD
 function LeerServipag() {
-	// Realizar una solicitud AJAX para obtener los datos
 	$.ajax({
 		url: 'components/servipag/models/leercargaservipag.php',
 		method: 'GET',
 		dataType: 'json',
 		success: function (data) {
-			// Vaciar la tabla antes de rellenarla
+			// Vaciar la tabla
 			const tableBody = $('#servipagTable tbody');
 			tableBody.empty();
 
-			// Usar $.each para recorrer los datos y agregarlos a la tabla
+			let montoTotal = 0;
+			$.each(data, function (index, item) {
+				let monto = parseInt(item.monto_pagado);
+				montoTotal += monto;
+			});
+			$('#montoTotalPagado').text(formatoMonedaChile(montoTotal));
+
+			// Recorremos los datos y armamos cada fila
 			$.each(data, function (index, item) {
 				const row = `
-                    <tr>     
-					    <td>${item.id}</td>
+                    <tr>
+                        <td>${item.id}</td>
                         <td>${item.rut}</td>
-						<td>${item.ficha_propiedad}</td>
-                        <td><a href="index.php?component=arriendo&view=arriendo_ficha_tecnica&token=${
-													item.token
-												}" target="_blank"> ${item.id_arriendo}</a> ${
-					item.direccion
-				}</td>
+                        <td>${item.ficha_propiedad}</td>
+                        <td>
+                            <a href="index.php?component=arriendo&view=arriendo_ficha_tecnica&token=${
+															item.token
+														}" target="_blank">
+                                ${item.id_arriendo}
+                            </a> 
+                            ${item.direccion}
+                        </td>
                         <td>${item.estado}</td>
                         <td>${formatoFecha(item.fecha_pago)}</td>
                         <td>${formatoMonedaChile(item.valor_arriendo)}</td>
                         <td>${formatoMonedaChile(item.monto_pagado)}</td>
                         <td>${formatoMonedaChile(item.diferencia)}</td>
+						<td></td>
                     </tr>
                 `;
 				tableBody.append(row);
 			});
 
-			// Inicializar o reiniciar el DataTable después de llenar la tabla
+			// Si la tabla ya fue inicializada, destruirla antes de reinicializarla
 			if ($.fn.DataTable.isDataTable('#servipagTable')) {
-				$('#servipagTable').DataTable().destroy();
+				$('#servipagTable').DataTable().clear().destroy();
 			}
+
+			// Inicializar DataTables con botón de Excel y sin paginación (todos los registros en una sola página)
+			$('#servipagTable').DataTable({
+				paging: false, // Deshabilita la paginación
+				dom: 'Bfrtip',
+				buttons: [
+					{
+						extend: 'excelHtml5',
+						text: 'Descargar Excel',
+						title: 'Servipag',
+						exportOptions: {
+							columns: ':visible',
+							format: {
+								body: function (data, row, column, node) {
+									// 1) QUITAR HTML DE LA COLUMNA DIRECCIÓN (ÍNDICE 4)
+									if (column === 3) {
+										// Extrae el texto real de la celda (incluye ID y dirección)
+										let rawText = $(node).text();
+
+										//Partiendo líneas y eliminando la primera
+										let lines = rawText
+											.split('\n')
+											.map((line) => line.trim())
+											.filter(Boolean);
+										// lines[0] será el ID, lines[1] la dirección
+										// Te quedas con todo menos la primera línea
+										if (lines.length > 1) {
+											lines.shift(); // elimina el primer elemento del array (el ID)
+										}
+										// Une el resto con espacio en caso de que hubiera más de un salto de línea
+										let direccionLimpia = lines.join(' ');
+										return direccionLimpia.trim();
+									}
+
+									// 2) CONVERTIR A ENTERO LAS COLUMNAS DE MONTOS (7, 8, 9)
+									if (column === 6 || column === 7 || column === 8) {
+										// Elimina el símbolo $, puntos y comas
+										let limpio = data
+											.replace(/\$/g, '')
+											.replace(/\./g, '')
+											.replace(/,/g, '')
+											.trim();
+										// Conviértelo a entero
+										let numero = parseInt(limpio, 10);
+										if (isNaN(numero)) {
+											numero = 0;
+										}
+										return numero;
+									}
+
+									// 3) EL RESTO DE COLUMNAS SE MANTIENE IGUAL
+									return data;
+								},
+							},
+						},
+					},
+				],
+				columnDefs: [
+					{
+						targets: 9, // Aplica el contador en la columna "Nro"
+						render: function (data, type, row, meta) {
+							return meta.row + 1;
+						},
+					},
+				],
+				order: [[1, 'asc']],
+			});
 		},
 		error: function (xhr, status, error) {
 			console.error('Error al cargar los datos:', error);
@@ -113,7 +190,7 @@ async function CargarServipag() {
 		} else {
 			// En caso de success: false, se muestra una alerta de error con el mensaje recibido
 			Swal.fire({
-				icon: 'error',
+				icon: 'info',
 				title: 'Error',
 				text: result.message,
 			});
@@ -184,12 +261,13 @@ function ProcesarListado() {
 			});
 
 			LeerServipag();
+			$('montoTotalPagado').text('0');
 		},
 		error: function (xhr, status, error) {
 			Swal.close();
 			Swal.fire({
-				icon: 'error',
-				title: 'Error',
+				icon: 'info',
+				title: 'Info',
 				text: 'Hubo un error al procesar los datos.',
 			});
 		},

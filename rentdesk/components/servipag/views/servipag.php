@@ -26,19 +26,21 @@
 <div class="container mt-5">
     <div class="card">
         <div class="card-body">
+            <h5 class="mb-4 mt-0">Monto total Pagado : <span id="montoTotalPagado"></span></h5>
             <table id="servipagTable" class="table caption-top">
-                <caption>Servipag</caption>
                 <thead>
                     <tr>
-                        <td>Nro</td>
-                        <td>Rut</td>
-                        <td>ID propiedad</td>
-                        <td>Direccion</td>
-                        <td>Contrato</td>
-                        <td>fecha pago</td>
-                        <td>Arriendo</td>
-                        <td>Monto Pagado</td>
-                        <td>Diferencia</td>
+                        <!-- <th style="display: none;">ID</th> -->
+                        <th>Nro</th>
+                        <th>Rut</th>
+                        <th>ID propiedad</th>
+                        <th>Direccion</th>
+                        <th>Contrato</th>
+                        <th>Fecha pago</th>
+                        <th>Arriendo</th>
+                        <th>Monto Pagado</th>
+                        <th>Diferencia</th>
+                        <th>POS</th>
                     </tr>
                 </thead>
                 <tbody>
