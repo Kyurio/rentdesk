@@ -208,21 +208,20 @@ async function CargarServipag() {
 
 // procesar listado
 function ProcesarListado() {
-	const tableRows = $('#servipagTable tbody tr');
-
-	// Verificar si la tabla está vacía
-	if (tableRows.length === 0) {
+	// Verificar si la tabla muestra el mensaje de "tabla vacía"
+	if ($('#servipagTable tbody td.dataTables_empty').length > 0) {
 		Swal.fire({
 			icon: 'warning',
 			title: 'Tabla vacía',
 			text: 'No hay datos para procesar.',
 		});
-		return; // Detener la ejecución si no hay filas
+		return; // Detener la ejecución si no hay filas reales
 	}
 
 	const dataToSend = [];
 
-	// Recorrer cada fila de la tabla para capturar los datos
+	// Si hay datos, se recorren las filas
+	const tableRows = $('#servipagTable tbody tr');
 	tableRows.each(function () {
 		const row = $(this).find('td');
 		const dataRow = {
@@ -248,7 +247,7 @@ function ProcesarListado() {
 
 	// Enviar los datos al backend
 	$.ajax({
-		url: 'components/servipag/models/pago_transferencias.php', // Reemplaza con la ruta correcta
+		url: 'components/servipag/models/pago_transferencias.php',
 		method: 'POST',
 		contentType: 'application/json',
 		data: JSON.stringify(dataToSend),
@@ -261,18 +260,18 @@ function ProcesarListado() {
 			});
 
 			LeerServipag();
-			$('montoTotalPagado').text('0');
 		},
 		error: function (xhr, status, error) {
 			Swal.close();
 			Swal.fire({
-				icon: 'info',
-				title: 'Info',
+				icon: 'error',
+				title: 'Error',
 				text: 'Hubo un error al procesar los datos.',
 			});
 		},
 	});
 
+	// Llamada adicional para refrescar la tabla (si es necesaria)
 	LeerServipag();
 }
 
