@@ -1,5 +1,4 @@
 $(document).ready(function () {
-
 	//direccion
 	getDireccion();
 
@@ -3950,14 +3949,9 @@ var ccMovimientosTable;
 function cargarCCMovimientos() {
 	var idFicha = $('#id_ficha').val();
 
-	// Si la tabla ya está inicializada, solo recarga los datos
+	// Si la tabla ya está inicializada, simplemente recargamos los datos
 	if ($.fn.DataTable.isDataTable('#cc-movimientos')) {
-		ccMovimientosTable.ajax
-			.url(
-				'components/arriendo/models/listado_cc_movimientos.php?idFicha=' +
-					idFicha
-			)
-			.load();
+		ccMovimientosTable.ajax.reload();
 		return;
 	}
 
@@ -3965,11 +3959,19 @@ function cargarCCMovimientos() {
 	ccMovimientosTable = $('#cc-movimientos').DataTable({
 		ajax: {
 			url: 'components/arriendo/models/listado_cc_movimientos.php',
-			type: 'POST',
-			data: { idFicha: idFicha },
+			type: 'GET',
+			// En cada petición se envía el idFicha de forma consistente
+			data: function (d) {
+				d.idFicha = $('#id_ficha').val();
+			},
 			dataSrc: function (response) {
-				if (response && response[0]?.fn_saldos_arrendatario.length > 0) {
-					return response[0].fn_saldos_arrendatario;
+				if (response && response[0] && response[0].fn_saldos_arrendatario) {
+					// Si no es un arreglo, lo convertimos a arreglo
+					let datos = response[0].fn_saldos_arrendatario;
+					if (!Array.isArray(datos)) {
+						datos = [datos];
+					}
+					return datos;
 				}
 				return [];
 			},
@@ -4036,17 +4038,17 @@ function cargarCCMovimientos() {
 					const buttonColor = row.elimina === 1 ? 'danger' : 'secondary';
 
 					return `
-						<button 
-							type="button" 
-							class="btn btn-${buttonColor} m-0 mx-3" 
-							style="padding: .5rem;" 
-							title="Eliminar" 
-							onclick="eliminarMovimiento(${row.idcc}, ${row.elimina})" 
-							${isDisabled}
-						>
-							<i class="${icon} px-1" style="font-size: .75rem;"></i>
-						</button>
-					`;
+			  <button 
+				type="button" 
+				class="btn btn-${buttonColor} m-0 mx-3" 
+				style="padding: .5rem;" 
+				title="Eliminar" 
+				onclick="eliminarMovimiento(${row.idcc}, ${row.elimina})" 
+				${isDisabled}
+			  >
+				<i class="${icon} px-1" style="font-size: .75rem;"></i>
+			  </button>
+			`;
 				},
 			},
 		],
@@ -4100,8 +4102,7 @@ function eliminarMovimiento(idcc, elimina) {
 						title: 'Movimiento eliminado',
 						icon: 'success',
 					});
-					// Actualizamos la lista de movimientos
-					cargarCCMovimientosList();
+					ccMovimientosTable.ajax.reload();
 				},
 				error: function (xhr, status, error) {
 					Swal.fire({
