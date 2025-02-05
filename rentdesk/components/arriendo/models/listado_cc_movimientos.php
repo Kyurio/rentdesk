@@ -21,9 +21,6 @@ if (isset($_POST["idFicha"])) {
 }
 
 
-
-
-
 $cant_rows = $num_reg;
 $num_pagina = round($inicio / $cant_rows) + 1;
 $data = array("consulta" => $queryCcMovimientos, "cantRegistros" => $cant_rows, "numPagina" => $num_pagina);

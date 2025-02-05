@@ -346,6 +346,7 @@ $peso_archivo = $config->maxSizeMB;
 															<th>Abonos</th>
 															<th>Cobros</th>
 															<th>Saldos</th>
+															<th>Acciones</th>
 
 														</tr>
 													</thead>
