@@ -1,4 +1,8 @@
 $(document).ready(function () {
+
+	//direccion
+	getDireccion();
+
 	SeleccionacobrarComisionAdministracion();
 	//BRUNO TORRES
 	$('#descargarExcelArriendo').on('click', function (e) {
@@ -36,8 +40,8 @@ $(document).ready(function () {
 				// 1) Transforma la respuesta para renombrar y ordenar columnas en el Excel
 				var formattedData = response.map(function (row) {
 					return {
-						'Ficha Técnica': row.id_arriendo,
-						'Propiedad ID': row.propiedad_id,
+						// 'Ficha Técnica': row.id_arriendo,
+						'Código Propiedad': row.codigo_propiedad,
 						Dirección: row.direccion,
 						'Estado Propiedad': row.estado_propiedad,
 						Estado: row.estado,
@@ -2021,6 +2025,44 @@ function cargarChequesEditar(
 
 // *********** bruno *************
 
+//direccion
+function getDireccion() {
+	// Obtener token de la URL
+	var url = window.location.href;
+	var parametros = new URL(url).searchParams;
+	var token_propiedad = parametros.get('token');
+
+	// Llamada AJAX
+	$.ajax({
+		url: 'components/arriendo/models/get_direccion.php',
+		type: 'post',
+		data: {
+			token: token_propiedad,
+		},
+		success: function (response) {
+			// Aquí puedes procesar la respuesta, p.ej. parsear JSON
+			const data = JSON.parse(response);
+			if (data && data.length > 0) {
+				// Asumiendo que solo tomas la primera fila, por ejemplo
+				// Parsea la respuesta JSON
+				const data = JSON.parse(response);
+				if (data && data.length > 0) {
+					// Asigna el texto al span
+					$('#direccionFichaArriendo').text(data[0].direccion);
+				} else {
+					console.log('No se encontró dirección');
+				}
+			} else {
+				console.log('No se encontró dirección');
+			}
+		},
+		error: function (xhr, status, error) {
+			console.error('Error:', error);
+		},
+	});
+}
+
+//cheques
 function editarCheque() {
 	var formData = new FormData(
 		document.getElementById('cheque_formulario_Editar')

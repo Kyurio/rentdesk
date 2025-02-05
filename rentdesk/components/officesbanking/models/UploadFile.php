@@ -1,7 +1,7 @@
 <?php
 // Configuración de la carpeta de destino
 $uploadDir = __DIR__ . '/../../../upload/officebanking'; // Ruta en el sistema de archivos
-$publicBaseUrl = 'rentdesk.fuenzalida.com/upload/officebanking/'; // Ruta pública para el navegador
+$publicBaseUrl = 'upload/officebanking/'; // Ruta pública para el navegador
 
 // Crear la carpeta si no existe
 if (!is_dir($uploadDir) && !mkdir($uploadDir, 0755, true)) {

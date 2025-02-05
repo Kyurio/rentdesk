@@ -246,6 +246,7 @@ $(document).ready(function () {
 				//    (Sucusal, Ejecutivo, Propietario, Tipo de Propiedad, Dirección, etc.)
 				var formattedData = response.map(function (row) {
 					return {
+						'Codigo Propiedad': row.codigo_propiedad,
 						Sucursal: row.sucursal,
 						Ejecutivo: row.ejecutivo,
 						Propietario: row.propietarios,
@@ -6262,25 +6263,31 @@ function toggleButtonState() {
 // jhernandez
 function cargarLiquidacionesGenMasivaList() {
 	$.ajax({
-		url: 'components/propiedad/models/PropiedadesPorLiquidar.php', // URL de la solicitud
-		method: 'GET', // Método HTTP
-		dataType: 'json', // Tipo de datos esperados
+		url: 'components/propiedad/models/PropiedadesPorLiquidar.php',
+		method: 'GET',
+		dataType: 'json',
 		success: function (data) {
 			// Ordenar los datos por idcontrato en orden descendente
 			data.sort(function (a, b) {
-				return b.idcontrato - a.idcontrato; // Orden descendente
+				return b.idcontrato - a.idcontrato;
 			});
 
-			var tableBody = $('#liq-generacion-masiva-table tbody');
-			tableBody.empty(); // Limpiar la tabla antes de llenarla
+			// Si la tabla ya está inicializada como DataTable, destruirla
+			if ($.fn.DataTable.isDataTable('#liq-generacion-masiva-table')) {
+				$('#liq-generacion-masiva-table').DataTable().destroy();
+			}
 
+			// Vaciar el cuerpo de la tabla
+			var tableBody = $('#liq-generacion-masiva-table tbody');
+			tableBody.empty();
+
+			// Recorrer los datos y agregar cada fila a la tabla
 			$.each(data, function (index, item) {
 				// Verificar si "detalle" y "conciliacion" existen
-				if (item.detalle && item.detalle.conciliacion !== undefined) {
-					var cierre = item.detalle.conciliacion;
-				} else {
-					var cierre = 0;
-				}
+				var cierre =
+					item.detalle && item.detalle.conciliacion !== undefined
+						? item.detalle.conciliacion
+						: 0;
 
 				// Verificar si las propiedades existen
 				var direccion = item.direccion || 'Sin dato';
@@ -6288,8 +6295,6 @@ function cargarLiquidacionesGenMasivaList() {
 				var idContrato = item.idcontrato || 'Sin dato';
 
 				var precioNumerico = parseFloat(item.saldo);
-
-				// Validar si el precio es numérico y mayor a 0
 				var montoFormateado = isNaN(precioNumerico)
 					? 'No definido'
 					: new Intl.NumberFormat('es-CL', {
@@ -6301,12 +6306,12 @@ function cargarLiquidacionesGenMasivaList() {
 				if (idPropiedad !== 'Sin dato' && idContrato !== 'Sin dato') {
 					tableBody.append(`
                         <tr>
-						    <td>${direccion}</td>
+                            <td>${direccion}</td>
                             <td>${idPropiedad}</td>
                             <td>${idContrato}</td>
-                            <td>${montoFormateado}</td>
-							<td>${cierre}</td>
-							<td>-</td>
+                            <td data-order="${precioNumerico}">${montoFormateado}</td>
+                            <td>${cierre}</td>
+                            <td>-</td>
                             <td>
                                 <div class="d-flex">
                                     <label class="switch">
@@ -6323,16 +6328,16 @@ function cargarLiquidacionesGenMasivaList() {
 				}
 			});
 
-			// Inicializar o reiniciar DataTable
-			if (!$.fn.DataTable.isDataTable('#liq-generacion-masiva-table')) {
-				$('#liq-generacion-masiva-table').DataTable();
-			} else {
-				$('#liq-generacion-masiva-table').DataTable().destroy();
-				$('#liq-generacion-masiva-table').DataTable();
-			}
+			// Re-inicializar DataTable con la opción para modificar el menú de cantidad de registros
+			$('#liq-generacion-masiva-table').DataTable({
+				lengthMenu: [
+					[25, 50, 100, 200, 300],
+					[25, 50, 100, 200, 300],
+				],
+			});
 		},
 		error: function (xhr, status, error) {
-			console.error('Error en la solicitud:', error); // Manejo de errores
+			console.error('Error en la solicitud:', error);
 		},
 	});
 }
@@ -8015,7 +8020,45 @@ function CargarSelectTipoMovimientosCCAbono() {
 	});
 }
 
-//bruno
+//bruno direccion
+
+function getDireccion() {
+	// Obtener token de la URL
+	var url = window.location.href;
+	var parametros = new URL(url).searchParams;
+	var token_propiedad = parametros.get('token');
+
+	// Llamada AJAX
+	$.ajax({
+		url: 'components/propiedad/models/get_direccion.php',
+		type: 'post',
+		data: {
+			token: token_propiedad,
+		},
+		success: function (response) {
+			// Aquí puedes procesar la respuesta, p.ej. parsear JSON
+			const data = JSON.parse(response);
+			if (data && data.length > 0) {
+				// Asumiendo que solo tomas la primera fila, por ejemplo
+				// Parsea la respuesta JSON
+				const data = JSON.parse(response);
+				if (data && data.length > 0) {
+					// Asigna el texto al span
+					$('#direccionFichaPropiedad').text(data[0].direccion);
+				} else {
+					console.log('No se encontró dirección');
+				}
+			} else {
+				console.log('No se encontró dirección');
+			}
+		},
+		error: function (xhr, status, error) {
+			console.error('Error:', error);
+		},
+	});
+}
+
+//bruno recordatorios
 function ListadoNotificaciones() {
 	const ficha_tecnica = document.getElementById('ficha_tecnica_id').value;
 	const tablaId = '#ListadoRecordatiorios';
@@ -8150,6 +8193,7 @@ function eliminarRecordatorio(id) {
 
 $(document).ready(function () {
 	cargarRetencionesList(); // Llama a la función al cargar la página
+	getDireccion();
 });
 
 // Función para cargar retenciones

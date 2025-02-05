@@ -1,6 +1,6 @@
-<?php 
+<?php
 session_start();
-include("../../../includes/sql_inyection.php");
+// include("../../../includes/sql_inyection.php");
 include("../../../configuration.php");
 include("../../../includes/funciones.php");
 include("../../../includes/services_util.php");
@@ -49,25 +49,25 @@ $query = "
   where pp.id_persona is not null  and ps.id_subsidiaria = $id_subsidiaria ";
 
 
- 
-  if(isset($dni) && $dni != "" ){
-  $query= $query ."AND dni = '$dni' ";
-  }
-  
-  $query= $query ."order by id_persona desc ";
- 
- 	$data = array("consulta" => $query);							
-$resultado = $services->sendPostNoToken($url_services.'/util/count',$data);		
-$cantidad_registros =$resultado;
 
-  $cant_rows = $num_reg;
-  $num_pagina = round($inicio / $cant_rows) + 1;
-  $data = array("consulta" => $query, "cantRegistros" => $cant_rows, "numPagina" => $num_pagina);
-  $resultado = $services->sendPostNoToken($url_services . '/util/paginacion', $data, []);
-  $json = json_decode($resultado);
-  
-  if ($resultado==""){
-        	echo "
+if (isset($dni) && $dni != "") {
+	$query = $query . "AND dni = '$dni' ";
+}
+
+$query = $query . "order by id_persona desc ";
+
+$data = array("consulta" => $query);
+$resultado = $services->sendPostNoToken($url_services . '/util/count', $data);
+$cantidad_registros = $resultado;
+
+$cant_rows = $num_reg;
+$num_pagina = round($inicio / $cant_rows) + 1;
+$data = array("consulta" => $query, "cantRegistros" => $cant_rows, "numPagina" => $num_pagina);
+$resultado = $services->sendPostNoToken($url_services . '/util/paginacion', $data, []);
+$json = json_decode($resultado);
+
+if ($resultado == "") {
+	echo "
 	{
 	\"draw\": $draw,
 	\"recordsTotal\": 0,
@@ -78,47 +78,46 @@ $cantidad_registros =$resultado;
 		
 	
 	}";
-  }else{
-  if ($json !== null) {
-			// Iterate over each object in the array
-			foreach ($json as $obj) {
-			if($coma==1)
-		$signo_coma = ",";
-		
-		$coma = 1;	
-$cantidad_filtrados++;
+} else {
+	if ($json !== null) {
+		// Iterate over each object in the array
+		foreach ($json as $obj) {
+			if ($coma == 1)
+				$signo_coma = ",";
 
-		
-		if($obj->id_tipo_persona == 1){
-			$nombre = $obj->nombres." ".$obj->apellido_paterno." ".$obj->apellido_materno;
-		}else{
-			$nombre = $obj->razon_social;
-		}
-		
+			$coma = 1;
+			$cantidad_filtrados++;
 
-		
-		$query_propietario = " SELECT 'SI' as existe FROM PROPIEDADES.propiedad_copropietarios 
+
+			if ($obj->id_tipo_persona == 1) {
+				$nombre = $obj->nombres . " " . $obj->apellido_paterno . " " . $obj->apellido_materno;
+			} else {
+				$nombre = $obj->razon_social;
+			}
+
+
+
+			$query_propietario = " SELECT 'SI' as existe FROM PROPIEDADES.propiedad_copropietarios 
 		 where id_propietario = $obj->id_persona ";
-		// var_dump($query_arrendatario);
-		   $cant_rows = $num_reg;
-		$num_pagina = round(1/ 999999) + 1;
-		$data = array("consulta" => $query_propietario, "cantRegistros" => $cant_rows, "numPagina" => $num_pagina);
-		$resultado = $services->sendPostNoToken($url_services . '/util/paginacion', $data, []);
-		//var_dump($resultado);
-		$json_propietario = json_decode($resultado)[0];
+			// var_dump($query_arrendatario);
+			$cant_rows = $num_reg;
+			$num_pagina = round(1 / 999999) + 1;
+			$data = array("consulta" => $query_propietario, "cantRegistros" => $cant_rows, "numPagina" => $num_pagina);
+			$resultado = $services->sendPostNoToken($url_services . '/util/paginacion', $data, []);
+			//var_dump($resultado);
+			$json_propietario = json_decode($resultado)[0];
 
-		$botones =  "<a href='index.php?component=propietario&view=propietario&token=$obj->tokenpropietario' type='button' class='btn btn-info m-0' style='padding: .5rem;' aria-label='Editar' title='Editar'> <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i></a>";
-		
-		if (@$json_propietario->existe != "SI"){
-		$botones = $botones."<button type='button' onclick='eliminarPropietario($obj->id_persona)' class='btn btn-danger m-0' style='padding: .5rem;' title='Eliminar'><i class='fa-regular fa-trash-can' style='font-size: .75rem;'></i> </button>";
-			}else{
-		$botones = $botones."<button type='button' onclick='avisoEliminar()' class='btn btn-secondary m-0' style='padding: .5rem;' title='Eliminar'><i class='fa-regular fa-trash-can' style='font-size: .75rem;'></i> </button>";
+			$botones =  "<a href='index.php?component=propietario&view=propietario&token=$obj->tokenpropietario' type='button' class='btn btn-info m-0' style='padding: .5rem;' aria-label='Editar' title='Editar'> <i class='fa-regular fa-pen-to-square' style='font-size: .75rem;'></i></a>";
 
-		}
-		
-		$ficha_propietario = "<a href='index.php?component=propietario&view=propietario_ficha_tecnica&token=$obj->tokenpropietario' class='link-info' > #$obj->id_persona</a>";
-		
-		$datos = $datos ."
+			if (@$json_propietario->existe != "SI") {
+				$botones = $botones . "<button type='button' onclick='eliminarPropietario($obj->id_persona)' class='btn btn-danger m-0' style='padding: .5rem;' title='Eliminar'><i class='fa-regular fa-trash-can' style='font-size: .75rem;'></i> </button>";
+			} else {
+				$botones = $botones . "<button type='button' onclick='avisoEliminar()' class='btn btn-secondary m-0' style='padding: .5rem;' title='Eliminar'><i class='fa-regular fa-trash-can' style='font-size: .75rem;'></i> </button>";
+			}
+
+			$ficha_propietario = "<a href='index.php?component=propietario&view=propietario_ficha_tecnica&token=$obj->tokenpropietario' class='link-info' > #$obj->id_persona</a>";
+
+			$datos = $datos . "
 				$signo_coma
 				[
 				\"$ficha_propietario\",
@@ -127,11 +126,11 @@ $cantidad_filtrados++;
 				\"$obj->tipo_persona\",
 				\"$botones\"
 				]";
+		}
 	}
-	}
-	  
-	  
-	  
+
+
+
 	echo "
 	{
 	\"draw\": $draw,
@@ -145,7 +144,5 @@ $cantidad_filtrados++;
 	}
 	
 	
-	"; 
-  }
-  
-  ?>
+	";
+}

@@ -14,23 +14,29 @@ try {
     $json = file_get_contents('php://input');
     $data = json_decode($json, true);
 
+    $fechasContables = $QueryBuilder->selectAdvanced('propiedades.servipag', 'fecha_contab');
+
     foreach ($data as $item) {
+        // Cambiar formato de fecha
+        $fechaPago = DateTime::createFromFormat('d-m-Y', $item['fecha_pago']);
+        if (!$fechaPago) {
+            throw new Exception('Formato de fecha incorrecto: ' . $item['fecha_pago']);
+        }
+        $fechaPagoFormateada = $fechaPago->format('Y-m-d');
+
         $result = $QueryBuilder->executeFunction('propiedades.fn_pago_transferencia', [
             $item['monto_pagado'],
             $item['id_propiedad'],
-            $item['fecha_pago'],
+            $fechaPagoFormateada,
             0
         ]);
 
-    
-
-        // actualiza el estado de procesado a true
-        $data = ['procesado' => true];
+        // Actualiza el estado de procesado a true
+        $dataActualizacion = ['procesado' => true];
         $conditions = ['id' => $item['id_servipag']];
-        $result = $QueryBuilder->update('propiedades.servipag', $data, $conditions);
-        var_dump($result);
-
+        $resultUpdate = $QueryBuilder->update('propiedades.servipag', $dataActualizacion, $conditions);
     }
+
 
     echo json_encode([
         'status' => 'success',
