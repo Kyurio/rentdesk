@@ -169,7 +169,7 @@
 					<label><span class="obligatorio">*</span> Busqueda por<?php if ($flag_solo_rut != 1) { ?> DNI /<?php } ?> RUT</label>
 					<div class="input-group mb-3">
 						<input type="text" class="form-control" id="DNI" name="nombre_cliente" placeholder="Nombre o Rut" value="<?php echo isset($token) && $result ? $result->dni : ''; ?>" onblur="ocultarAutocomplete('DNI');" form="form2" pattern="^\d{1,8}-[0-9Kk]$" autocomplete='off' onkeyup='buscarClienteAutocompleteGenerica(this.value,"DNI");'>
-						<button class="btn btn-info m-0" type="button" id="button-addon2" onClick="busquedaDNI();" data-bs-toggle="modal" data-bs-target="#modalArrendatario">Buscar</button>
+						<button class="btn btn-info m-0" type="button" id="button-addon2" onClick="busquedaDNI();">Buscar</button>
 					</div>
 				</div>
 			</div>

@@ -4053,6 +4053,7 @@ function cargarCCMovimientos() {
 			},
 		],
 		order: [], // Desactiva el orden automático
+		ordering: false,
 		destroy: true, // Permite reinicializar la tabla si es necesario
 		dom: 'Bfrtip', // Botones para exportar
 		buttons: [

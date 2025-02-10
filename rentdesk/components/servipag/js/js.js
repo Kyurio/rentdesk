@@ -15,6 +15,11 @@ function formatoFecha(fecha) {
 
 // Función para leer el listado de Servipag registrado en la BD
 function LeerServipag() {
+	// Si la tabla ya fue inicializada, destruirla antes de actualizar el contenido
+	if ($.fn.DataTable.isDataTable('#servipagTable')) {
+		$('#servipagTable').DataTable().clear().destroy();
+	}
+
 	$.ajax({
 		url: 'components/servipag/models/leercargaservipag.php',
 		method: 'GET',
@@ -51,20 +56,15 @@ function LeerServipag() {
                         <td>${formatoMonedaChile(item.valor_arriendo)}</td>
                         <td>${formatoMonedaChile(item.monto_pagado)}</td>
                         <td>${formatoMonedaChile(item.diferencia)}</td>
-						<td></td>
+                        <td></td>
                     </tr>
                 `;
 				tableBody.append(row);
 			});
 
-			// Si la tabla ya fue inicializada, destruirla antes de reinicializarla
-			if ($.fn.DataTable.isDataTable('#servipagTable')) {
-				$('#servipagTable').DataTable().clear().destroy();
-			}
-
-			// Inicializar DataTables con botón de Excel y sin paginación (todos los registros en una sola página)
+			// Inicializar DataTables
 			$('#servipagTable').DataTable({
-				paging: false, // Deshabilita la paginación
+				paging: false,
 				dom: 'Bfrtip',
 				buttons: [
 					{
@@ -75,43 +75,27 @@ function LeerServipag() {
 							columns: ':visible',
 							format: {
 								body: function (data, row, column, node) {
-									// 1) QUITAR HTML DE LA COLUMNA DIRECCIÓN (ÍNDICE 4)
 									if (column === 3) {
-										// Extrae el texto real de la celda (incluye ID y dirección)
 										let rawText = $(node).text();
-
-										//Partiendo líneas y eliminando la primera
 										let lines = rawText
 											.split('\n')
 											.map((line) => line.trim())
 											.filter(Boolean);
-										// lines[0] será el ID, lines[1] la dirección
-										// Te quedas con todo menos la primera línea
 										if (lines.length > 1) {
-											lines.shift(); // elimina el primer elemento del array (el ID)
+											lines.shift();
 										}
-										// Une el resto con espacio en caso de que hubiera más de un salto de línea
 										let direccionLimpia = lines.join(' ');
 										return direccionLimpia.trim();
 									}
-
-									// 2) CONVERTIR A ENTERO LAS COLUMNAS DE MONTOS (7, 8, 9)
 									if (column === 6 || column === 7 || column === 8) {
-										// Elimina el símbolo $, puntos y comas
 										let limpio = data
 											.replace(/\$/g, '')
 											.replace(/\./g, '')
 											.replace(/,/g, '')
 											.trim();
-										// Conviértelo a entero
 										let numero = parseInt(limpio, 10);
-										if (isNaN(numero)) {
-											numero = 0;
-										}
-										return numero;
+										return isNaN(numero) ? 0 : numero;
 									}
-
-									// 3) EL RESTO DE COLUMNAS SE MANTIENE IGUAL
 									return data;
 								},
 							},
@@ -120,7 +104,7 @@ function LeerServipag() {
 				],
 				columnDefs: [
 					{
-						targets: 9, // Aplica el contador en la columna "Nro"
+						targets: 9,
 						render: function (data, type, row, meta) {
 							return meta.row + 1;
 						},
@@ -187,6 +171,7 @@ async function CargarServipag() {
 				title: 'Éxito',
 				text: result.message,
 			});
+			LeerServipag();
 		} else {
 			// En caso de success: false, se muestra una alerta de error con el mensaje recibido
 			Swal.fire({

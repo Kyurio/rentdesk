@@ -6309,7 +6309,7 @@ function cargarLiquidacionesGenMasivaList() {
                             <td>${direccion}</td>
                             <td>${idPropiedad}</td>
                             <td>${idContrato}</td>
-                            <td data-order="${precioNumerico}">${montoFormateado}</td>
+                            <td data-order="${precioNumerico}">${montoFormateado}</td> <--AQUI SE ORDENADA POR EL INT Y SE MUESTRA EL MONTO-->
                             <td>${cierre}</td>
                             <td>-</td>
                             <td>
